@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory 
+        android:title="@string/pref_title">
+        <CheckBoxPreference
+			 	android:key="hide_matched_messages"
+			 	android:title="@string/pref_hide_matched"
+			 	android:summary="@string/pref_hide_matched_summary">
+		</CheckBoxPreference>
+        <CheckBoxPreference
+			 	android:key="hide_not_matched_messages"
+			 	android:title="@string/pref_hide_non_matched"
+			 	android:summary="@string/pref_hide_non_matched_summary">
+		</CheckBoxPreference>
+        <CheckBoxPreference
+			 	android:key="hide_currency"
+			 	android:title="@string/pref_hide_title"
+			 	android:summary="@string/pref_hide_currency_summary">
+		</CheckBoxPreference>
+        <CheckBoxPreference
+			 	android:key="inverse_rate"
+			 	android:title="@string/pref_inverse_rate"
+			 	android:summary="@string/pref_inverse_rate_summary">
+		</CheckBoxPreference>        
+        </PreferenceCategory>
+</PreferenceScreen>

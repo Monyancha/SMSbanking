@@ -1,0 +1,56 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="@dimen/widget_margin"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:baselineAligned="false"
+    android:id="@+id/widget_layout">
+
+    <ImageView
+        android:id="@+id/widget_background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/layout_bg"
+        android:contentDescription="@string/background"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/widget_text"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:contentDescription="@string/appwidget_text"
+            android:text="@string/widget_default_name"
+            android:textColor="#fbff00"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:allowUndo="false"
+            android:clickable="true"
+            android:gravity="bottom|center"
+            android:layout_weight="1"/>
+
+        <TextView
+                android:id="@+id/widget_value"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:contentDescription="@string/appwidget_text"
+                android:text="@string/appwidget_text"
+                android:textColor="#fbff00"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:alpha="1"
+                android:allowUndo="true"
+                android:clickable="true"
+                android:gravity="top|center"
+                android:layout_weight="1"/>
+    </LinearLayout>
+
+</RelativeLayout>

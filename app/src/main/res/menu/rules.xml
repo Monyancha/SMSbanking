@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.khizhny.smsbanking.RuleListActivity" >
+
+    <item
+        android:id="@+id/rule_add"
+        android:orderInCategory="100"
+        android:title="@string/rule_add"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/rule_edit"
+        android:orderInCategory="100"
+        android:title="@string/bank_edit"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/rule_delete"
+        android:orderInCategory="100"
+        android:title="@string/bank_delete"
+        app:showAsAction="never"/>     
+</menu>

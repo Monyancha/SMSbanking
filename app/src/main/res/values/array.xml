@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="parameter_entries">
+        <item>Account state before transaction</item>
+        <item>Account state after transaction</item>
+        <item>Account difference</item>
+        <item>Transaction commission</item>
+        <item>Transaction currency</item>
+        <item>Extra parameter 1</item>
+        <item>Extra parameter 2</item>
+        <item>Extra parameter 3</item>
+        <item>Extra parameter 4</item>
+    </string-array>
+
+    <string-array name="interval_entries">
+        <item>Unknown</item>
+        <item>Year</item>
+        <item>Quater</item>
+        <item>Month</item>
+        <item>Week</item>
+        <item>Day</item>
+    </string-array>
+
+    <string-array name="method_entries">
+	<item>n-th word after Phrase</item>
+    <item>n-th word before Phrase</item>
+    <item>all words between Phrases</item>
+    <item>use constant Value</item>
+</string-array>
+
+<string-array name="transaction_types">
+    <item>Unknown</item>
+    <item>Income</item>
+    <item>Withdraw</item>
+    <item>TransferIn</item>
+    <item>TransferOut</item>
+    <item>Paid</item>
+    <item>Failed</item>
+    <item>Calculated</item>
+    <item>Ignore</item>
+</string-array>
+
+</resources>

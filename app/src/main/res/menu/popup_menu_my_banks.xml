@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/bank_activate"
+        android:title="@string/bank_activate"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_add"
+        android:title="@string/bank_add"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_edit"
+        android:title="@string/bank_edit"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_delete"
+        android:title="@string/bank_delete"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_export"
+        android:title="@string/bank_export"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_import"
+        android:title="@string/bank_import"
+        android:visible="true"/>
+    <item
+        android:id="@+id/bank_share"
+        android:title="@string/bank_share"
+        android:visible="true"/>
+</menu>

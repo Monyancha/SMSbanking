@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SMS banking</string>
+    <string name="SMS_TEXT">SMS TEXT</string>
+
+    <string name="action_bank_list">Manage bank templates</string>
+    <string name="action_rule_list">Manage rules</string>
+    <string name="action_sub_rule_list">Extraction rules</string>
+    <string name="action_preferences">Preferences</string>
+
+    <string name="action_quit">Quit</string>
+    <string name="action_save">Save</string>
+    <string name="action_rule_text">Creating new rule</string>
+    <string name="action_rate_app">Rate application</string>
+
+    <string name="rule_message">Pick constant words:</string>
+    <string name="rule_next">Next>></string>
+    <string name="rule_name">Rule name:</string>
+    <string name="rule_add_tip">To add new rule click on the SMS message in the main window.</string>
+    <string name="rule_edit_tip">Pick up the rule to edit.</string>
+    <string name="rule_delete_tip">Pick up the rule to delete.</string>
+
+    <string name="popup_create_rule">Create new rule</string>
+    <string name="popup_edit_rule">Edit rule</string>
+    <string name="popup_delete_rule">Delete rule</string>
+
+    <string name="account_default_currency">Bank account default currency:</string>
+    <string name="bank_account_name">Bank account name:</string>
+    <string name="sms_bank_sender">SMS senders:</string>
+    <string name="rule_type">Transaction type:</string>
+    <string name="sub_rule_parameters">Choose parameters to extract:</string>
+    <string name="sub_rule_constant_value">Value:</string>
+    <string name="sub_rule_parameter_prompt">Choose parameter to extract</string>
+    <string name="sub_rule_add">Add</string>
+    <string name="sub_rule_method">Method:</string>
+    <string name="sub_rule_phrase">Phrase:</string>
+    <string name="sub_rule_result_value">Result:</string>
+    <string name="sub_rule_decimal_separator">decimal separator</string>
+    <string name="sub_rule_trim_text">Ignore n characters (first,last):</string>
+
+    <string name="tip_icon">icon</string>
+    <string name="tip_tip">Tip</string>
+    <string name="tip_type">transaction type</string>
+    <string name="tip_rule_name">Rule Name</string>
+    <string name="tip_before">before</string>
+    <string name="tip_after">after</string>
+    <string name="tip_difference">diff</string>
+    <string name="tip_commission">commission</string>
+    <string name="tip_date">29.02.1981</string>
+    <string name="tip_bank_name">Bank name</string>
+    <string name="tip_bank_phone">Phone</string>
+    <string name="pref_hide_title">Hide currency name</string>
+    <string name="pref_hide_currency_summary">All values in your current bank account currency will not be displayed.</string>
+    <string name="pref_inverse_rate">Inverse currency rates</string>
+    <string name="pref_inverse_rate_summary">Changes USD/EUR to EUR/USD</string>
+    <string name="pref_hide_matched">Hide matched messages.</string>
+    <string name="pref_hide_matched_summary">Useful while rule configuration.</string>
+    <string name="pref_hide_non_matched">Hide not matched messages.</string>
+    <string name="pref_hide_non_matched_summary">Check to hide useless messages.</string>
+
+	<string name="tip_bank_1">Welcome!\n
+		To use this program you have to set it up properly. Here is a little guide.\n
+		First of all you need set up your \"Bank Account\" information.\n
+		To do this you need:\n\n
+		1. Go to "Bank Templates".\n
+		2. Add new bank or choose it from the list.\n
+		3. Pick up the Name, SMS sender and default currency of your account.\n
+		4. Save your bank settings and make it active.\n
+		5. Return to the main window.\n\n
+		Do you see a list of messages from the bank?\n
+		Congratulations! Your bank account is set and you are now ready to set up rules :)</string>
+
+	<string name="tip_rules_1">
+		The most important part is to set up the rules.\n
+		To do this you will need:\n
+		\n
+		1. Go back to messages list\n
+		2. One by one pick up the messages from the list which is marked with \"?\" icon.\n
+		3. Choose \"Create new rule\" from the popup menu.\n
+		4. Give any name to the rule.\n
+		5. Pick up transaction type from the list.\n
+		6. Pick all the words from the message which will never change in this type of messages. These words will be used later for extracting values. \n
+		7. Press \"Next\" button and add extraction rules.\n
+		\n
+		TIP: You can use card number or bank account number as constant word to split messages between several accounts of the same bank.
+	</string>
+
+	<string name="tip_subrules_1">
+		For each rule you need to specify a set of sub rules which can be used to extract 5 transaction parameters:\n
+		\n
+		1. \"Account state before transaction\"\n
+		2. \"Account state after transaction\"\n
+		3. \"Account state difference\"\n
+		4. \"Transaction commission\" (optional)\n
+		5. \"Transaction currency\" (optional)\n
+		\n
+		Note 1: Just 2 of first 3 parameters needed. Third parameter will be calculated automatically.\n
+		\n
+		Note 2: If just 1 of first 3 parameters is set program will use \"Account state\" from previous or next transaction. Sometimes it leads to wrong calculations if some previous transaction missed.\n
+		\n
+		Note 3: If \"Transaction currency\" is not set the default value is used from bank account settings.\n
+		\n
+		Note 4: If \"Transaction currency\" differs from default value set in bank account settings the exchange rate will be calculated. Sometimes it leads to wrong calculations if some previous transaction missed.\n
+		\n
+		Note 5: If \"Transaction commission\" is not set the default value is zero.\n
+		\n
+		Note 6: To delete the rule just uncheck the checkbox.
+	</string>
+
+    <string name="saving_changes">Saving changes…</string>
+    <string name="pref_title">Common settings</string>
+    <string name="popup_delete_sms">Delete message</string>
+    <string name="activity_title_bank_list">Bank list</string>
+    <string name="activity_title_bank">Bank settings</string>
+    <string name="negate">negate</string>
+    <string name="close">close</string>
+
+    <string name="bank_copy">Use this template</string>
+    <string name="bank_import">Import bank</string>
+    <string name="bank_export">Export bank</string>
+    <string name="bank_activate">Activate</string>
+    <string name="mybank_activity_title">My banks</string>
+    <string name="bank_templates_title">Bank templates</string>
+    <string name="bank_add">Add new bank</string>
+    <string name="bank_edit">Edit</string>
+    <string name="bank_delete">Delete</string>
+    <string name="bank_activate_tip">is set active.</string>
+    <string name="bank_default_name">My Bank</string>
+    <string name="add_phone_button_description">plus</string>
+    <string name="phone_number_not_set">Phone number must be set.</string>
+    <string name="export_sucessfull">Export successful</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_failed">import_failed</string>
+    <string name="help">Help</string>
+    <string name="n_equal">n=</string>
+    <string name="appwidget_text">0.00</string>
+    <string name="add_widget">Add widget</string>
+    <string name="widget_default_name">Bank</string>
+    <string name="appwidget_currency">USD</string>
+    <string name="bank_share">Share</string>
+    <string name="popup_switch_rule">Use another rule</string>
+    <string name="warning_sign">(!)</string>
+    <string name="extra_parameter">extra1</string>
+    <string name="text_color">Text color:</string>
+    <string name="background_color">Background:</string>
+    <string name="bank_name">Bank Name</string>
+    <string name="font_size">Font size</string>
+    <string name="widget_sample_label">My Bank\n123.56 USD</string>
+    <string name="background">backgrpound</string>
+    <string name="title_activity_statistics">Statistics</string>
+    <string name="statistics">Statistics</string>
+    <string name="quot_interval_quot">Interval:</string>
+    <string name="no_transactions_found">No transactions found</string>
+    <string name="rule_add">Add rule</string>
+    <string name="stat_show_balance">Balance curve</string>
+    <string name="stat_show_outcome">Outcome</string>
+    <string name="stat_show_income">Income</string>
+    <string name="stat_show_values">Balance values</string>
+    <string name="stats_income">income</string>
+    <string name="stats_outcome">outcome</string>
+    <string name="stats_balance">balance</string>
+</resources>
+

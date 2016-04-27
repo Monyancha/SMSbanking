@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.khizhny.smsbanking.StatisticsActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/quot_interval_quot"
+        android:id="@+id/type_text"
+        android:gravity="center_vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/stat_step"/>
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/stat_step"
+        android:contentDescription="@string/tip_type"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/interval_entries"
+        android:prompt="@string/rule_type"
+        android:touchscreenBlocksFocus="false"
+        android:layout_toEndOf="@+id/type_text"
+        android:gravity="center_vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/type_text"/>
+
+    <com.github.mikephil.charting.charts.CombinedChart
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/chart"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/stat_step"/>
+</RelativeLayout>

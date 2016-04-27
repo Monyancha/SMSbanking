@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sub_rule_ll"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/sub_rule_parameter_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/sub_rule_active"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:checked="true"
+            android:longClickable="false" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_parameter"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:entries="@array/parameter_entries"
+            android:prompt="@string/sub_rule_parameter_prompt" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="30sp"
+        android:id="@+id/sub_rule_method_ll">
+
+        <TextView
+            android:id="@+id/TextView02"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_method"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:gravity="center"
+            android:layout_gravity="center_vertical"
+            android:textSize="10sp" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_method"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:entries="@array/method_entries" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_left_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/sub_rule_left_n_label"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/n_equal"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_left_n"
+            android:layout_width="40sp"
+            android:layout_height="fill_parent"
+            android:entries="@array/n_entries" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_phrase"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_left_phrase"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_right_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/sub_rule_right_n_label"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/n_equal"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_right_n"
+            android:layout_width="40sp"
+            android:layout_height="fill_parent"
+            android:entries="@array/n_entries" />
+
+        <TextView
+            android:id="@+id/TextView04"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_phrase"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_right_phrase"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_const_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_constant_value"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <EditText
+            android:id="@+id/sub_rule_constant_value"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:ems="10"
+            android:enabled="true"
+            android:textSize="10sp"
+            android:inputType="text"
+            android:imeOptions="actionDone|actionSearch" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_separator_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_decimal_separator"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_separator"
+            android:layout_width="40sp"
+            android:layout_height="fill_parent"
+            android:entries="@array/decimal_separator" />
+
+        <CheckBox
+            android:id="@+id/sub_rule_negate"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/negate"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_trim_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/TextView03"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_trim_text"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="10sp"
+            android:gravity="center" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_ignore_n_first"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:entries="@array/z_entries"
+            android:focusable="true" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/sub_rule_ignore_n_last"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:entries="@array/z_entries" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sub_rule_result_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="30sp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/sub_rule_result_text"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/sub_rule_result_value"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="12sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/sub_rule_result_value"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="text"
+            android:textSize="12sp"
+            android:textColor="#ff0000"
+            android:gravity="center">
+
+            <requestFocus />
+        </TextView>
+    </LinearLayout>
+</LinearLayout>

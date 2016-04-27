@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="parameter_entries">
+        <item>Баланс до операции</item>
+        <item>Баланс после операции</item>
+        <item>Изменение баланса</item>
+        <item>Комиссия</item>
+        <item>Валюта операции</item>
+        <item>Доп. параметр 1</item>
+        <item>Доп. параметр 2</item>
+        <item>Доп. параметр 3</item>
+        <item>Доп. параметр 4</item>
+    </string-array>
+
+    <string-array name="interval_entries">
+        <item>Не указан</item>
+        <item>Год</item>
+        <item>Квартал</item>
+        <item>Месяц</item>
+        <item>Неделя</item>
+        <item>День</item>
+    </string-array>
+
+    <string-array name="method_entries">
+        <item>N-ное слово после фразы</item>
+        <item>N-ное слово до фразы</item>
+        <item>все слова между фразами</item>
+        <item>использовать константу</item>
+    </string-array>
+
+    <string-array name="transaction_types">
+        <item>Неизвестен</item>
+        <item>Пополнение</item>
+        <item>Снятие</item>
+        <item>Перевод на карту</item>
+        <item>Перевод с карты</item>
+        <item>Покупки</item>
+        <item>Неудача</item>
+        <item>Расчётное</item>
+        <item>Игнорировать</item>
+    </string-array>
+
+</resources>

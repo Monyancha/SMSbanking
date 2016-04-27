@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="parameter_entries">
+        <item>Баланс до операції</item>
+        <item>Баланс після операції</item>
+        <item>Зміна баланса</item>
+        <item>Комісія</item>
+        <item>Валюта операції</item>
+        <item>Додатковий параметр 1</item>
+        <item>Додатковий параметр 2</item>
+        <item>Додатковий параметр 3</item>
+        <item>Додатковий параметр 4</item>
+    </string-array>
+
+    <string-array name="interval_entries">
+        <item>Не вказан</item>
+        <item>Рік</item>
+        <item>Квартал</item>
+        <item>Місяць</item>
+        <item>Тиждень</item>
+        <item>День</item>
+    </string-array>
+
+    <string-array name="method_entries">
+        <item>N-не слово післе фрази</item>
+        <item>N-не слово до фрази</item>
+        <item>усі слова між фразами</item>
+        <item>використовувати константу</item>
+    </string-array>
+
+    <string-array name="transaction_types">
+        <item>Невідомий</item>
+        <item>Поповнення</item>
+        <item>Зняття</item>
+        <item>Переказ на картку</item>
+        <item>Переказ з картки</item>
+        <item>Придбання (покупки)</item>
+        <item>Неуспішно</item>
+        <item>Розрахункове</item>
+        <item>Ігнорувати</item>
+    </string-array>
+
+</resources>

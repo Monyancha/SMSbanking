@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:drawableLeft="@drawable/ic_transanction_unknown"
+        android:id="@+id/ruleName"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/tip_rule_name"
+        android:gravity="center_vertical"
+        />
+
+</LinearLayout>

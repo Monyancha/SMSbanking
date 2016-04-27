@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:id="@+id/LinearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <RadioButton
+        android:id="@+id/active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignBottom="@+id/bankCurrency"
+        android:layout_alignTop="@+id/bankName" />
+
+    <TextView
+        android:id="@+id/bankName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tip_bank_name"
+        android:layout_toRightOf="@+id/active"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/bankPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:gravity="start|center_vertical"
+        android:text="@string/tip_bank_phone"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/bankName"
+        android:layout_toRightOf="@+id/active" />
+
+    <TextView
+        android:id="@+id/bankValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:gravity="start|center_vertical"
+        android:text="@string/appwidget_text"
+        android:layout_below="@+id/bankPhone"
+        android:layout_toRightOf="@+id/active"
+        android:textColor="#29b000"
+        android:layout_alignParentBottom="false" />
+
+    <TextView
+        android:id="@+id/bankCurrency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:gravity="start|center_vertical"
+        android:layout_below="@+id/bankPhone"
+        android:textColor="#29b000"
+        android:text="@string/appwidget_currency"
+        android:layout_toRightOf="@+id/bankValue"
+        android:layout_marginLeft="12sp" />
+
+</RelativeLayout>

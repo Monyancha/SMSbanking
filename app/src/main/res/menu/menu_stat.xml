@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.khizhny.smsbanking.MainActivity" >
+    <item
+        android:id="@+id/item_stat_values"
+        android:title="@string/stat_show_values"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/item_stat_income"
+        android:title="@string/stat_show_income"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/item_stat_outcome"
+        android:title="@string/stat_show_outcome"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/item_stat_balance"
+        android:title="@string/stat_show_balance"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+</menu>

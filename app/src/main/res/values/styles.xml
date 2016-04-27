@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Mytheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:itemBackground">@color/white</item>
+        <item name="icon">@drawable/ic_launcher</item>
+    </style>
+</resources>
