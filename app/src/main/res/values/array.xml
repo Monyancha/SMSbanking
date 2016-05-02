@@ -16,7 +16,7 @@
     <string-array name="interval_entries">
         <item>Unknown</item>
         <item>Year</item>
-        <item>Quater</item>
+        <item>Quarter</item>
         <item>Month</item>
         <item>Week</item>
         <item>Day</item>

@@ -266,7 +266,7 @@ public class StatisticsActivity extends AppCompatActivity{
             case 1: //Year
                 cal.add(Calendar.YEAR,index);
                 break;
-            case 2: //Quater
+            case 2: //Quarter
                 cal.add(Calendar.MONTH,index*3);
                 break;
             case 3: //Month
@@ -283,18 +283,18 @@ public class StatisticsActivity extends AppCompatActivity{
         int week=cal.get(Calendar.WEEK_OF_YEAR); // 0-53
         int month=cal.get(Calendar.MONTH);  // 0-11
         int day=cal.get(Calendar.DAY_OF_MONTH); // 1-365
-        int quater = month /3;  //0-3
+        int quarter = month /3;  //0-3
         switch (step){
             case 1: //Year
                 return "Y"+year;
-            case 2: //Quater
-                return "Y"+year+"Q"+(quater+1);
+            case 2: //Quarter
+                return "Y"+year+"Q"+(quarter+1);
             case 3: //Month
                 return "Y"+year+"M"+(month+1);
             case 4: //Week
                 return "Y"+year+"W"+week;
             case 5: //Day
-                return day+"/"+month+"/"+year;
+                return day+"/"+(month+1)+"/"+year;
             default:
                 return "";
         }
