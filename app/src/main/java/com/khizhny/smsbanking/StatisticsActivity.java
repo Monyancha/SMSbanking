@@ -122,6 +122,15 @@ public class StatisticsActivity extends AppCompatActivity{
         });
         if (transactions.size()>1) {
             Date start_date = transactions.get(transactions.size() - 1).getTransanctionDate();
+            /*shifting to the begining of the day*/
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(start_date);
+            cal.set(Calendar.HOUR_OF_DAY,0);
+            cal.set(Calendar.MINUTE,0);
+            cal.set(Calendar.SECOND,0);
+            cal.set(Calendar.MILLISECOND,0);
+            start_date = cal.getTime();
+
             int lastBarIndex = transactions.get(0).getDateIndex(start_date, step);
             //int lastTransactionIndex = transactions.size() - 1;
             // Filling categories array
@@ -148,7 +157,7 @@ public class StatisticsActivity extends AppCompatActivity{
                 totalIncome = 0;
                 totalOutcome = 0;
                 // calculatind total balance income and outcome and maximum balance
-                while (currentTransactionBarIndex == barIndex && transactionIndex > 0) {
+                while (currentTransactionBarIndex == barIndex && transactionIndex >= 0) {
                     t = transactions.get(transactionIndex);
                     if (t.hasStateAfter) {
                         currentBalance = t.getStateAfter().floatValue();
@@ -156,10 +165,9 @@ public class StatisticsActivity extends AppCompatActivity{
                     if (currentBalance > balance) {
                         balance = currentBalance;
                     }
-                    try {
-                        diff = t.getStateAfter().floatValue() - t.getStateBefore().floatValue();
-                    } catch (Exception e) {
-                        diff = 0;
+                    diff = 0 ;
+                    if (t.hasStateDifference) {
+                        diff = t.getStateDifference().floatValue();
                     }
                     if (diff > 0) {
                         totalIncome = totalIncome + diff;
@@ -262,6 +270,7 @@ public class StatisticsActivity extends AppCompatActivity{
         Calendar cal = Calendar.getInstance();
         cal.setMinimalDaysInFirstWeek(7);
         cal.setTime(startDate);
+        /*shifting calendar from start date */
         switch (step){
             case 1: //Year
                 cal.add(Calendar.YEAR,index);
@@ -279,11 +288,13 @@ public class StatisticsActivity extends AppCompatActivity{
                 cal.add(Calendar.DAY_OF_YEAR,index);
                 break;
         }
+        Log.d("DateCheck","startDate=" + startDate+ "  SHIFTING to index=" +index + " final date=" + cal.getTime());
         int year=cal.get(Calendar.YEAR);
         int week=cal.get(Calendar.WEEK_OF_YEAR); // 0-53
         int month=cal.get(Calendar.MONTH);  // 0-11
         int day=cal.get(Calendar.DAY_OF_MONTH); // 1-365
         int quarter = month /3;  //0-3
+        Log.d("DateCheck","year=" + year + " week="+week+" month="+month+" day="+day+" quarter="+quarter);
         switch (step){
             case 1: //Year
                 return "Y"+year;

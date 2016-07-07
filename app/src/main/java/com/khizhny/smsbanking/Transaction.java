@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -557,6 +558,7 @@ public class Transaction implements Comparable<Transaction> {
         Calendar cal = Calendar.getInstance();
         cal.setMinimalDaysInFirstWeek(7);
         cal.setTime(startDate);
+
         int startYear=cal.get(Calendar.YEAR);
         int startWeek=cal.get(Calendar.WEEK_OF_YEAR);
         int startMonth=cal.get(Calendar.MONTH);
@@ -581,6 +583,7 @@ public class Transaction implements Comparable<Transaction> {
                 return diffWeek;
                 //break;
             case 5: //Day
+                //Log.d("DateCheck","getDateIndex startDate="+startDate+"  transactionDate="+transanctionDate+ " index="+diffDay);
                 return (int) diffDay;
                 //break;
             default:

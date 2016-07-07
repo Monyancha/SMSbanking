@@ -259,14 +259,18 @@ public class Rule implements java.io.Serializable {
      * @return TRUE if Rule was applied. False if rule can not be applied.
      */
 	public Boolean applyRule(Transaction transaction ){
-		String sms_body=transaction.getBody();
-		if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
-			return false;  //  rule is not for this SMS.
-		}else{
-			transaction.icon = getRuleTypeDrawable();
-			for (SubRule subRule : subRuleList)	subRule.applySubRule(sms_body, transaction);
-			return true;
-		}
+		if (transaction!=null) {
+            String sms_body = transaction.getBody();
+            if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
+                return false;  //  rule is not for this SMS.
+            } else {
+                transaction.icon = getRuleTypeDrawable();
+                for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
+                return true;
+            }
+        } else {
+            return false;
+        }
 	}
 	public Boolean hasIgnoreType(){
 		return ruleType == Rule.transactionType.IGNORE;
