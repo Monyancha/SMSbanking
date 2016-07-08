@@ -69,8 +69,8 @@
 
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/sub_rule_left_n"
-            android:layout_width="40sp"
-            android:layout_height="fill_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:entries="@array/n_entries" />
 
         <TextView
@@ -107,8 +107,8 @@
 
         <android.support.v7.widget.AppCompatSpinner
             android:id="@+id/sub_rule_right_n"
-            android:layout_width="40sp"
-            android:layout_height="fill_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:entries="@array/n_entries" />
 
         <TextView

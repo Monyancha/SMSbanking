@@ -158,4 +158,6 @@
     <string name="stats_balance">Баланс</string>
     <string name="pref_ignore_clones">Ігнорувати дублікати.</string>
     <string name="pref_ignore_clones_summary">Ігнорувати послідовні дублюючі повідомлення.</string>
+    <string name="pref_hide_ads">Приховати рекламу</string>
+    <string name="pref_hide_ads_summary">Залиште щоб підтримати розробника.</string>
 </resources>

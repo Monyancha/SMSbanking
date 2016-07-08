@@ -26,6 +26,11 @@ import android.widget.ListView;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.util.List;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
@@ -41,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private TransactionListAdapter transactionListAdapter;
     private Boolean hideCurrency;
     private Boolean inverseRate;
-    private Boolean ignoreClones;
+    private Boolean hideAds;
     private List <Bank> myBanks;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
@@ -118,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             intent.putExtra("tip_res_id", R.string.tip_bank_1);
             startActivity(intent);
         }
+
+
     }
 
     @Override
@@ -128,15 +135,26 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         hideCurrency = settings.getBoolean("hide_currency", false);
         inverseRate = settings.getBoolean("inverse_rate", false);
-        ignoreClones = settings.getBoolean("ignore_clones", false);
 
-        // refreshing list
+
+        // refreshing lists
         refreshTransactionsList();
         //refreshAccountStates();
         //loadTransactionsTask = new LoadTransactionsTask();
         //loadTransactionsTask.execute();
         //updateMyAccountsState = new UpdateMyAccountsState();
         //updateMyAccountsState.execute();
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        hideAds = settings.getBoolean("hide_ads", false);
+        if (!hideAds) {
+            // real: ca-app-pub-1260562111804726/2944681295
+            MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+        } else {
+            mAdView.setVisibility(View.GONE);
+        }
+
     }
 
     @Override

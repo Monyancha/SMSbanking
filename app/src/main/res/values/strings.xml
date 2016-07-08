@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- This is real ID-->
+    <string name="banner_ad_unit_id" translatable="false">ca-app-pub-1260562111804726/2944681295</string>
+    <!--  -->
+    <!-- This is test ID-->
+    <!--string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string!-->
     <string name="app_name">SMS banking</string>
     <string name="SMS_TEXT">SMS TEXT</string>
 
@@ -58,6 +62,10 @@
     <string name="pref_hide_matched_summary">Useful while rule configuration.</string>
     <string name="pref_hide_non_matched">Hide not matched messages.</string>
     <string name="pref_hide_non_matched_summary">Check to hide useless messages.</string>
+    <string name="pref_hide_ads">Hide ads</string>
+    <string name="pref_hide_ads_summary">Leave it to support developer</string>
+
+
 
 	<string name="tip_bank_1">Welcome!\n
 		To use this program you have to set it up properly. Here is a little guide.\n
