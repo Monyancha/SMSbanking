@@ -281,7 +281,7 @@ public class SubRule implements java.io.Serializable {
 			case ACCOUNT_DIFFERENCE: //Account difference
 				transaction.setDifference(applySubRule(msg, 0));
 				return true;
-			case COMISSION: //Transaction commission
+			case COMMISSION: //Transaction commission
 				transaction.setComission(applySubRule(msg, 0));
 				return true;
 			case CURRENCY: //Transaction currency

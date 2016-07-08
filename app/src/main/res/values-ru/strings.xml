@@ -50,7 +50,7 @@
 	<string name="tip_date">29.02.1981</string>
 	<string name="tip_bank_name">Название банка</string>
 	<string name="tip_bank_phone">Номер</string>
-	<string name="pref_hide_title">Не показывать валюту</string>
+	<string name="pref_hide_title">Не показывать валюту.</string>
 	<string name="pref_hide_currency_summary">Не указывать валюту если она родная.</string>
 	<string name="pref_inverse_rate">Обратный обменный курс</string>
 	<string name="pref_inverse_rate_summary">Вместо USD/EUR указывать EUR/USD</string>
@@ -145,7 +145,7 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Интервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="no_transactions_found">No transactions found</string>
+    <string name="no_transactions_found">нет транзакций</string>
     <string name="rule_add">Новое правило</string>
     <string name="stat_show_balance">Кривая баланса</string>
     <string name="stat_show_outcome">Расход</string>
@@ -154,5 +154,7 @@
     <string name="stats_income">Доход</string>
     <string name="stats_outcome">Расход</string>
     <string name="stats_balance">Баланс</string>
+    <string name="pref_ignore_clones">Игнорировать дубликаты.</string>
+    <string name="pref_ignore_clones_summary">Игнорировать дублирующие последовательные сообщения.</string>
 </resources>
 

@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -26,14 +25,14 @@ public class Transaction implements Comparable<Transaction> {
 	public int icon;
 	private String body;
 	public long smsId;
-	private Date transanctionDate;
+	private Date transactionDate;
 	private String accountCurrency;
 	private String transactionCurrency;
 	private BigDecimal stateBefore;
 	private BigDecimal stateAfter;
 	private BigDecimal stateDifference;
 	private BigDecimal currencyRate;
-	private BigDecimal comission;
+	private BigDecimal commission;
 
 	private String extraParam1;
 	private String extraParam2;
@@ -41,13 +40,13 @@ public class Transaction implements Comparable<Transaction> {
 	private String extraParam4;
 
 	private int selectedRuleId;        // id if transactions saved by the user.
-	private List <Rule> appliableRules;  // list of rules that can be used to form this transaction
+	private List <Rule> applicableRules;  // list of rules that can be used to form this transaction
 
 	public enum Parameters {
 		ACCOUNT_STATE_BEFORE,
 		ACCOUNT_STATE_AFTER,
 		ACCOUNT_DIFFERENCE,
-		COMISSION,
+        COMMISSION,
 		CURRENCY,
 		EXTRA_1,
 		EXTRA_2,
@@ -69,7 +68,7 @@ public class Transaction implements Comparable<Transaction> {
 	@Override
 	public int compareTo(@NonNull Transaction o) {
 		try{
-			return o.getTransanctionDate().compareTo(getTransanctionDate());
+			return o.getTransactionDate().compareTo(getTransactionDate());
 		} catch (Exception e)  {
 			return 0;
 		}
@@ -79,8 +78,8 @@ public class Transaction implements Comparable<Transaction> {
 		this.icon=R.drawable.ic_transanction_unknown;
 		selectedRuleId=-1;
 		this.currencyRate=new BigDecimal(1).setScale(3, RoundingMode.HALF_UP);
-		this.setComission(new BigDecimal(0).setScale(2, RoundingMode.HALF_UP));
-		appliableRules = new ArrayList <Rule>();
+		this.setCommission(new BigDecimal(0).setScale(2, RoundingMode.HALF_UP));
+		applicableRules = new ArrayList <Rule>();
         extraParam1="";
         extraParam2="";
         extraParam3="";
@@ -92,13 +91,13 @@ public class Transaction implements Comparable<Transaction> {
 		return body;
 	}
 
-	public Date getTransanctionDate() {
-		return transanctionDate;
+	public Date getTransactionDate() {
+		return transactionDate;
 	}
 
-	public String getTransanctionDateAsString(String transanctionDateFormat) {
-		DateFormat f = new SimpleDateFormat(transanctionDateFormat, Locale.ENGLISH);
-		return f.format(transanctionDate);
+	public String getTransactionDateAsString(String transactionDateFormat) {
+		DateFormat f = new SimpleDateFormat(transactionDateFormat, Locale.ENGLISH);
+		return f.format(transactionDate);
 	}
 
 	public String getAccountCurrency(){
@@ -117,17 +116,21 @@ public class Transaction implements Comparable<Transaction> {
 		return stateDifference;
 	}
 
-	public BigDecimal getComission() {
-		return comission;
+    public BigDecimal getStateDifferenceInNativeCurrency(){
+        return currencyRate.multiply(stateDifference,  MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getCommission() {
+		return commission;
 	}
 
-	public String getComissionAsString(boolean hideCurrency){
-		if (comission.signum()!=0)
+	public String getCommissionAsString(boolean hideCurrency){
+		if (commission.signum()!=0)
 		{
 			if (!hideCurrency) {
-				return comission.toString()+accountCurrency;
+				return commission.toString()+accountCurrency;
 			}else{
-				return comission.toString();
+				return commission.toString();
 			}
 		}else{
 			return "";
@@ -168,25 +171,24 @@ public class Transaction implements Comparable<Transaction> {
 	}
 
 	public String getAccountDifferenceAsString(boolean hideCurrency,boolean inverseRate){
-		// function forms a string that will represent trnsaction difference on screen
+		// function forms a string that will represent transaction difference on screen
 		String rez="";
 		if (accountCurrency.equals(transactionCurrency) || currencyRate.equals(new BigDecimal("1.000"))){
 			// if transaction has native currency
-			if (stateDifference.subtract(comission).signum()==1) {
+			if (stateDifference.subtract(commission).signum()==1) {
 				rez+="+";
 			}
-			rez+= stateDifference.subtract(comission).toString();
+			rez+= stateDifference.subtract(commission).toString();
 			if (!hideCurrency) {
 				rez+= " "+transactionCurrency;
 			}
 		}else
 		{   // if transaction has foreign currency
-			BigDecimal calculated_price = currencyRate.multiply(stateDifference,  MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
 			if (stateDifference.signum()==1) {
 				rez+="+";
 			}
 			rez+= stateDifference.toString()+ " "+transactionCurrency;
-			rez+="\n("+calculated_price;
+			rez+="\n("+getStateDifferenceInNativeCurrency();
 			if (!hideCurrency) {
 				rez+=" "+accountCurrency;
 			}
@@ -225,12 +227,12 @@ public class Transaction implements Comparable<Transaction> {
 		this.body = body;
 	}
 
-	public void setTransanctionDate(Date transanctionDate, Context context) {
-		this.transanctionDate=transanctionDate;
+	public void setTransactionDate(Date transactionDate, Context context) {
+		this.transactionDate =transactionDate;
 		if (context!=null) {
             DatabaseAccess db = DatabaseAccess.getInstance(context);
             db.open();
-            selectedRuleId= db.getRuleIdFromConflictChoices(transanctionDate);
+            selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
             db.close();
 		}
 		hasTransactionDate =true;
@@ -258,8 +260,8 @@ public class Transaction implements Comparable<Transaction> {
 		this.hasStateDifference =true;
 	}
 
-	public void setComission(BigDecimal comission) {
-		this.comission = comission;
+	public void setCommission(BigDecimal commission) {
+		this.commission = commission;
 	}
 
 	public int setStateBefore(String s){
@@ -291,7 +293,7 @@ public class Transaction implements Comparable<Transaction> {
 
 	public int setComission(String comission) {
 		try{
-			this.setComission(new BigDecimal(comission.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
+			this.setCommission(new BigDecimal(comission.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
 			return 1;
 		}catch (Exception e) {
 			return 0;
@@ -305,7 +307,7 @@ public class Transaction implements Comparable<Transaction> {
 		// Calculating stateAfter if possible
 		if (!hasStateAfter && hasStateBefore && hasStateDifference) {
 			if (transactionCurrency.equals(accountCurrency)) {
-				stateAfter = stateBefore.add(stateDifference).subtract(comission);
+				stateAfter = stateBefore.add(stateDifference).subtract(commission);
 				hasStateAfter =true;
 				hasCalculatedAccountStateAfter=true;
 			}
@@ -313,7 +315,7 @@ public class Transaction implements Comparable<Transaction> {
 		// Calculating stateBefore if possible
 		if (!hasStateBefore && hasStateAfter && hasStateDifference) {
 			if (transactionCurrency.equals(accountCurrency)) {
-				stateBefore = stateAfter.subtract(stateDifference).add(comission);
+				stateBefore = stateAfter.subtract(stateDifference).add(commission);
 				hasStateBefore =true;
 				hasCalculatedAccountStateBefore=true;
 			}
@@ -321,15 +323,15 @@ public class Transaction implements Comparable<Transaction> {
 		// Calculating account difference if possible
 		if (!hasStateDifference && hasStateBefore && hasStateAfter) {
 			if (transactionCurrency.equals(accountCurrency)) {
-				stateDifference = stateAfter.subtract(stateBefore).add(comission);
+				stateDifference = stateAfter.subtract(stateBefore).add(commission);
 				hasStateDifference =true;
 				hasCalculatedAccountDifference=true;
 			}
 		}
-		// if comission changed recalculate state before
+		// if commission changed recalculate state before
 		if (hasStateDifference && hasStateBefore && hasStateAfter) {
 			if (transactionCurrency.equals(accountCurrency)) {
-				stateBefore = stateAfter.subtract(stateDifference).add(comission);
+				stateBefore = stateAfter.subtract(stateDifference).add(commission);
 			}
 		}
 		// calculating exchange rates if it is possible.
@@ -341,8 +343,8 @@ public class Transaction implements Comparable<Transaction> {
 					stateDifference.signum() != 0) {
 				// calculating price in native currency
 				BigDecimal uah_price = stateBefore.subtract(stateAfter);
-				// minus comission if exists
-				uah_price = uah_price.add(comission);
+				// minus commission if exists
+				uah_price = uah_price.add(commission);
 				// exchange rate
 				BigDecimal rate = uah_price.divide(stateDifference.negate(), 3, RoundingMode.HALF_UP);
 				setCurrencyRate(rate);
@@ -394,7 +396,7 @@ public class Transaction implements Comparable<Transaction> {
 						next.hasCalculatedAccountStateBefore = true;
 					}
 				}
-				// Adding info to transanctions with foreign currency. (calculating exchange rates if it is possible).
+				// Adding info to transactions with foreign currency. (calculating exchange rates if it is possible).
 				curr.calculateMissedData();
 				// adding extra transactions if account state changed unexpectedly
 				if (prev.hasStateAfter && curr.hasStateBefore) {
@@ -402,7 +404,7 @@ public class Transaction implements Comparable<Transaction> {
 						Transaction new_transaction = new Transaction();
 						new_transaction.setBody("");
 						new_transaction.setTransactionCurrency(prev.getAccountCurrency());
-						new_transaction.setTransanctionDate(new Date((curr.getTransanctionDate().getTime() + prev.getTransanctionDate().getTime()) / 2),null);
+						new_transaction.setTransactionDate(new Date((curr.getTransactionDate().getTime() + prev.getTransactionDate().getTime()) / 2),null);
 						new_transaction.hasCalculatedTransactionDate = true;
 						new_transaction.setAccountCurrency(prev.getAccountCurrency());
 						new_transaction.icon = R.drawable.ic_transanction_missed;
@@ -441,8 +443,9 @@ public class Transaction implements Comparable<Transaction> {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 		Boolean hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
 		Boolean hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+        Boolean ignoreClones = settings.getBoolean("ignore_clones", false);
 		List<Transaction> transactionList = new ArrayList<Transaction>();
-		String sms_body;
+		String sms_body="";
 		String phoneNumbers = activeBank.getPhone().replace(";", "','");
         Cursor c;
         if (MyApplication.hasReadSmsPermission) {
@@ -455,51 +458,55 @@ public class Transaction implements Comparable<Transaction> {
 			int msgCount = c.getCount();
 			if (c.moveToFirst()) {
 				for (int ii = 0; ii < msgCount; ii++) {
-					sms_body = c.getString(c.getColumnIndexOrThrow("body"));
-					Transaction transaction = new Transaction();
-					transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
-					transaction.setAccountCurrency(activeBank.getDefaultCurrency());
-					transaction.setTransanctionDate(new Date(c.getLong(c.getColumnIndexOrThrow("date"))),context);
-					sms_body = sms_body.replace("'", "").replace("\n", " ");
-					transaction.setBody(sms_body);
-					transaction.setTransactionCurrency(activeBank.getDefaultCurrency());
-					Boolean messageHasIgnoreTypeRule = false;
+                    if (ignoreClones && sms_body.equals(c.getString(c.getColumnIndexOrThrow("body")))){
+                        // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
+                    }else {
+                        sms_body = c.getString(c.getColumnIndexOrThrow("body"));
+                        Transaction transaction = new Transaction();
+                        transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
+                        transaction.setAccountCurrency(activeBank.getDefaultCurrency());
+                        transaction.setTransactionDate(new Date(c.getLong(c.getColumnIndexOrThrow("date"))), context);
+                        sms_body = sms_body.replace("'", "").replace("\n", " ");
+                        transaction.setBody(sms_body);
+                        transaction.setTransactionCurrency(activeBank.getDefaultCurrency());
+                        Boolean messageHasIgnoreTypeRule = false;
 
-					for (Rule rule : activeBank.ruleList) {
-						if (sms_body.matches(rule.getMask())) {
-							if (rule.hasIgnoreType()){
-								messageHasIgnoreTypeRule=true;
-							} else {
-								transaction.appliableRules.add(rule);
-							}
-						}
-					}
+                        for (Rule rule : activeBank.ruleList) {
+                            if (sms_body.matches(rule.getMask())) {
+                                if (rule.hasIgnoreType()) {
+                                    messageHasIgnoreTypeRule = true;
+                                } else {
+                                    transaction.applicableRules.add(rule);
+                                }
+                            }
+                        }
 
-					if (!messageHasIgnoreTypeRule) {
-						// adding transaction to the list only is it is not ignoreg by any rule
-						if ((!hideNotMatchedMessages && transaction.appliableRules.size()==0)) {
-							// adding to list only is user set "show non matched" option in parameters
-							transaction.calculateMissedData();
-							transactionList.add(transaction);
-						}
-						if (!hideMatchedMessages && transaction.appliableRules.size() ==1) {
-							// adding to list only is user set "show matched"  option in parameters
-							transaction.appliableRules.get(0).applyRule(transaction);
-							transaction.calculateMissedData();
-							transactionList.add(transaction);
-						}
-						if (!hideMatchedMessages && transaction.appliableRules.size()>=2) {
-							// redirecting user to choose bank from template.
-							if (transaction.selectedRuleId>=0){ // if user already picked rule using his choice
-								transaction.getSelectedRule().applyRule(transaction);
-							} else{ // if user did not picked rule choose any first.
-								transaction.appliableRules.get(0).applyRule(transaction);
-							}
-							transaction.calculateMissedData();
-							transactionList.add(transaction);
-						}
-					}
-					c.moveToNext();
+                        if (!messageHasIgnoreTypeRule) {
+                            // adding transaction to the list only is it is not ignoreg by any rule
+                            if ((!hideNotMatchedMessages && transaction.applicableRules.size() == 0)) {
+                                // adding to list only is user set "show non matched" option in parameters
+                                transaction.calculateMissedData();
+                                transactionList.add(transaction);
+                            }
+                            if (!hideMatchedMessages && transaction.applicableRules.size() == 1) {
+                                // adding to list only is user set "show matched"  option in parameters
+                                transaction.applicableRules.get(0).applyRule(transaction);
+                                transaction.calculateMissedData();
+                                transactionList.add(transaction);
+                            }
+                            if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
+                                // redirecting user to choose bank from template.
+                                if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
+                                    transaction.getSelectedRule().applyRule(transaction);
+                                } else { // if user did not picked rule choose any first.
+                                    transaction.applicableRules.get(0).applyRule(transaction);
+                                }
+                                transaction.calculateMissedData();
+                                transactionList.add(transaction);
+                            }
+                        }
+                    }
+                    c.moveToNext();
 				}
 			}
 			c.close();
@@ -508,35 +515,35 @@ public class Transaction implements Comparable<Transaction> {
 		return transactionList;
 	}
 	public Rule getSelectedRule(){
-		for (Rule r : appliableRules) {
+		for (Rule r : applicableRules) {
 			if (r.getId()==selectedRuleId) return r;
 		}
 		return null;
 	}
 
 	public int ruleOptionsCount(){
-		return appliableRules.size();
+		return applicableRules.size();
 	}
 	/**
 	 * Changes selected rule ID by the user to next possible value.
 	 * Seves changes to db.
 	 */
 	public void switchRule(Context ctx){
-		if (appliableRules.size()<2) return;
+		if (applicableRules.size()<2) return;
 		int originSelectedRuleId=selectedRuleId;
-		for (int i=0; i<appliableRules.size(); i++) {
-			if (appliableRules.get(i).getId()==originSelectedRuleId || selectedRuleId==-1) {
-				if (i+1==appliableRules.size()){
-					selectedRuleId=appliableRules.get(0).getId();
+		for (int i = 0; i< applicableRules.size(); i++) {
+			if (applicableRules.get(i).getId()==originSelectedRuleId || selectedRuleId==-1) {
+				if (i+1== applicableRules.size()){
+					selectedRuleId= applicableRules.get(0).getId();
 				}else{
-					selectedRuleId=appliableRules.get(i+1).getId();
+					selectedRuleId= applicableRules.get(i+1).getId();
 					break;
 				}
 			}
 		}
         DatabaseAccess db = DatabaseAccess.getInstance(ctx);
         db.open();
-        db.saveRuleConflictChoice(selectedRuleId,transanctionDate);
+        db.saveRuleConflictChoice(selectedRuleId, transactionDate);
         db.close();
 	}
 
@@ -549,9 +556,9 @@ public class Transaction implements Comparable<Transaction> {
     }
 
     /**
-     * Returns the index of transaction date.
+     * Returns the index of transaction date in the bar chart.
      * @param startDate reference date (with index value=0)
-     * @param step 1-Year,2-Quater,3-MONTH,4-WEEK, 5-DAY
+     * @param step 1-Year,2-Quarter,3-MONTH,4-WEEK, 5-DAY
      * @return index of transaction date.
      */
     public int getDateIndex(Date startDate,int step){
@@ -562,10 +569,10 @@ public class Transaction implements Comparable<Transaction> {
         int startYear=cal.get(Calendar.YEAR);
         int startWeek=cal.get(Calendar.WEEK_OF_YEAR);
         int startMonth=cal.get(Calendar.MONTH);
-        cal.setTime(transanctionDate);
+        cal.setTime(transactionDate);
         int diffYear=cal.get(Calendar.YEAR)-startYear;
         int diffMonth=diffYear*12+cal.get(Calendar.MONTH)-startMonth;
-        long diffDay=TimeUnit.DAYS.convert(transanctionDate.getTime()-startDate.getTime(), TimeUnit.MILLISECONDS);
+        long diffDay=TimeUnit.DAYS.convert(transactionDate.getTime()-startDate.getTime(), TimeUnit.MILLISECONDS);
         int diffWeek=diffYear*52+cal.get(Calendar.WEEK_OF_YEAR)-startWeek;
         //int diffWeek=(int) diffDay/7;
         int diffQuater = diffMonth/3;
@@ -583,7 +590,7 @@ public class Transaction implements Comparable<Transaction> {
                 return diffWeek;
                 //break;
             case 5: //Day
-                //Log.d("DateCheck","getDateIndex startDate="+startDate+"  transactionDate="+transanctionDate+ " index="+diffDay);
+                //Log.d("DateCheck","getDateIndex startDate="+startDate+"  transactionDate="+transactionDate+ " index="+diffDay);
                 return (int) diffDay;
                 //break;
             default:

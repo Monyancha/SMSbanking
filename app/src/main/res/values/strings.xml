@@ -50,7 +50,7 @@
     <string name="tip_date">29.02.1981</string>
     <string name="tip_bank_name">Bank name</string>
     <string name="tip_bank_phone">Phone</string>
-    <string name="pref_hide_title">Hide currency name</string>
+    <string name="pref_hide_title">Hide currency name.</string>
     <string name="pref_hide_currency_summary">All values in your current bank account currency will not be displayed.</string>
     <string name="pref_inverse_rate">Inverse currency rates</string>
     <string name="pref_inverse_rate_summary">Changes USD/EUR to EUR/USD</string>
@@ -160,5 +160,7 @@
     <string name="stats_income">income</string>
     <string name="stats_outcome">outcome</string>
     <string name="stats_balance">balance</string>
+    <string name="pref_ignore_clones">Ignore message clones.</string>
+    <string name="pref_ignore_clones_summary">Check if you get multiple messages for each transaction..</string>
 </resources>
 

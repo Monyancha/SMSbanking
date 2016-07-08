@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private TransactionListAdapter transactionListAdapter;
     private Boolean hideCurrency;
     private Boolean inverseRate;
+    private Boolean ignoreClones;
     private List <Bank> myBanks;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
@@ -127,10 +128,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         hideCurrency = settings.getBoolean("hide_currency", false);
         inverseRate = settings.getBoolean("inverse_rate", false);
+        ignoreClones = settings.getBoolean("ignore_clones", false);
 
         // refreshing list
         refreshTransactionsList();
-        //refreshAccoutStates();
+        //refreshAccountStates();
         //loadTransactionsTask = new LoadTransactionsTask();
         //loadTransactionsTask.execute();
         //updateMyAccountsState = new UpdateMyAccountsState();

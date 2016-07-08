@@ -50,7 +50,7 @@
 	<string name="tip_date">29.02.1981</string>
 	<string name="tip_bank_name">Назва банка</string>
 	<string name="tip_bank_phone">Номер</string>
-	<string name="pref_hide_title">Не відображати валюту</string>
+	<string name="pref_hide_title">Не відображати валюту.</string>
 	<string name="pref_hide_currency_summary">Не відображати валюту, якщо вона \'рідна\'.</string>
 	<string name="pref_inverse_rate">Зворотній курс обміну</string>
 	<string name="pref_inverse_rate_summary">Замість USD/EUR відображати EUR/USD</string>
@@ -147,7 +147,7 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Інтервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="no_transactions_found">No transactions found</string>
+    <string name="no_transactions_found">нема транзакцій</string>
     <string name="rule_add">Нове правило</string>
     <string name="stat_show_balance">Крива балансу</string>
     <string name="stat_show_outcome">Витрати</string>
@@ -156,4 +156,6 @@
     <string name="stats_income">Дохід</string>
     <string name="stats_outcome">Витрати</string>
     <string name="stats_balance">Баланс</string>
+    <string name="pref_ignore_clones">Ігнорувати дублікати.</string>
+    <string name="pref_ignore_clones_summary">Ігнорувати послідовні дублюючі повідомлення.</string>
 </resources>

@@ -24,6 +24,11 @@
 			 	android:key="inverse_rate"
 			 	android:title="@string/pref_inverse_rate"
 			 	android:summary="@string/pref_inverse_rate_summary">
-		</CheckBoxPreference>        
-        </PreferenceCategory>
+		</CheckBoxPreference>
+        <CheckBoxPreference
+            android:key="ignore_clones"
+            android:title="@string/pref_ignore_clones"
+            android:summary="@string/pref_ignore_clones_summary">
+        </CheckBoxPreference>
+    </PreferenceCategory>
 </PreferenceScreen>

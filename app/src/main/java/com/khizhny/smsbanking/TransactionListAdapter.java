@@ -59,7 +59,7 @@ public class TransactionListAdapter extends ArrayAdapter<Transaction> {
 		// Filling Transaction Date
         TextView dateView = (TextView) rowView.findViewById(R.id.transanction_date);
         if (t.hasTransactionDate){
-        	dateView.setText(t.getTransanctionDateAsString("dd.MM.yyyy"));
+        	dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
         }else {
         	dateView.setText("");
         }
@@ -72,11 +72,11 @@ public class TransactionListAdapter extends ArrayAdapter<Transaction> {
         }
 		// Filling comission
         TextView accountComissionView = (TextView) rowView.findViewById(R.id.transactionComission);
-        if (t.getComission().equals(new BigDecimal("0.00"))) {
+        if (t.getCommission().equals(new BigDecimal("0.00"))) {
 			accountComissionView.setVisibility(View.GONE);
 		} else {
 			accountComissionView.setVisibility(View.VISIBLE);
-			accountComissionView.setText(t.getComissionAsString(hideCurrency));
+			accountComissionView.setText(t.getCommissionAsString(hideCurrency));
 			accountComissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
 		}
 		// Filling difference

@@ -350,7 +350,7 @@ public class SubRuleListAdapter extends ArrayAdapter<SubRule> {
 			case ACCOUNT_STATE_BEFORE:
 			case ACCOUNT_STATE_AFTER:
 			case ACCOUNT_DIFFERENCE:
-			case COMISSION:
+			case COMMISSION:
                 resultView.setText(subrule.applySubRule(msg, 0));
 				break;
 			case EXTRA_1:
