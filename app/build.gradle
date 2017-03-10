@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.khizhny.smsbanking"
-        minSdkVersion 10
-        targetSdkVersion 23
-        versionCode 120
-        versionName '1.20'
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 121
+        versionName '1.21'
     }
     repositories {
         maven { url 'http://repo1.maven.org/maven2' }
@@ -33,10 +33,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
-    compile 'com.google.android.gms:play-services-ads:9.0.2'
+    compile 'com.google.android.gms:play-services-ads:10.2.0'
     compile 'com.google.firebase:firebase-ads:9.0.2'
 }
 apply plugin: 'com.google.gms.google-services'

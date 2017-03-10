@@ -210,6 +210,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             return true;
         }
+        if (id == R.id.action_privacy) {
+            String url = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        }
         if (id == R.id.action_quit) {
             this.finish();
             System.exit(0);

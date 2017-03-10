@@ -158,5 +158,6 @@
     <string name="pref_ignore_clones_summary">Игнорировать дублирующие последовательные сообщения.</string>
     <string name="pref_hide_ads">Спрятать рекламу</string>
     <string name="pref_hide_ads_summary">Оставьте для поддержки разработчика.</string>
+    <string name="action_privacy">Политика конфиденциальности</string>
 </resources>
 

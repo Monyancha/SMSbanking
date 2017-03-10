@@ -163,7 +163,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         myBank = (Spinner) findViewById(R.id.my_bank);
         myBank.setAdapter(myBankAdapter);
 
-        // last used deafault colors and sizes loading from preferences
+        // last used default colors and sizes loading from preferences
         textColor = loadSavedIntFromPref(this, SmsBankingWidgetConfigureActivity.PREF_LAST_USED_COLOR);
         backColor = loadSavedIntFromPref(this, SmsBankingWidgetConfigureActivity.PREF_LAST_USED_BACKGROUND);
         textSize  = loadSavedIntFromPref(this, SmsBankingWidgetConfigureActivity.PREF_LAST_USED_SIZE);
@@ -171,7 +171,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         if (backColor==0) backColor=Color.BLUE;
         if (textSize<MIN_FONT_SIZE) textSize=MIN_FONT_SIZE;
 
-        // Apllying to sample
+        // Aplying to sample
         sampleText = (TextView)  findViewById(R.id.widget_sample);
         sampleText.setTextColor(textColor);
         sampleText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
