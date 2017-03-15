@@ -1,6 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        sign {
+            keyAlias 'PublishingKey'
+            storeFile file('C:/Android/AndroidKeys/keys')
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion '25.0.2'
     defaultConfig {
