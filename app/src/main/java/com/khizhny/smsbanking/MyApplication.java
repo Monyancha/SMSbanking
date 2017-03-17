@@ -2,8 +2,10 @@ package com.khizhny.smsbanking;
 
 import android.Manifest;
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Telephony;
 import android.util.Log;
 
@@ -12,6 +14,9 @@ public class MyApplication extends Application {
     public static String defaultSmsApp;
     public final static String LOG = "SMS_BANKING";
     public static boolean hasReadSmsPermission=true;
+    static Boolean hideMatchedMessages ;
+    static Boolean hideNotMatchedMessages;
+    static Boolean ignoreClones;
 
     @Override
     public void onCreate() {
@@ -27,5 +32,11 @@ public class MyApplication extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             hasReadSmsPermission=(checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
         }
+
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
+        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+        ignoreClones = settings.getBoolean("ignore_clones", false);
     }
 }

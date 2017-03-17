@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -12,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -43,10 +45,13 @@ import com.google.android.gms.ads.MobileAds;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.*;
 
 
 import jxl.Cell;
@@ -68,12 +73,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
-
+    private ProgressDialog pDialog;
     Transaction selectedTransaction;
     private TransactionListAdapter transactionListAdapter;
     private Boolean hideCurrency;
     private Boolean inverseRate;
+    private Boolean hideAds;
     private List<Bank> myBanks;
+    private Bank activeBank;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
 
@@ -81,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onCreate(savedInstanceState);
         Log.d(LOG, "MainActivity creating...");
         setTitle("");
-
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             MyApplication.hasReadSmsPermission = (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
@@ -110,16 +116,30 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
 
         });
+
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideCurrency = settings.getBoolean("hide_currency", false);
+        inverseRate = settings.getBoolean("inverse_rate", false);
+        hideAds = settings.getBoolean("hide_ads", false);
+
+        if (transactions!=null) {
+            transactionListAdapter = new TransactionListAdapter(transactions);
+            listView.setAdapter(transactionListAdapter);
+        }
+
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.blue, R.color.green);
         }
+
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshTransactionsList();
-                //loadTransactionsTask = new LoadTransactionsTask();
-                //loadTransactionsTask.execute();
+            if (activeBank != null) {
+                RefreshTransactionsTask task = new RefreshTransactionsTask();
+                task.execute(activeBank);
+            }
             }
         });
 
@@ -139,6 +159,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         DatabaseAccess db = DatabaseAccess.getInstance(this);
         db.open();
         myBanks = db.getMyBanks();
+        for (Bank b: myBanks){
+            if (b.isActive()) activeBank=b;
+        }
         db.close();
         if (myBanks.size() == 0) {
             // redirecting user to choose bank from template.
@@ -150,22 +173,16 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             intent.putExtra("tip_res_id", R.string.tip_bank_1);
             startActivity(intent);
         }
+
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(MyApplication.LOG, "MainActivity Start...");
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-
-        // refreshing lists
-        refreshTransactionsList();
-
+        // enabling ads banner
         AdView mAdView = (AdView) findViewById(R.id.adView);
-        if (!settings.getBoolean("hide_ads", false)) {
+        if (!hideAds) {
             // real: ca-app-pub-1260562111804726/2944681295
             MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
             AdRequest adRequest = new AdRequest.Builder().build();
@@ -174,6 +191,19 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             mAdView.setVisibility(View.GONE);
         }
 
+
+        //Getting activeBank
+        DatabaseAccess db = DatabaseAccess.getInstance(this);
+        db.open();
+        myBanks = db.getMyBanks();
+        for (Bank b: myBanks){
+            if (b.isActive()) activeBank=b;
+        }
+        db.close();
+
+        // refreshing lists
+        RefreshTransactionsTask task = new RefreshTransactionsTask();
+        task.execute(activeBank);
     }
 
     @Override
@@ -331,7 +361,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     MyApplication.hasReadSmsPermission = true;
-                    refreshTransactionsList();
+                    RefreshTransactionsTask task = new RefreshTransactionsTask();
+                    task.execute(activeBank);
                 } else {
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "READ_SMS permision denied", Toast.LENGTH_SHORT)
@@ -359,17 +390,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     private class TransactionListAdapter extends ArrayAdapter<Transaction> {
 
-        private final Context context;
-        private List<Transaction> transactions;
-        private boolean hideCurrency;
-        private boolean inverseRate;
+        TransactionListAdapter(List<Transaction> transactions) {
+            super(MainActivity.this, R.layout.activity_main_list_row, transactions);
 
-        TransactionListAdapter(Context context, List<Transaction> transactions, boolean hideCurrency, boolean inverseRate) {
-            super(context, R.layout.activity_main_list_row, transactions);
-            this.context = context;
-            this.transactions = transactions;
-            this.hideCurrency=hideCurrency;
-            this.inverseRate=inverseRate;
         }
 
         @NonNull
@@ -377,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView;
             if (rowView == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 rowView = inflater.inflate(R.layout.activity_main_list_row, parent, false);
             }
             Transaction t = transactions.get(position);
@@ -462,21 +485,22 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     }
 
-    private void refreshTransactionsList() {
+   /* private void refreshTransactionsList() {
         DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
         db.open();
         Bank bank = db.getActiveBank();
         db.close();
-        if (bank != null) { // setting list view to show active bank transactions
+
+        if (bank != null) {
+            // setting list view to show active bank transactions
             Log.d(MyApplication.LOG, "LoadTransactions for " + bank.getName());
             transactions = Transaction.loadTransactions(bank, MainActivity.this);
         }
         if (transactions != null) {
-            transactionListAdapter = new TransactionListAdapter(MainActivity.this, transactions, hideCurrency, inverseRate);
-            listView.setAdapter(transactionListAdapter);
+
         }
         swipeRefreshLayout.setRefreshing(false);
-    }
+    }/**/
 
     private void exportToExcel() {        //Saving in external storage
         File sdCard = Environment.getExternalStorageDirectory();
@@ -615,5 +639,122 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
+    }
+
+    /**
+     * Task loads a list of transactions from SMS using rules defined for Bank
+     * Bank
+     */
+    class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            swipeRefreshLayout.setRefreshing(true);
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Reading messages");
+            pDialog.setCancelable(false);
+            pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            pDialog.show();
+        }
+
+        @Override
+        protected List<Transaction> doInBackground(Bank... params) {
+            Bank activeBank = params[0];
+
+            List<Transaction> transactionList = new ArrayList<Transaction>();
+            String sms_body = "";
+            String phoneNumbers = activeBank.getPhone().replace(";", "','");
+            Cursor c;
+            if (MyApplication.hasReadSmsPermission) {
+                Uri uri = Uri.parse("content://sms/inbox");
+                c = getContentResolver().query(uri, null, "address IN ('" + phoneNumbers + "')", null, "date DESC");
+            } else {
+                return transactionList;
+            }
+            if (c != null) {
+                int msgCount = c.getCount();
+                if (c.moveToFirst()) {
+                    for (int ii = 0; ii < msgCount; ii++) {
+                        if (ignoreClones && sms_body.equals(c.getString(c.getColumnIndexOrThrow("body")))) {
+                            // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
+                        } else {
+                            sms_body = c.getString(c.getColumnIndexOrThrow("body"));
+                            Transaction transaction = new Transaction();
+                            transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
+                            transaction.setAccountCurrency(activeBank.getDefaultCurrency());
+                            transaction.setTransactionDate(new Date(c.getLong(c.getColumnIndexOrThrow("date"))), MainActivity.this);
+                            sms_body = sms_body.replace("'", "").replace("\n", " ");
+                            transaction.setBody(sms_body);
+                            transaction.setTransactionCurrency(activeBank.getDefaultCurrency());
+                            Boolean messageHasIgnoreTypeRule = false;
+
+                            for (Rule rule : activeBank.ruleList) {
+                                if (sms_body.matches(rule.getMask())) {
+                                    if (rule.hasIgnoreType()) {
+                                        messageHasIgnoreTypeRule = true;
+                                    } else {
+                                        transaction.applicableRules.add(rule);
+                                    }
+                                }
+                            }
+
+                            if (!messageHasIgnoreTypeRule) {
+                                // adding transaction to the list only is it is not ignoreg by any rule
+                                if ((!hideNotMatchedMessages && transaction.applicableRules.size() == 0)) {
+                                    // adding to list only is user set "show non matched" option in parameters
+                                    transaction.calculateMissedData();
+                                    transactionList.add(transaction);
+                                }
+                                if (!hideMatchedMessages && transaction.applicableRules.size() == 1) {
+                                    // adding to list only is user set "show matched"  option in parameters
+                                    transaction.applicableRules.get(0).applyRule(transaction);
+                                    transaction.calculateMissedData();
+                                    transactionList.add(transaction);
+                                }
+                                if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
+                                    // redirecting user to choose bank from template.
+                                    if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
+                                        transaction.getSelectedRule().applyRule(transaction);
+                                    } else { // if user did not picked rule choose any first.
+                                        transaction.applicableRules.get(0).applyRule(transaction);
+                                    }
+                                    transaction.calculateMissedData();
+                                    transactionList.add(transaction);
+                                }
+                            }
+                        }
+                        c.moveToNext();
+                        publishProgress(100 * ii / msgCount);
+                    }
+                    c.close();
+                }
+            }
+            transactionList = Transaction.addMissingTransactions(transactionList);
+            return transactionList;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            pDialog.setProgress(values[0]);
+            pDialog.setMessage("Reading messages ... " + values[0] + "%");
+        }
+
+        @Override
+        protected void onPostExecute(List<Transaction> t) {
+            super.onPostExecute(t);
+            // Dismiss the progress dialog
+            if (pDialog.isShowing())
+                pDialog.dismiss();
+
+            if (t!=null) {
+                transactions=t;
+                transactionListAdapter = new TransactionListAdapter(t);
+                listView.setAdapter(transactionListAdapter);
+            }
+            transactionListAdapter.notifyDataSetChanged();
+            swipeRefreshLayout.setRefreshing(false);
+        }
     }
 }

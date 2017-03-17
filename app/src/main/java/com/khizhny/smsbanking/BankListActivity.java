@@ -288,6 +288,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         }
     }
 
+    /**
+     * Refreshes all accounts in myBanks list and saves the last known account state to db
+     */
     private void refreshAccountStates(){
         Log.d(MyApplication.LOG,"UpdateMyAccountsState start...");
         DatabaseAccess db = DatabaseAccess.getInstance(getApplicationContext());
@@ -296,6 +299,10 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         db.close();
         for (Bank bank : myBanks) {
             Log.d(MyApplication.LOG,"UpdateMyAccountsState started for " + bank.getName());
+
+            /*MainActivity.RefreshTransactionsTask task = new MainActivity.RefreshTransactionsTask();
+            task.execute(bank);/**/
+
             BigDecimal lastState = Transaction.getLastAccountState(Transaction.loadTransactions(bank, getApplicationContext()));
             bank.setCurrentAccountState(lastState);
             db.open();

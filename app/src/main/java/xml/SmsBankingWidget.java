@@ -5,7 +5,9 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -13,8 +15,15 @@ import android.widget.RemoteViews;
 import com.khizhny.smsbanking.Bank;
 import com.khizhny.smsbanking.DatabaseAccess;
 import com.khizhny.smsbanking.MainActivity;
+import com.khizhny.smsbanking.MyApplication;
 import com.khizhny.smsbanking.R;
+import com.khizhny.smsbanking.Rule;
 import com.khizhny.smsbanking.Transaction;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import static com.khizhny.smsbanking.MyApplication.*;
 
 /**
  * Implementation of App Widget functionality.
