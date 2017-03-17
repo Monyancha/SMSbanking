@@ -1,25 +1,34 @@
 package com.khizhny.smsbanking;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.support.v7.widget.PopupMenu;
 import android.widget.AdapterView.OnItemClickListener;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class RuleListActivity extends AppCompatActivity implements OnMenuItemClickListener{
 	private ListView listView;
 	private Bank activeBank;
-	private RuleListAdapter adapter;
+    private RuleListAdapter adapter;
 	int selected_row;
 	boolean tipWasSeen;
 
@@ -53,11 +62,11 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
             adapter = new RuleListAdapter(this, activeBank.ruleList);
             listView.setAdapter(adapter);
             if (activeBank.ruleList.isEmpty() && !tipWasSeen) {
-                Intent intent = new Intent(this, Tip.class);
+                Intent intent = new Intent(this, TipActivity.class);
                 intent.putExtra("tip_res_id", R.string.tip_subrules_1);
                 startActivity(intent);
 
-                intent = new Intent(this, Tip.class);
+                intent = new Intent(this, TipActivity.class);
                 intent.putExtra("tip_res_id", R.string.tip_rules_1);
                 startActivity(intent);
 
@@ -103,15 +112,39 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.rule_add:
-				Toast.makeText(this, getString(R.string.rule_add_tip), Toast.LENGTH_SHORT).show();
-				return true;
-			case R.id.rule_edit:
-                Toast.makeText(this, getString(R.string.rule_edit_tip), Toast.LENGTH_SHORT).show();
-				return true;
-			case R.id.rule_delete:
-                Toast.makeText(this, getString(R.string.rule_delete_tip), Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, getString(R.string.rule_add_tip), Toast.LENGTH_LONG).show();
 				return true;
 		}
 		return false;
 	}
+
+    private class RuleListAdapter extends ArrayAdapter<Rule> {
+
+        private final Context context;
+        private final List<Rule> ruleList;
+
+        public RuleListAdapter(Context context, List<Rule> ruleList) {
+            super(context, R.layout.activity_rule_list_row, ruleList);
+            this.context = context;
+            this.ruleList = ruleList;
+        }
+        @Override
+        public View getView(int position, View rowView , ViewGroup parent) {
+            if (rowView == null) {
+                LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = vi.inflate(R.layout.activity_rule_list_row, parent, false);
+            }
+
+            TextView ruleNameView = (TextView) rowView.findViewById(R.id.ruleName);
+            ruleNameView.setText(ruleList.get(position).getName());
+
+            Drawable icon = ResourcesCompat.getDrawable(context.getResources(), ruleList.get(position).getRuleTypeDrawable(), null);
+            if (icon != null) {
+                icon.setBounds(0, 0, icon.getMinimumWidth(), icon.getMinimumHeight());
+            }
+            ruleNameView.setCompoundDrawables(icon,null,null,null);
+            return rowView;
+        }
+
+    }
 }

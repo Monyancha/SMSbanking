@@ -22,8 +22,6 @@
     <string name="rule_next">Next>></string>
     <string name="rule_name">Rule name:</string>
     <string name="rule_add_tip">To add new rule click on the SMS message in the main window.</string>
-    <string name="rule_edit_tip">Pick up the rule to edit.</string>
-    <string name="rule_delete_tip">Pick up the rule to delete.</string>
 
     <string name="popup_create_rule">Create new rule</string>
     <string name="popup_edit_rule">Edit rule</string>
@@ -36,7 +34,6 @@
     <string name="sub_rule_parameters">Choose parameters to extract:</string>
     <string name="sub_rule_constant_value">Value:</string>
     <string name="sub_rule_parameter_prompt">Choose parameter to extract</string>
-    <string name="sub_rule_add">Add</string>
     <string name="sub_rule_method">Method:</string>
     <string name="sub_rule_phrase">Phrase:</string>
     <string name="sub_rule_result_value">Result:</string>
@@ -140,7 +137,6 @@
     <string name="export_sucessfull">Export successful</string>
     <string name="export_failed">Export failed</string>
     <string name="import_failed">import_failed</string>
-    <string name="help">Help</string>
     <string name="n_equal">n=</string>
     <string name="appwidget_text">0.00</string>
     <string name="add_widget">Add widget</string>
@@ -171,5 +167,7 @@
     <string name="pref_ignore_clones">Ignore message clones.</string>
     <string name="pref_ignore_clones_summary">Check if you get multiple messages for each transaction..</string>
     <string name="action_privacy">Privacy notice</string>
+    <string name="export_to_xls">Export to XLS</string>
+    <string name="add">Add</string>
 </resources>
 

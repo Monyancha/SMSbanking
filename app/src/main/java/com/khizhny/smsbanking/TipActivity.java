@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-public class Tip extends Activity {
+public class TipActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +24,7 @@ public class Tip extends Activity {
         ImageButton closeButtonView = (ImageButton) findViewById(R.id.imageButton);
         closeButtonView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Tip.this.finish();
+                TipActivity.this.finish();
             }
         });
     }

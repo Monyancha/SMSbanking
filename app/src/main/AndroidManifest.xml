@@ -98,7 +98,7 @@
         android:name=".PrefActivity"
         android:label="@string/action_preferences"/>
     <activity
-        android:name=".Tip"
+        android:name=".TipActivity"
         android:label="@string/tip_tip"
         android:theme="@android:style/Theme.Translucent"/>
 

@@ -17,14 +17,14 @@ public class Bank  implements java.io.Serializable{
 
 	// Information   about your bank account
 	private int id;  // id in main DB. If -1 then it is new.
-	public static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
+	static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
 	private int editable; // true if user is allowed to modify
 	private int active;  // indicates that user want to watch this account info in program. test
 	private String name;
 	private String phone;
-	private String dafaultCurrency;
+	private String defaultCurrency;
 	private BigDecimal currentAccountState; // used to keep last account state in db for widgets.
-	public List<Rule> ruleList;
+	List<Rule> ruleList;
 
 	/**
 	 * Bank object constructor
@@ -47,7 +47,7 @@ public class Bank  implements java.io.Serializable{
 		this.active=1;
 		this.name = origin.name;
 		this.phone = origin.phone;
-		this.dafaultCurrency = origin.dafaultCurrency;
+		this.defaultCurrency = origin.defaultCurrency;
 		currentAccountState=new BigDecimal("0.00");
 		for (Rule r : origin.ruleList) {
 			this.ruleList.add( new Rule(r,-1));
@@ -65,7 +65,7 @@ public class Bank  implements java.io.Serializable{
 		return phone;
 	}
 	public String getDefaultCurrency() {
-		return dafaultCurrency;
+		return defaultCurrency;
 	}
 	public boolean isActive() {
 		return active != 0;
@@ -100,8 +100,8 @@ public class Bank  implements java.io.Serializable{
 	public  void setPhone(String phone){
 		this.phone=phone.replace("'", "");
 	}
-	public  void setDefaultCurrency(String dafaultCurrency){
-		this.dafaultCurrency=dafaultCurrency;
+	public  void setDefaultCurrency(String defaultCurrency){
+		this.defaultCurrency =defaultCurrency;
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class Bank  implements java.io.Serializable{
 	 * @param filePath File path where Bank should be exported
 	 * @return True if success, False if failed.
 	 */
-	public static Boolean exportBank(Bank b, String filePath){
+	static Boolean exportBank(Bank b, String filePath){
 		try{
 			//filePath="/storage/sdcard0/test.dat";  // used for testing while usb storage is mountd
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filePath)));
@@ -131,7 +131,7 @@ public class Bank  implements java.io.Serializable{
 	 * @param filePath File path
 	 * @return Object read from file or null.
 	 */
-	public static Object importBank(String filePath)
+	static Object importBank(String filePath)
 	{
 		try
 		{
@@ -145,27 +145,28 @@ public class Bank  implements java.io.Serializable{
 		}
 		return null;
 	}
-	public ContentValues getContentValues(){
+
+	ContentValues getContentValues(){
 		ContentValues v = new ContentValues();
 		if (id>=1) v.put("_id",id);
 		v.put("name",name);
 		v.put("phone",phone);
 		v.put("active", active);
-		v.put("default_currency", dafaultCurrency);
+		v.put("default_currency", defaultCurrency);
 		v.put("editable",editable);
 		v.put("current_account_state",currentAccountState.toString());
 		return v;
 	}
 
-	public void setCurrentAccountState(BigDecimal currentAccountState) {
+	void setCurrentAccountState(BigDecimal currentAccountState) {
 		this.currentAccountState = currentAccountState;
 	}
 
-	public void setCurrentAccountState(String currentAccountState) {
+	void setCurrentAccountState(String currentAccountState) {
 		this.currentAccountState = new BigDecimal(currentAccountState.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 
-	public String getCurrentAccountState() {
+	String getCurrentAccountState() {
 		return currentAccountState.toString();
 	}
 }

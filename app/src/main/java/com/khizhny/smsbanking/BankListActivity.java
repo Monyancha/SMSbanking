@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,11 +14,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import java.io.File;
@@ -28,7 +34,8 @@ import java.util.List;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class BankListActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
-	private ListView listView;
+
+    private ListView listView;
 	private List<Bank> bankList;
 	private BankListAdapter adapter;
 	private int selected_row;
@@ -62,7 +69,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		popupMenu.setOnMenuItemClickListener(BankListActivity.this);
 		bankFilter = getIntent().getExtras().getString("bankFilter");
         if (bankFilter.equals("myBanks")){
-            refreshAccoutStates();
+            refreshAccountStates();
         }
         requestPermissions();
     }
@@ -281,7 +288,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         }
     }
 
-    private void refreshAccoutStates(){
+    private void refreshAccountStates(){
         Log.d(MyApplication.LOG,"UpdateMyAccountsState start...");
         DatabaseAccess db = DatabaseAccess.getInstance(getApplicationContext());
         db.open();
@@ -296,5 +303,41 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             db.close();
             Log.d(MyApplication.LOG,"UpdateMyAccountsState finished for " + bank.getName());
         }
+    }
+
+    private class BankListAdapter extends ArrayAdapter<Bank> {
+
+        BankListAdapter(Context context, List<Bank> bankList) {
+            super(context, R.layout.activity_bank_list_row, bankList);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View rowView = convertView;
+            if (rowView == null) {
+                LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = vi.inflate(R.layout.activity_bank_list_row, parent, false);
+            }
+
+            TextView bankNameView = (TextView) rowView.findViewById(R.id.bankName);
+            bankNameView.setText(bankList.get(position).getName());
+
+            TextView bankPhoneView = (TextView) rowView.findViewById(R.id.bankPhone);
+            bankPhoneView.setText(bankList.get(position).getPhone());
+
+            TextView bankCurrencyView = (TextView) rowView.findViewById(R.id.bankCurrency);
+            bankCurrencyView.setText(bankList.get(position).getDefaultCurrency());
+
+            TextView bankValueView = (TextView) rowView.findViewById(R.id.bankValue);
+            bankValueView.setText(bankList.get(position).getCurrentAccountState());
+
+            RadioButton RadioButtonView = (RadioButton) rowView.findViewById(R.id.active);
+            RadioButtonView.setChecked(bankList.get(position).isActive());
+            RadioButtonView.setFocusable(false);
+            RadioButtonView.setClickable(false);
+            RadioButtonView.setTag(position);
+            return rowView;
+        }
+
     }
 }

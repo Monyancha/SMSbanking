@@ -9,12 +9,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/bank_name"
+        android:id="@+id/textView3"
+        android:gravity="center"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/textView3"
-        android:layout_alignBottom="@+id/my_bank"
-        android:gravity="center" />
+        android:layout_alignParentStart="true"/>
 
     <android.support.v7.widget.AppCompatSpinner
         android:layout_width="wrap_content"

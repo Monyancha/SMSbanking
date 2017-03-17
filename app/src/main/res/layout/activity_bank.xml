@@ -24,11 +24,11 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/bank_default_name"
-        android:singleLine="true"
         android:layout_alignParentStart="false"
         android:ems="10"
         android:layout_alignLeft="@+id/bankName"
-        android:layout_below="@+id/bankName" />
+        android:layout_below="@+id/bankName"
+        android:layout_alignParentLeft="false"/>
 
     <TextView
         android:id="@+id/sms_senders_label"
@@ -45,7 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/add_phone_button"
-        android:src="@drawable/ic_green_plus"
+        android:src="@drawable/ic_add"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/name"
         android:contentDescription="@string/add_phone_button_description" />
@@ -77,7 +77,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/clear_phones"
-        android:src="@drawable/ic_red_trash"
+        android:src="@drawable/ic_delete_black_24dp"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/add_phone_button"
         android:contentDescription="@string/add_phone_button_description" />

@@ -2,17 +2,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.khizhny.smsbanking.MainActivity" >
-    
-    <item
-        android:id="@+id/action_preferences"
-        android:orderInCategory="100"
-        android:title="@string/action_preferences"
-        app:showAsAction="never"/>
     <item
         android:id="@+id/action_bank_my_list"
-        android:orderInCategory="100"
+        android:orderInCategory="91"
         android:title="@string/mybank_activity_title"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_credit_card"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_statistics"
+        android:orderInCategory="92"
+        android:icon="@drawable/ic_show_chart_black_24dp"
+        android:title="@string/statistics"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_preferences"
+        android:orderInCategory="101"
+        android:icon="@drawable/ic_settings_black_24dp"
+        android:title="@string/action_preferences"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_quit"
+        android:orderInCategory="102"
+        android:title="@string/action_quit"
+        android:icon="@drawable/ic_exit_to_app_black_24dp"
+        app:showAsAction="always"/>
+
     <item
         android:id="@+id/action_bank_list"
         android:orderInCategory="100"
@@ -22,26 +37,24 @@
         android:id="@+id/action_rule_list"
         android:orderInCategory="100"
         android:title="@string/action_rule_list"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_list_black_24dp"
+        app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/action_statistics"
+        android:id="@+id/action_export_transactions"
         android:orderInCategory="100"
-        android:title="@string/statistics"
-        app:showAsAction="never"/>
+        android:title="@string/export_to_xls"
+        android:icon="@drawable/ic_icon"
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_rate_app"
         android:orderInCategory="100"
         android:title="@string/action_rate_app"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_star_border_black_24dp"
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_privacy"
         android:orderInCategory="100"
         android:title="@string/action_privacy"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/action_quit"
-        android:orderInCategory="100"
-        android:title="@string/action_quit"
         app:showAsAction="never"/>
 
 </menu>

@@ -18,8 +18,6 @@
 	<string name="rule_next">Далі>></string>
 	<string name="rule_name">Назва правила:</string>
 	<string name="rule_add_tip">Щоб додати нове правило натисніть на SMS в основному вікні.</string>
-	<string name="rule_edit_tip">Оберіть правило зі списку для редагування</string>
-	<string name="rule_delete_tip">Оберіть правило зі списку для видалення</string>
 
     <string name="popup_create_rule">Створити нове правило</string>
 	<string name="popup_edit_rule">Редагувати</string>
@@ -32,8 +30,7 @@
 	<string name="sub_rule_parameters">Вкажіть які параметри будуть витягуватись:</string>
     <string name="sub_rule_constant_value">Константа:</string>
 	<string name="sub_rule_parameter_prompt">Параметр, що буде витягуватись:</string>
-	<string name="sub_rule_add">Додати</string>
-	<string name="sub_rule_method">Метод:</string>
+    <string name="sub_rule_method">Метод:</string>
 	<string name="sub_rule_phrase">Фраза:</string>
 	<string name="sub_rule_result_value">Результат:</string>
 	<string name="sub_rule_decimal_separator">Розподільчий символ</string>
@@ -128,8 +125,7 @@
 	<string name="export_sucessfull">Экспортування успішне</string>
 	<string name="export_failed">Экспортував невдало</string>
     <string name="import_failed">Імпортував невдало</string>
-	<string name="help">Допомога</string>
-	<string name="n_equal">n=</string>
+    <string name="n_equal">n=</string>
 	<string name="add_widget">Додати віджет</string>
 	<string name="appwidget_text">0.00</string>
     <string name="widget_default_name">Банк</string>
@@ -161,4 +157,6 @@
     <string name="pref_hide_ads">Приховати рекламу</string>
     <string name="pref_hide_ads_summary">Залиште щоб підтримати розробника.</string>
     <string name="action_privacy">Політика конфіденційності</string>
+    <string name="export_to_xls">Експортувати в XLS</string>
+    <string name="add">Додати</string>
 </resources>

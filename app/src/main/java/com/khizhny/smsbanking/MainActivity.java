@@ -5,35 +5,62 @@ import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Telephony.Sms;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
+
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
+
+import jxl.Cell;
+import jxl.CellView;
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.NumberFormat;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 import xml.SmsBankingWidget;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener {
@@ -46,19 +73,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private TransactionListAdapter transactionListAdapter;
     private Boolean hideCurrency;
     private Boolean inverseRate;
-    private Boolean hideAds;
-    private List <Bank> myBanks;
+    private List<Bank> myBanks;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
+    private static final String EXPORT_FOLDER = "SMS banking";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG, "MainActivity creating...");
+        setTitle("");
 
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            MyApplication.hasReadSmsPermission=(checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
+            MyApplication.hasReadSmsPermission = (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
             if (!MyApplication.hasReadSmsPermission) {
-                requestPermissions(new String[]{Manifest.permission.READ_SMS},REQUEST_CODE_ASK_PERMISSIONS);
+                requestPermissions(new String[]{Manifest.permission.READ_SMS}, REQUEST_CODE_ASK_PERMISSIONS);
             }
         }
 
@@ -82,9 +110,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
 
         });
-        swipeRefreshLayout=(SwipeRefreshLayout) findViewById(R.id.swipe_layout);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
         if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setColorSchemeResources(R.color.red,R.color.blue,R.color.green);
+            swipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.blue, R.color.green);
         }
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -94,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 //loadTransactionsTask.execute();
             }
         });
-
 
 
         // Checking if Activity was called by widget clicking.
@@ -119,12 +146,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             intent.putExtra("bankFilter", "templates");
             startActivity(intent);
             // Showing the tip
-            intent = new Intent(this, Tip.class);
+            intent = new Intent(this, TipActivity.class);
             intent.putExtra("tip_res_id", R.string.tip_bank_1);
             startActivity(intent);
         }
-
-
     }
 
     @Override
@@ -136,17 +161,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         hideCurrency = settings.getBoolean("hide_currency", false);
         inverseRate = settings.getBoolean("inverse_rate", false);
 
-
         // refreshing lists
         refreshTransactionsList();
-        //refreshAccountStates();
-        //loadTransactionsTask = new LoadTransactionsTask();
-        //loadTransactionsTask.execute();
-        //updateMyAccountsState = new UpdateMyAccountsState();
-        //updateMyAccountsState.execute();
+
         AdView mAdView = (AdView) findViewById(R.id.adView);
-        hideAds = settings.getBoolean("hide_ads", false);
-        if (!hideAds) {
+        if (!settings.getBoolean("hide_ads", false)) {
             // real: ca-app-pub-1260562111804726/2944681295
             MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
             AdRequest adRequest = new AdRequest.Builder().build();
@@ -193,6 +212,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         if (id == R.id.action_statistics) {
             Intent intent = new Intent(this, StatisticsActivity.class);
             startActivity(intent);
+            return true;
+        }
+        if (id == R.id.action_export_transactions) {
+            exportToExcel();
+
             return true;
         }
         if (id == R.id.action_rate_app) {
@@ -280,14 +304,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onStop() {
-        Log.d(MyApplication.LOG,"MainActivity stopping...");
+        Log.d(MyApplication.LOG, "MainActivity stopping...");
         refreshScreenWidgets();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.d(MyApplication.LOG,"MainActivity destroying...");
+        Log.d(MyApplication.LOG, "MainActivity destroying...");
         // restoring default SMS managing application
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (!MyApplication.defaultSmsApp.equals(getPackageName())) {
@@ -299,13 +323,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onDestroy();
     }
 
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[]  permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
-                    MyApplication.hasReadSmsPermission=true;
+                    MyApplication.hasReadSmsPermission = true;
                     refreshTransactionsList();
                 } else {
                     // Permission Denied
@@ -318,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
-    private void refreshScreenWidgets(){
+    private void refreshScreenWidgets() {
         //Refreshing onscreen widgets
         if (myBanks.size() > 0) {
             ComponentName name = new ComponentName(MainActivity.this, SmsBankingWidget.class);
@@ -326,25 +351,269 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             Intent update = new Intent();
             update.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             update.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            Log.d(MyApplication.LOG,"Sending broadcast to MainActivity to refresh widgets...");
+            Log.d(MyApplication.LOG, "Sending broadcast to MainActivity to refresh widgets...");
             MainActivity.this.sendBroadcast(update);
         }
-        Log.d(MyApplication.LOG,"UpdateMyAccountsState finished...");
+        Log.d(MyApplication.LOG, "UpdateMyAccountsState finished...");
     }
 
-    private void refreshTransactionsList(){
+    private class TransactionListAdapter extends ArrayAdapter<Transaction> {
+
+        private final Context context;
+        private List<Transaction> transactions;
+        private boolean hideCurrency;
+        private boolean inverseRate;
+
+        TransactionListAdapter(Context context, List<Transaction> transactions, boolean hideCurrency, boolean inverseRate) {
+            super(context, R.layout.activity_main_list_row, transactions);
+            this.context = context;
+            this.transactions = transactions;
+            this.hideCurrency=hideCurrency;
+            this.inverseRate=inverseRate;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            View rowView = convertView;
+            if (rowView == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = inflater.inflate(R.layout.activity_main_list_row, parent, false);
+            }
+            Transaction t = transactions.get(position);
+            TextView smsTextView;
+
+            // Filling Massage text
+            smsTextView = (TextView) rowView.findViewById(R.id.smsBody);
+            if (t.ruleOptionsCount()>=2){
+                ((TextView) rowView.findViewById(R.id.warning_sign)).setText(String.format("(%d)", t.ruleOptionsCount()));
+                smsTextView.setText(t.getBody());
+            }else{
+                ((TextView) rowView.findViewById(R.id.warning_sign)).setText("");
+                smsTextView.setText(t.getBody());
+            }
+
+            // Filling Before state
+            TextView accountBeforeView = (TextView) rowView.findViewById(R.id.stateBefore);
+            if (t.hasStateBefore){
+                accountBeforeView.setText(t.getAccountStateBeforeAsString(hideCurrency));
+            } else {
+                accountBeforeView.setText("");
+            }
+            // Filling Transaction Date
+            TextView dateView = (TextView) rowView.findViewById(R.id.transanction_date);
+            if (t.hasTransactionDate){
+                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
+            }else {
+                dateView.setText("");
+            }
+            // Filling After state
+            TextView accountAfterView = (TextView) rowView.findViewById(R.id.stateAfter);
+            if (t.hasStateAfter){
+                accountAfterView.setText(t.getAccountStateAfterAsString(hideCurrency));
+            }else {
+                accountAfterView.setText("");
+            }
+            // Filling comission
+            TextView accountComissionView = (TextView) rowView.findViewById(R.id.transactionComission);
+            if (t.getCommission().equals(new BigDecimal("0.00"))) {
+                accountComissionView.setVisibility(View.GONE);
+            } else {
+                accountComissionView.setVisibility(View.VISIBLE);
+                accountComissionView.setText(t.getCommissionAsString(hideCurrency));
+                accountComissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
+            }
+            // Filling difference
+            TextView accountDifferenceView = (TextView) rowView.findViewById(R.id.stateDifference);
+            if (t.hasStateDifference){
+                accountDifferenceView.setVisibility(View.VISIBLE);
+                accountDifferenceView.setText(t.getAccountDifferenceAsString(hideCurrency,inverseRate));
+                switch (t.getStateDifference().signum()) {
+                    case -1:
+                        accountDifferenceView.setTextColor(Color.RED);
+                        break;
+                    case 0:
+                        accountDifferenceView.setTextColor(Color.GRAY);
+                        break;
+                    case 1:
+                        accountDifferenceView.setTextColor(Color.rgb(0,100,0)); // dark green
+                }
+            } else {
+                //accountDifferenceView.setVisibility(View.GONE);
+                accountDifferenceView.setText("");
+            }
+            // Changing icon
+            ImageView iconView = (ImageView) rowView.findViewById(R.id.transanctionIcon);
+            iconView.setImageResource(t.icon);
+
+            // Filling Extra parameters
+            if (t.hasExtras()){
+                ((TextView) rowView.findViewById(R.id.extra1)).setText(t.getExtraParam1());
+                ((TextView) rowView.findViewById(R.id.extra2)).setText(t.getExtraParam2());
+                ((TextView) rowView.findViewById(R.id.extra3)).setText(t.getExtraParam3());
+                ((TextView) rowView.findViewById(R.id.extra4)).setText(t.getExtraParam4());
+                rowView.findViewById(R.id.extras_ll).setVisibility(View.VISIBLE);
+            } else {
+                rowView.findViewById(R.id.extras_ll).setVisibility(View.GONE);
+            }
+
+            return rowView;
+        }
+
+    }
+
+    private void refreshTransactionsList() {
         DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
         db.open();
         Bank bank = db.getActiveBank();
         db.close();
-        if (bank!=null) { // setting list view to show active bank transactions
-            Log.d(MyApplication.LOG,"LoadTransactions for "+bank.getName());
+        if (bank != null) { // setting list view to show active bank transactions
+            Log.d(MyApplication.LOG, "LoadTransactions for " + bank.getName());
             transactions = Transaction.loadTransactions(bank, MainActivity.this);
         }
-        if (transactions!=null) {
+        if (transactions != null) {
             transactionListAdapter = new TransactionListAdapter(MainActivity.this, transactions, hideCurrency, inverseRate);
             listView.setAdapter(transactionListAdapter);
         }
         swipeRefreshLayout.setRefreshing(false);
+    }
+
+    private void exportToExcel() {        //Saving in external storage
+        File sdCard = Environment.getExternalStorageDirectory();
+        File directory = new File(sdCard.getAbsolutePath() + "/" + EXPORT_FOLDER);
+
+        //create directory if not exist
+        if (!directory.isDirectory()) {
+            if (!directory.mkdirs()){
+                Toast.makeText(this, "Can't create forder " + directory, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
+        db.open();
+        Bank bank = db.getActiveBank();
+        db.close();
+
+        //file path
+        String FILE_NAME = bank.getName() + ".xls";
+        File file = new File(directory, FILE_NAME);
+
+        WorkbookSettings wbSettings = new WorkbookSettings();
+        wbSettings.setLocale(new Locale("en", "EN"));
+        WritableWorkbook workbook;
+
+        try {
+            workbook = Workbook.createWorkbook(file, wbSettings);
+            WritableSheet worksheet = workbook.createSheet(bank.getName(), 0);
+
+            try {
+                int i = 0;
+                worksheet.addCell(new Label(0, i, "N"));
+                worksheet.addCell(new Label(1, i, "TransactionDate"));
+                worksheet.addCell(new Label(2, i, "State before"));
+                worksheet.addCell(new Label(3, i, "Difference"));
+                worksheet.addCell(new Label(4, i, "DifferenceInNativeCurrency"));
+                worksheet.addCell(new Label(5, i, "Rate"));
+                worksheet.addCell(new Label(6, i, "Commission"));
+                worksheet.addCell(new Label(7, i, "StateAfter"));
+                worksheet.addCell(new Label(8, i, "TransactionCurrency"));
+                worksheet.addCell(new Label(9, i, "ExtraParam1"));
+                worksheet.addCell(new Label(10, i, "ExtraParam2"));
+                worksheet.addCell(new Label(11, i, "ExtraParam3"));
+                worksheet.addCell(new Label(12, i, "ExtraParam4"));
+                worksheet.addCell(new Label(13, i, "TransactionType"));
+                worksheet.addCell(new Label(14, i, "SMS"));
+
+                for (Transaction t : transactions) {
+                    i = i + 1;
+                    worksheet.addCell(new Label(0, i, i + ""));
+                    worksheet.addCell(new Label(1, i, t.getTransactionDateAsString("yyyy-MM-dd hh:mm:ss")));
+                    if (t.hasStateBefore)     addBigDecimal(worksheet, 2, i, t.getStateBefore(),2);
+                    if (t.hasStateDifference) {
+                        addBigDecimal(worksheet, 3, i, t.getStateDifference(),2);
+                        addBigDecimal(worksheet, 4, i, t.getStateDifferenceInNativeCurrency(),2);
+                        if (!(t.getCurrencyRate().equals(new BigDecimal("1.000")))) addBigDecimal(worksheet, 5, i, t.getCurrencyRate(),3);
+                    }
+                    if (!(t.getCommission().equals(new BigDecimal("0.00")))) addBigDecimal(worksheet, 6, i, t.getCommission(),2);
+                    if (t.hasStateAfter)  addBigDecimal(worksheet, 7, i, t.getStateAfter(),2);
+                    worksheet.addCell(new Label(8, i, t.getTransactionCurrency()));
+                    worksheet.addCell(new Label(9, i, t.getExtraParam1()));
+                    worksheet.addCell(new Label(10, i, t.getExtraParam2()));
+                    worksheet.addCell(new Label(11, i, t.getExtraParam3()));
+                    worksheet.addCell(new Label(12, i, t.getExtraParam4()));
+                    worksheet.addCell(new Label(13, i, t.getTransactionType()));
+                    worksheet.addCell(new Label(14, i, t.getBody()));
+                }
+                sheetAutoFitColumns(worksheet);
+                workbook.write();
+                workbook.close();
+                Toast.makeText(this, "File saved to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.fromFile(file));
+                startActivity(intent);
+            } catch (RowsExceededException e) {
+                Toast.makeText(this, "Too many rows to save.", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            } catch (WriteException e) {
+                Toast.makeText(this, "Can't write to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            Toast.makeText(this, "Can't write to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private void sheetAutoFitColumns(WritableSheet sheet) {
+        for (int i = 0; i < sheet.getColumns(); i++) {
+            Cell[] cells = sheet.getColumn(i);
+            int longestStrLen = -1;
+
+            if (cells.length == 0)
+                continue;
+
+        /* Find the widest cell in the column. */
+            for (Cell cell : cells) {
+                if (cell.getContents().length() > longestStrLen) {
+                    String str = cell.getContents();
+                    if (str == null || str.isEmpty())
+                        continue;
+                    longestStrLen = str.trim().length();
+                }
+            }
+
+        /* If not found, skip the column. */
+            if (longestStrLen == -1)
+                continue;
+
+        /* If wider than the max width, crop width */
+            if (longestStrLen > 255)
+                longestStrLen = 255;
+
+            CellView cv = sheet.getColumnView(i);
+            cv.setSize(longestStrLen * 256 + 100); /* Every character is 256 units wide, so scale it. */
+            sheet.setColumnView(i, cv);
+        }
+    }
+
+    private void addBigDecimal(WritableSheet sheet, int column, int row, BigDecimal value, int digits) throws WriteException {
+        NumberFormat numberFormat;
+        if (digits==3) {
+            numberFormat = new NumberFormat("0.000");
+        }else{
+            numberFormat = new NumberFormat("0.00");
+        }
+        WritableCellFormat cellFormat = new WritableCellFormat(numberFormat);
+        Double v = round(value.doubleValue(),digits);
+        Number number = new Number(column, row, v, cellFormat);
+        sheet.addCell(number);
+    }
+
+    private static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 }

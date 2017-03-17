@@ -79,6 +79,9 @@ public class Transaction implements Comparable<Transaction> {
 		selectedRuleId=-1;
 		this.currencyRate=new BigDecimal(1).setScale(3, RoundingMode.HALF_UP);
 		this.setCommission(new BigDecimal(0).setScale(2, RoundingMode.HALF_UP));
+        this.stateAfter=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+        this.stateBefore=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+        this.stateDifference=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
 		applicableRules = new ArrayList <Rule>();
         extraParam1="";
         extraParam2="";
@@ -100,24 +103,34 @@ public class Transaction implements Comparable<Transaction> {
 		return f.format(transactionDate);
 	}
 
-	public String getAccountCurrency(){
-		return accountCurrency;
-	}
+    public String getAccountCurrency(){
+        return accountCurrency;
+    }
+    public String getTransactionCurrency(){
+        return transactionCurrency;
+    }
 
-	public BigDecimal getStateBefore(){
-		return stateBefore;
+    public BigDecimal getStateBefore(){
+		return stateBefore.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public BigDecimal getStateAfter(){
-		return stateAfter;
+		return stateAfter.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public BigDecimal getStateDifference(){
-		return stateDifference;
+		return stateDifference.setScale(2, RoundingMode.HALF_UP);
 	}
 
     public BigDecimal getStateDifferenceInNativeCurrency(){
         return currencyRate.multiply(stateDifference,  MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
+    }
+    public String getDifferenceInNativeCurrencyAsString(){
+        if (hasStateDifference) {
+            return currencyRate.multiply(stateDifference, MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP).toString();
+        }else{
+            return "N/A";
+        }
     }
 
     public BigDecimal getCommission() {
@@ -138,9 +151,25 @@ public class Transaction implements Comparable<Transaction> {
 
 	}
 
-	public String getExtraParam1() {
-		return extraParam1;
-	}
+    public String getTransactionType()
+    {
+        switch (icon){
+            case R.drawable.ic_transanction_unknown : return "UNKNOWN";
+            case R.drawable.ic_transanction_plus : return "INCOME";
+            case R.drawable.ic_transanction_minus : return "WITHDRAW";
+            case R.drawable.ic_transanction_transfer_to : return "TRANSFER_IN";
+            case R.drawable.ic_transanction_transfer_from : return "TRANSFER_OUT";
+            case R.drawable.ic_transanction_pay : return "PURCHASE";
+            case R.drawable.ic_transanction_failed : return "FAILED";
+            case R.drawable.ic_transanction_missed : return "CALCULATED";
+            default : return "unknown";
+        }
+
+    }
+
+    public String getExtraParam1() {
+        return extraParam1;
+    }
 
 	public void setExtraParam1(String extraParam1) {
 		this.extraParam1 = extraParam1;
@@ -172,58 +201,74 @@ public class Transaction implements Comparable<Transaction> {
 
 	public String getAccountDifferenceAsString(boolean hideCurrency,boolean inverseRate){
 		// function forms a string that will represent transaction difference on screen
-		String rez="";
-		if (accountCurrency.equals(transactionCurrency) || currencyRate.equals(new BigDecimal("1.000"))){
-			// if transaction has native currency
-			if (stateDifference.subtract(commission).signum()==1) {
-				rez+="+";
-			}
-			rez+= stateDifference.subtract(commission).toString();
-			if (!hideCurrency) {
-				rez+= " "+transactionCurrency;
-			}
-		}else
-		{   // if transaction has foreign currency
-			if (stateDifference.signum()==1) {
-				rez+="+";
-			}
-			rez+= stateDifference.toString()+ " "+transactionCurrency;
-			rez+="\n("+getStateDifferenceInNativeCurrency();
-			if (!hideCurrency) {
-				rez+=" "+accountCurrency;
-			}
-			rez+=")";
-			if (!inverseRate){
-				rez+="\n("+"rate"+" "+currencyRate.toString()+")";
-			}else{
-				rez+="\n("+"rate"+" "+(new BigDecimal(1).setScale(3, RoundingMode.HALF_UP)).divide(currencyRate,RoundingMode.HALF_UP).toString()+")";
-			}
+        if (hasStateDifference) {
+            String rez = "";
+            if (accountCurrency.equals(transactionCurrency) || currencyRate.equals(new BigDecimal("1.000"))) {
+                // if transaction has native currency
+                if (stateDifference.subtract(commission).signum() == 1) {
+                    rez += "+";
+                }
+                rez += stateDifference.subtract(commission).toString();
+                if (!hideCurrency) {
+                    rez += " " + transactionCurrency;
+                }
+            } else {   // if transaction has foreign currency
+                if (stateDifference.signum() == 1) {
+                    rez += "+";
+                }
+                rez += stateDifference.toString() + " " + transactionCurrency;
+                rez += "\n(" + getStateDifferenceInNativeCurrency();
+                if (!hideCurrency) {
+                    rez += " " + accountCurrency;
+                }
+                rez += ")";
+                if (!inverseRate) {
+                    rez += "\n(" + "rate" + " " + currencyRate.toString() + ")";
+                } else {
+                    rez += "\n(" + "rate" + " " + (new BigDecimal(1).setScale(3, RoundingMode.HALF_UP)).divide(currencyRate, RoundingMode.HALF_UP).toString() + ")";
+                }
 
-		}
-		return rez;
+            }
+            return rez;
+        }else{
+            return "N/A";
+        }
+
 	}
 
 	public String getAccountStateBeforeAsString(boolean hideCurrency){
-		if (!hideCurrency) {
-			return stateBefore.toString()+" "+accountCurrency;
-		}else{
-			return stateBefore.toString();
-		}
+		if (hasStateBefore) {
+            if (!hideCurrency) {
+                return stateBefore.toString() + " " + accountCurrency;
+            } else {
+                return stateBefore.toString();
+            }
+        }else{
+            return "N/A";
+        }
 	}
 
 	public String getAccountStateAfterAsString(boolean hideCurrency){
-		if (!hideCurrency) {
-			return stateAfter.toString()+" "+accountCurrency;
-		}else{
-			return stateAfter.toString();
-		}
+        if (hasStateAfter) {
+            if (!hideCurrency) {
+                return stateAfter.toString()+" "+accountCurrency;
+            }else{
+                return stateAfter.toString();
+            }
+        }else{
+            return "N/A";
+        }
 	}
 
 	public void setCurrencyRate(BigDecimal currencyRate){
 		this.currencyRate=currencyRate;
 	}
+    public BigDecimal getCurrencyRate(){
+        return currencyRate;
+    }
 
-	public void setBody(String body) {
+
+    public void setBody(String body) {
 		this.body = body;
 	}
 
@@ -248,20 +293,20 @@ public class Transaction implements Comparable<Transaction> {
 
 	}
 	public void setStateBefore(BigDecimal stateBefore) {
-		this.stateBefore = stateBefore;
+		this.stateBefore = stateBefore.setScale(2, RoundingMode.HALF_UP);
 		this.hasStateBefore =true;
 	}
 	public void setStateAfter(BigDecimal stateAfter) {
-		this.stateAfter = stateAfter;
+		this.stateAfter = stateAfter.setScale(2, RoundingMode.HALF_UP);
 		this.hasStateAfter =true;
 	}
 	public void setDifference(BigDecimal stateDifference) {
-		this.stateDifference = stateDifference;
+		this.stateDifference = stateDifference.setScale(2, RoundingMode.HALF_UP);
 		this.hasStateDifference =true;
 	}
 
 	public void setCommission(BigDecimal commission) {
-		this.commission = commission;
+		this.commission = commission.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	public int setStateBefore(String s){

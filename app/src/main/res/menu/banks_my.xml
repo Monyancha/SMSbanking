@@ -4,11 +4,14 @@
     tools:context="com.khizhny.smsbanking.BankListActivity" >
     <item
         android:id="@+id/bank_add"
-        android:orderInCategory="100"
+        android:orderInCategory="99"
         android:title="@string/bank_add"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_add"
+        app:showAsAction="always"/>
     <item
         android:id="@+id/bank_import"
         android:title="@string/bank_import"
-        android:visible="true"/>
+        android:icon="@drawable/ic_import_export_black_24dp"
+        android:visible="true"
+        app:showAsAction="never"/>
 </menu>

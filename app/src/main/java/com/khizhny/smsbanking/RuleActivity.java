@@ -56,7 +56,7 @@ public class RuleActivity extends AppCompatActivity {
 		ruleNameView =  (TextView) this.findViewById(R.id.rule_name);
 		ruleNameView.setText(rule.getName());
 
-		AppCompatSpinner ruleTypeView = (AppCompatSpinner) this.findViewById(R.id.stat_step);
+		AppCompatSpinner ruleTypeView = (AppCompatSpinner) this.findViewById(R.id.rule_type);
         if (ruleTypeView != null) {
             ruleTypeView.setSelection(rule.getRuleTypeInt());
         }

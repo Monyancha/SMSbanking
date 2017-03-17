@@ -9,37 +9,14 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/sms_text"
+        android:id="@+id/Rule_name_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="8dp"
         android:freezesText="true"
+        android:text="@string/SMS_TEXT"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="8sp"
-        android:text="@string/SMS_TEXT"/>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/LinearLayout3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="top"
-        android:orientation="horizontal" >
-        <Button
-            android:id="@+id/sub_rule_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:minHeight="8dp"
-            android:text="@string/sub_rule_add"
-            android:textSize="15sp" />
-        <Button
-            android:id="@+id/sub_rule_show_tip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:minHeight="8dp"
-            android:text="@string/help"
-            android:textSize="15sp" />
-    </LinearLayout>
+        android:textSize="8sp"/>
 
 
     <TextView
