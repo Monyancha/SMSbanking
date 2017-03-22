@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -84,6 +85,15 @@ public class SubRuleListActivity extends AppCompatActivity{
         if (smsTextView != null) {
             smsTextView.setText(smsText);
         }
+
+        Button doneButton = (Button) findViewById(R.id.finish_rule);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // closing activity and gount back to MainActivity
+                finish();
+            }
+        });
     }
 
     @Override

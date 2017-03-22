@@ -169,5 +169,6 @@
     <string name="action_privacy">Privacy notice</string>
     <string name="export_to_xls">Export to XLS</string>
     <string name="add">Add</string>
+    <string name="done">Done</string>
 </resources>
 

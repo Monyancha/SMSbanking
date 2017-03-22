@@ -466,18 +466,6 @@ public class Transaction implements Comparable<Transaction> {
     }
 
     /**
-     * @param transactionList List of transactions sorted desc by time.
-     * @return Last known account state.
-     */
-    public static BigDecimal getLastAccountState(List<Transaction> transactionList) {
-        for (Transaction t : transactionList) {
-            if (t.hasStateAfter) return t.getStateAfter();
-            if (t.hasStateBefore) return t.getStateBefore();
-        }
-        return new BigDecimal("0.00");
-    }
-
-    /**
      * Function loads a list of transactions from SMS to a List
      * @param activeBank Bank object with all extraction settings and rules.
      * @param context Context
@@ -642,5 +630,15 @@ public class Transaction implements Comparable<Transaction> {
                 return 0;
         }
     }
-
+    /**
+     * @param transactionList List of transactions sorted desc by time.
+     * @return Last known account state.
+     */
+    public static BigDecimal getLastAccountState(List<Transaction> transactionList) {
+        for (Transaction t : transactionList) {
+            if (t.hasStateAfter) return t.getStateAfter();
+            if (t.hasStateBefore) return t.getStateBefore();
+        }
+        return new BigDecimal("0.00");
+    }
 }

@@ -27,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	private int selected_row;
 	private String bankFilter;
     private final static String EXPORT_FILE_EXTENSION="dat";
-    private final static String EXPORT_PATH="/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
+    private final static String EXPORT_PATH="/SMS banking/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
     private static int REQUEST_CODE_ASK_PERMISSIONS=111;
 
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +67,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		PopupMenu popupMenu = new PopupMenu(BankListActivity.this, listView);
 		popupMenu.setOnMenuItemClickListener(BankListActivity.this);
 		bankFilter = getIntent().getExtras().getString("bankFilter");
-        if (bankFilter.equals("myBanks")){
-            refreshAccountStates();
-        }
+
         requestPermissions();
     }
 
@@ -158,14 +155,13 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				if (Bank.exportBank(b, exportPath)) {
 					Toast.makeText(BankListActivity.this, getString(R.string.export_sucessfull)+" "+exportPath, Toast.LENGTH_SHORT).show();
 					if (item.getItemId()==R.id.bank_share) {
-						File filelocation = new File(exportPath);
-						Uri path = Uri.fromFile(filelocation);
+						Uri path = Uri.fromFile(new File(exportPath));
 						Intent emailIntent = new Intent(Intent.ACTION_SEND); // set the type to 'email'
 						emailIntent.setType("vnd.android.cursor.dir/email");
 						String to[] = {"khizhny@gmail.com"};
 						emailIntent.putExtra(Intent.EXTRA_EMAIL, to);// the attachment
 						emailIntent.putExtra(Intent.EXTRA_STREAM, path);
-						emailIntent .putExtra(Intent.EXTRA_SUBJECT, "I want to share my SMS Banking settings. ("+Bank.serialVersionUID+")"); // the mail subject
+						emailIntent.putExtra(Intent.EXTRA_SUBJECT, "I want to share my SMS Banking settings. ("+Bank.serialVersionUID+")"); // the mail subject
 						startActivity(Intent.createChooser(emailIntent , "Send email..."));
 					}
 				} else {
@@ -288,30 +284,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         }
     }
 
-    /**
-     * Refreshes all accounts in myBanks list and saves the last known account state to db
-     */
-    private void refreshAccountStates(){
-        Log.d(MyApplication.LOG,"UpdateMyAccountsState start...");
-        DatabaseAccess db = DatabaseAccess.getInstance(getApplicationContext());
-        db.open();
-        List <Bank> myBanks=db.getMyBanks();
-        db.close();
-        for (Bank bank : myBanks) {
-            Log.d(MyApplication.LOG,"UpdateMyAccountsState started for " + bank.getName());
-
-            /*MainActivity.RefreshTransactionsTask task = new MainActivity.RefreshTransactionsTask();
-            task.execute(bank);/**/
-
-            BigDecimal lastState = Transaction.getLastAccountState(Transaction.loadTransactions(bank, getApplicationContext()));
-            bank.setCurrentAccountState(lastState);
-            db.open();
-            db.addOrEditBank(bank);
-            db.close();
-            Log.d(MyApplication.LOG,"UpdateMyAccountsState finished for " + bank.getName());
-        }
-    }
-
     private class BankListAdapter extends ArrayAdapter<Bank> {
 
         BankListAdapter(Context context, List<Bank> bankList) {
@@ -326,7 +298,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 rowView = vi.inflate(R.layout.activity_bank_list_row, parent, false);
             }
 
-            TextView bankNameView = (TextView) rowView.findViewById(R.id.bankName);
+            TextView bankNameView = (TextView) rowView.findViewById(R.id.label);
             bankNameView.setText(bankList.get(position).getName());
 
             TextView bankPhoneView = (TextView) rowView.findViewById(R.id.bankPhone);

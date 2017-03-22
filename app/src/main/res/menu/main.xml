@@ -6,7 +6,7 @@
         android:id="@+id/action_bank_my_list"
         android:orderInCategory="91"
         android:title="@string/mybank_activity_title"
-        android:icon="@drawable/ic_credit_card"
+        android:icon="@drawable/ic_credit_card_black_24dp"
         app:showAsAction="always"/>
     <item
         android:id="@+id/action_statistics"

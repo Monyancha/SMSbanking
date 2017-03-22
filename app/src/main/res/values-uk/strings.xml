@@ -159,4 +159,5 @@
     <string name="action_privacy">Політика конфіденційності</string>
     <string name="export_to_xls">Експортувати в XLS</string>
     <string name="add">Додати</string>
+    <string name="done">Готово</string>
 </resources>

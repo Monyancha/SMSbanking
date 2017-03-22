@@ -69,6 +69,7 @@ public class DatabaseAccess {
     public synchronized List<Bank> getBankTemplates () {
         List<Bank> bankList = new ArrayList<Bank>();
         String selectQuery = "SELECT _id, name, phone, active, default_currency FROM banks WHERE editable=0";
+        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery(selectQuery, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -97,33 +98,34 @@ public class DatabaseAccess {
         List<Bank> bankList = new ArrayList<Bank>();
         String selectQuery = "SELECT _id, name, phone, active, default_currency,current_account_state FROM banks WHERE editable<>0";
         Cursor cursor;
+        if (!db.isOpen()) open();
         try {
             cursor = db.rawQuery(selectQuery, null);
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    Bank bank = new Bank();
+                    bank.setId(Integer.parseInt(cursor.getString(0)));
+                    bank.setName(cursor.getString(1));
+                    bank.setPhone(cursor.getString(2));
+                    bank.setActive(Integer.parseInt(cursor.getString(3)));
+                    bank.setDefaultCurrency(cursor.getString(4));
+                    bank.setCurrentAccountState(cursor.getString(5));
+                    // Adding Rules
+                    bank.ruleList=getAllRules(bank.getId());
+                    bankList.add(bank);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
         } catch (Exception e){
             Log.e(LOG, "Error reading MyBanks from db. ");
             e.printStackTrace();
-            return bankList;
         }
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                Bank bank = new Bank();
-                bank.setId(Integer.parseInt(cursor.getString(0)));
-                bank.setName(cursor.getString(1));
-                bank.setPhone(cursor.getString(2));
-                bank.setActive(Integer.parseInt(cursor.getString(3)));
-                bank.setDefaultCurrency(cursor.getString(4));
-                bank.setCurrentAccountState(cursor.getString(5));
-                // Adding Rules
-                bank.ruleList=getAllRules(bank.getId());
-                bankList.add(bank);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
         return bankList;
     }
 
     public synchronized void setActiveBank (int bankId) {
+        if (!db.isOpen()) open();
         db.execSQL("UPDATE banks SET active=0");
         db.execSQL("UPDATE banks SET active=1 WHERE _id=" + bankId + " and editable<>0");
     }
@@ -135,6 +137,7 @@ public class DatabaseAccess {
      */
     public synchronized Bank getBank (int bankId) {
         Bank b = new Bank();
+        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery("SELECT _id, name, phone, active, default_currency,editable,current_account_state FROM banks WHERE _id="+bankId, null);
         if (cursor.moveToFirst()) {
             b.setId(cursor.getInt(0));
@@ -176,6 +179,7 @@ public class DatabaseAccess {
      * Sets any bank from myBanks as active. Used after bank is deleted.
      */
     public synchronized void setActiveAnyBank () {
+        if (!db.isOpen()) open();
         db.execSQL("UPDATE banks SET active=0");
         db.execSQL("UPDATE banks SET active=1 WHERE _id=(SELECT MAX(_id) FROM banks WHERE editable=1)");
     }
@@ -186,6 +190,7 @@ public class DatabaseAccess {
      */
     public synchronized void deleteBank (int bankId) {
         // deleting all subrules and rules of active bank
+        if (!db.isOpen()) open();
         db.execSQL("DELETE FROM subrules WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rule_conflicts WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rules WHERE bank_id=" + bankId);
@@ -227,6 +232,7 @@ public class DatabaseAccess {
      */
     public synchronized List<Rule> getAllRules(int bankId){
         List<Rule> ruleList = new ArrayList<Rule>();
+        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE bank_id=" + bankId, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -253,6 +259,7 @@ public class DatabaseAccess {
      * @return Saved rule ID.
      */
     public synchronized int addOrEditRule(Rule r){
+        if (!db.isOpen()) open();
         if (r.getId()>=1) { //Updating existing rule
             int id = r.getId();
             db.update("rules", r.getContentValues(), "_id=?", new String[]{id + ""});
@@ -276,6 +283,7 @@ public class DatabaseAccess {
      */
     public synchronized Rule getRule(int ruleId){
         String selectQuery = "SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE _id="+ruleId;
+        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery(selectQuery, null);
         Rule r;
         if (cursor.moveToFirst()) {
@@ -301,6 +309,7 @@ public class DatabaseAccess {
      */
     public synchronized void deleteRule (int ruleId) {
         // deleting all subrules and rule
+        if (!db.isOpen()) open();
         db.execSQL("DELETE FROM rule_conflicts WHERE rule_id="+ruleId);
         db.execSQL("DELETE FROM subrules WHERE rule_id="+ruleId);
         db.execSQL("DELETE FROM rules WHERE _id=" + ruleId);
@@ -311,6 +320,7 @@ public class DatabaseAccess {
      * @return a list of subrules for particular Rule
      */
     public synchronized List<SubRule> getSubRules(int ruleId){
+        if (!db.isOpen()) open();
         List<SubRule> subRuleList = new ArrayList<SubRule>();
         String selectQuery = "SELECT _id, left_phrase,right_phrase, distance_to_left_phrase, distance_to_right_phrase, constant_value, extracted_parameter,extraction_method,decimal_separator,trim_left,trim_right,negate  FROM subrules WHERE rule_id="+ruleId;
         Cursor cursor = db.rawQuery(selectQuery, null);

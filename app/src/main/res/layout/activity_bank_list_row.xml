@@ -13,10 +13,10 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="false"
         android:layout_alignBottom="@+id/bankCurrency"
-        android:layout_alignTop="@+id/bankName" />
+        android:layout_alignTop="@+id/label" />
 
     <TextView
-        android:id="@+id/bankName"
+        android:id="@+id/label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tip_bank_name"
@@ -32,7 +32,7 @@
         android:gravity="start|center_vertical"
         android:text="@string/tip_bank_phone"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/bankName"
+        android:layout_below="@+id/label"
         android:layout_toRightOf="@+id/active" />
 
     <TextView

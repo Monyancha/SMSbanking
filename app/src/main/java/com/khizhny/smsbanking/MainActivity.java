@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
@@ -9,7 +10,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -22,6 +25,7 @@ import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,8 +46,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,11 +89,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private Bank activeBank;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
+    private RefreshTransactionsTask refreshTransactionsTask;
+
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG, "MainActivity creating...");
-        setTitle("");
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             MyApplication.hasReadSmsPermission = (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
@@ -137,8 +145,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             @Override
             public void onRefresh() {
             if (activeBank != null) {
-                RefreshTransactionsTask task = new RefreshTransactionsTask();
-                task.execute(activeBank);
+                refreshTransactionsTask = new RefreshTransactionsTask();
+                refreshTransactionsTask.execute(activeBank);
             }
             }
         });
@@ -202,8 +210,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         db.close();
 
         // refreshing lists
-        RefreshTransactionsTask task = new RefreshTransactionsTask();
-        task.execute(activeBank);
+        RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
+        refreshTransactionsTask.execute(activeBank);
     }
 
     @Override
@@ -350,7 +358,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 startActivity(intent);
             }
         }
+        if (pDialog!=null) pDialog.dismiss();
+        if (refreshTransactionsTask!=null) refreshTransactionsTask.cancel(false);
         super.onDestroy();
+
     }
 
 
@@ -361,8 +372,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     MyApplication.hasReadSmsPermission = true;
-                    RefreshTransactionsTask task = new RefreshTransactionsTask();
-                    task.execute(activeBank);
+                    RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
+                    refreshTransactionsTask.execute(activeBank);
                 } else {
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "READ_SMS permision denied", Toast.LENGTH_SHORT)
@@ -651,8 +662,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         protected void onPreExecute() {
             super.onPreExecute();
             swipeRefreshLayout.setRefreshing(true);
+            if (pDialog != null) pDialog.dismiss();
             pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Reading messages");
+            pDialog.setMessage("Reading messages ...");
             pDialog.setCancelable(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             pDialog.show();
@@ -661,7 +673,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         @Override
         protected List<Transaction> doInBackground(Bank... params) {
             Bank activeBank = params[0];
-
+            if (activeBank==null) return null;
             List<Transaction> transactionList = new ArrayList<Transaction>();
             String sms_body = "";
             String phoneNumbers = activeBank.getPhone().replace(";", "','");
@@ -674,6 +686,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             if (c != null) {
                 int msgCount = c.getCount();
+                pDialog.setMax(msgCount-1);
                 if (c.moveToFirst()) {
                     for (int ii = 0; ii < msgCount; ii++) {
                         if (ignoreClones && sms_body.equals(c.getString(c.getColumnIndexOrThrow("body")))) {
@@ -725,12 +738,27 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                             }
                         }
                         c.moveToNext();
-                        publishProgress(100 * ii / msgCount);
+                        if (!isCancelled()) {
+                            publishProgress(ii + 1);
+                        } else{
+                            if (pDialog.isShowing()) pDialog.dismiss();
+                            return null;
+                        }
                     }
                     c.close();
                 }
             }
             transactionList = Transaction.addMissingTransactions(transactionList);
+
+            // saving last bank account state to db for later usage
+            BigDecimal lastState = Transaction.getLastAccountState(Transaction.loadTransactions(activeBank, MainActivity.this));
+
+            activeBank.setCurrentAccountState(lastState);
+            DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
+            db.open();
+            db.addOrEditBank(activeBank);
+            db.close();
+
             return transactionList;
         }
 
@@ -738,7 +766,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
             pDialog.setProgress(values[0]);
-            pDialog.setMessage("Reading messages ... " + values[0] + "%");
         }
 
         @Override
@@ -753,7 +780,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 transactionListAdapter = new TransactionListAdapter(t);
                 listView.setAdapter(transactionListAdapter);
             }
-            transactionListAdapter.notifyDataSetChanged();
+            if (transactionListAdapter!=null) transactionListAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
         }
     }

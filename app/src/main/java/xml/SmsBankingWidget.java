@@ -5,9 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -15,40 +13,35 @@ import android.widget.RemoteViews;
 import com.khizhny.smsbanking.Bank;
 import com.khizhny.smsbanking.DatabaseAccess;
 import com.khizhny.smsbanking.MainActivity;
-import com.khizhny.smsbanking.MyApplication;
 import com.khizhny.smsbanking.R;
-import com.khizhny.smsbanking.Rule;
 import com.khizhny.smsbanking.Transaction;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import static com.khizhny.smsbanking.MyApplication.*;
 
 /**
  * Implementation of App Widget functionality.
  * App Widget Configuration implemented in {@link SmsBankingWidgetConfigureActivity SmsBankingWidgetConfigureActivity}
  */
-
 public class SmsBankingWidget extends AppWidgetProvider {
 
     private static final String LOG = "SMS_BANKING_WIDGET";
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
-        Log.d(LOG,"Start updating widget appWidgetId="+appWidgetId);
+        Log.d(LOG,"-=Start updating widget appWidgetId="+appWidgetId);
         int bankId=SmsBankingWidgetConfigureActivity.loadSavedIntFromPref(context, appWidgetId, SmsBankingWidgetConfigureActivity.PREF_BANK_ID);
         int color=SmsBankingWidgetConfigureActivity.loadSavedIntFromPref(context, appWidgetId, SmsBankingWidgetConfigureActivity.PREF_COLOR);
         int backColor=SmsBankingWidgetConfigureActivity.loadSavedIntFromPref(context, appWidgetId, SmsBankingWidgetConfigureActivity.PREF_BACKGROUND);
         int fontSize=SmsBankingWidgetConfigureActivity.loadSavedIntFromPref(context, appWidgetId, SmsBankingWidgetConfigureActivity.PREF_SIZE);
 
-        Log.d(LOG,"Opening db...");
+        //delete widget if it has no bank id
+
+        Log.d(LOG,"Opening db for bankId="+bankId);
         DatabaseAccess db = DatabaseAccess.getInstance(context);
         db.open();
         Bank bank= db.getBank(bankId);
         db.close();
         if (bank!=null) {
-            Log.d(LOG,"Recalculating ballance state...");
+            Log.d(LOG,"Recalculating balance for bank:"+bank.getName());
+
             String balance=Transaction.getLastAccountState(Transaction.loadTransactions(bank,context)).toString();
 
             // Construct the RemoteViews object
@@ -66,10 +59,6 @@ public class SmsBankingWidget extends AppWidgetProvider {
             } else {
                 remoteViews.setInt(R.id.widget_background_image, "setAlpha",Color.alpha(backColor));
             }
-
-
-
-
             // Create an Intent to launch MainActivity
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra("bank_id", bankId);
@@ -85,12 +74,14 @@ public class SmsBankingWidget extends AppWidgetProvider {
             // Instruct the widget manager to update the widget
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);/**/
         }
-        Log.d(LOG,"Finished updating widget.");
+        Log.d(LOG,"Finished updating widget for BankId="+bankId);
     }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
+        Log.d(LOG,"Widget on Update is called.");
+
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
@@ -99,9 +90,11 @@ public class SmsBankingWidget extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         // When the user deletes the widget, delete the preference associated with it.
+        Log.d(LOG,"Widget onDelete is called.");
         for (int appWidgetId : appWidgetIds) {
             SmsBankingWidgetConfigureActivity.deleteWidgetInfoFromPref(context, appWidgetId);
         }
+        super.onDeleted(context, appWidgetIds);
     }
 
     @Override

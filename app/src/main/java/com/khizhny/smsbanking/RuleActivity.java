@@ -164,7 +164,7 @@ public class RuleActivity extends AppCompatActivity {
                     db.open();
                     rule.setId(db.addOrEditRule(rule));
                     db.close();
-                    RuleActivity.this.finish();
+                    finish();
                     Toast.makeText(v.getContext(), "New rule saved.", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(v.getContext(), SubRuleListActivity.class);
                     intent.putExtra("rule_id", rule.getId());

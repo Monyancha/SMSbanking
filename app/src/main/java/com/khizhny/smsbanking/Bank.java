@@ -166,7 +166,7 @@ public class Bank  implements java.io.Serializable{
 		this.currentAccountState = new BigDecimal(currentAccountState.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 
-	String getCurrentAccountState() {
+	public String getCurrentAccountState() {
 		return currentAccountState.toString();
 	}
 }

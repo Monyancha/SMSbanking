@@ -157,5 +157,6 @@
     <string name="action_privacy">Политика конфиденциальности</string>
     <string name="export_to_xls">Экспортировать в XLS</string>
     <string name="add">Добавить</string>
+    <string name="done">Готово</string>
 </resources>
 

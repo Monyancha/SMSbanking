@@ -5,7 +5,7 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/bankName"
+        android:id="@+id/label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
@@ -26,8 +26,8 @@
         android:text="@string/bank_default_name"
         android:layout_alignParentStart="false"
         android:ems="10"
-        android:layout_alignLeft="@+id/bankName"
-        android:layout_below="@+id/bankName"
+        android:layout_alignLeft="@+id/label"
+        android:layout_below="@+id/label"
         android:layout_alignParentLeft="false"/>
 
     <TextView
