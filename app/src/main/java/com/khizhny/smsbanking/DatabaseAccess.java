@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,7 +81,7 @@ public class DatabaseAccess {
                 bank.setPhone(cursor.getString(2));
                 bank.setActive(cursor.getInt(3));
                 bank.setDefaultCurrency(cursor.getString(4));
-
+                bank.setEditable(0);
                 // Adding Rules
                 bank.ruleList=getAllRules(bank.getId());
 
@@ -194,7 +195,14 @@ public class DatabaseAccess {
         db.execSQL("DELETE FROM subrules WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rule_conflicts WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rules WHERE bank_id=" + bankId);
+        db.execSQL("DELETE FROM transactions WHERE bank_id=" + bankId);
         db.execSQL("DELETE FROM banks WHERE _id=" + bankId);
+    }
+
+    public synchronized void deleteBankCache (int bankId) {
+        // deleting all subrules and rules of active bank
+        if (!db.isOpen()) open();
+        db.execSQL("DELETE FROM transactions WHERE bank_id=" + bankId);
     }
 
     /**
@@ -251,33 +259,78 @@ public class DatabaseAccess {
         return ruleList;
     }
 
+    public void cacheTransactions(int bankId, List<Transaction> transactionList){
+        deleteBankCache(bankId);
+        for (Transaction t:transactionList) {
+            ContentValues cv = t.getContentValues();
+            cv.put("bank_id",bankId);
+            db.insert("transactions", null, cv);
+        }
+    }
+
+    public synchronized List<Transaction> getTransactionCache(int bankId){
+        List<Transaction> transactionList = new ArrayList<Transaction>();
+        if (!db.isOpen()) open();
+        Cursor cursor = db.rawQuery("SELECT transaction_date,account_currency,sms_body,icon,transaction_currency,state_before,state_after,state_difference,commission,extra1,extra2,extra3,extra4,exchange_rate,sms_id FROM transactions WHERE bank_id=" + bankId, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Date transactionDate =  new Date (cursor.getLong(0));
+                Transaction t = new Transaction(cursor.getString(2),cursor.getString(1),transactionDate); // transaction_date,account_currency, sms_body,
+                t.icon=cursor.getInt(3); // icon,
+                t.setTransactionCurrency(cursor.getString(4));// transaction_currency,
+                t.setStateBefore(cursor.getString(5));// state_before,
+                t.setStateAfter(cursor.getString(6));// state_after,
+                t.setDifference(cursor.getString(7));// state_difference,
+                t.setComission(cursor.getString(8));// commission,
+                t.setExtraParam1(cursor.getString(9));// extra1,
+                t.setExtraParam2(cursor.getString(10));// extra2,
+                t.setExtraParam3(cursor.getString(11));// extra3,
+                t.setExtraParam4(cursor.getString(12));// extra4,
+                t.setCurrencyRate(cursor.getString(13));// exchange_rate
+                t.smsId=cursor.getLong(14);
+                t.isCached=true;
+
+                transactionList.add(t);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return transactionList;
+    }
+
     /**
      * Saves or Updater Rule in database without subrules.
      * If Rule.id=-1 new record will be created.
      * Otherwise Rile with this id will be updated.
      * @param r Rule
-     * @return Saved rule ID.
+     * @return Saved Rule ID.
      */
     public synchronized int addOrEditRule(Rule r){
         if (!db.isOpen()) open();
-        if (r.getId()>=1) { //Updating existing rule
+        if (r.getId()>=1) {
+            //Updating existing rule with same ID
             int id = r.getId();
             db.update("rules", r.getContentValues(), "_id=?", new String[]{id + ""});
+            for (SubRule subrule:r.subRuleList) {
+                //Updating all existing subRrules linked with the rule
+                int subruleId =addOrEditSubRule(subrule);
+            }
             return id;
-        }else{ // adding new rule
+        }else{
+            // adding new rule
             db.insert("rules", null, r.getContentValues());
             // querying Rule id to return
             Cursor c=db.rawQuery("SELECT MAX(_id) FROM rules",null);
+            // returning new rule id
             int id=0;
             if (c.moveToFirst()) id=c.getInt(0);
             c.close();
             return id;
         }
-
     }
 
     /**
-     * Gets Rule from DB by ID
+     * Gets Rule (with subrules) from DB by ID
      * @param ruleId Rule ID.
      * @return Rule object
      */
@@ -327,25 +380,25 @@ public class DatabaseAccess {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                SubRule r = new SubRule(ruleId);
-                r.setId(Integer.parseInt(cursor.getString(0)));
-                r.setLeftPhrase(cursor.getString(1));
-                r.setRightPhrase(cursor.getString(2));
-                r.setDistanceToLeftPhrase(cursor.getInt(3));
-                r.setDistanceToRightPhrase(cursor.getInt(4));
-                r.setConstantValue(cursor.getString(5));
-                r.setExtractedParameter(cursor.getInt(6));
-                r.setExtractionMethod(cursor.getInt(7));
-                r.setDecimalSeparator(cursor.getInt(8));
-                r.setTrimLeft(cursor.getInt(9));
-                r.setTrimRight(cursor.getInt(10));
+
+                SubRule subRule = new SubRule(ruleId,Transaction.Parameters.values()[cursor.getInt(6)]);
+                subRule.setId(Integer.parseInt(cursor.getString(0)));
+                subRule.setLeftPhrase(cursor.getString(1));
+                subRule.setRightPhrase(cursor.getString(2));
+                subRule.setDistanceToLeftPhrase(cursor.getInt(3));
+                subRule.setDistanceToRightPhrase(cursor.getInt(4));
+                subRule.setConstantValue(cursor.getString(5));
+                subRule.setExtractionMethod(cursor.getInt(7));
+                subRule.setDecimalSeparator(cursor.getInt(8));
+                subRule.setTrimLeft(cursor.getInt(9));
+                subRule.setTrimRight(cursor.getInt(10));
                 if (cursor.getInt(11)==0) {
-                    r.setNegate(false);
+                    subRule.setNegate(false);
                 } else {
-                    r.setNegate(true);
+                    subRule.setNegate(true);
                 }
                 // Adding contact to list
-                subRuleList.add(r);
+                subRuleList.add(subRule);
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -357,7 +410,7 @@ public class DatabaseAccess {
      * if ID<=0 rule will be added and new ID will be returned.
      * Otherwise corrresponding record record will be updated.
      * @param sr Subrule object
-     * @return rule ID
+     * @return SubRule ID
      */
     public synchronized int addOrEditSubRule(SubRule sr){
         int id=sr.getId();
@@ -375,6 +428,7 @@ public class DatabaseAccess {
         }else {	// Updating existing Rule
             db.update("subrules", sr.getContentValues(), "_id=?", new String[]{id + ""});
         }
+        sr.setId(id);
         return id;
     }
 
@@ -471,45 +525,4 @@ public class DatabaseAccess {
         }
     }
 
-    /**
-     * Upgrades database to V6. After V6 upgardes will be made by update scripts in assets folder.
-     */
-    public int getDbOldVersion(){
-        Cursor cursor = db.rawQuery("SELECT version FROM version", null);
-        int oldVersion=0;
-        if (cursor.moveToFirst()){
-            oldVersion = cursor.getInt(0);
-        }
-        cursor.close();
-        return oldVersion;
-    }
-
-    public void upgradeDbToV6() {
-        Log.d("SMS_BANKING", "DATABASE UPGRADE to V6 STARTED...");
-        switch (getDbOldVersion()){
-            case 4:
-                // these version is used only in 1.09
-                db.execSQL("ALTER TABLE banks ADD COLUMN editable;");
-                db.execSQL("ALTER TABLE banks ADD COLUMN current_account_state;");
-                db.execSQL("UPDATE banks SET editable=1, current_account_state=0");
-                db.execSQL("INSERT INTO sqlite_sequence(rowid,name,seq) VALUES(87,'banks',4);");
-                db.execSQL("UPDATE version SET version=5");
-                Log.v(LOG, "DB Updated from 4 to 5");
-            case 5: // these version is used only  in 1.10
-                // adding rule_conflicts table.
-                db.execSQL(
-                        "CREATE TABLE \"rule_conflicts\" (\n" +
-                                "\t`rule_id`\tNUMERIC NOT NULL,\n" +
-                                "\t`message_date`\tTEXT NOT NULL UNIQUE,\n" +
-                                "\tPRIMARY KEY(message_date),\n" +
-                                "\tFOREIGN KEY(`rule_id`) REFERENCES rules ( _id )\n" +
-                                ");");
-                db.execSQL("UPDATE version SET version=6");
-                Log.v(LOG, "DB Updated from 5 to 6");
-                // no return for further updates.
-            case 6:
-        }
-        db.close();
-        Log.d(LOG, "DATABASE UPGRADED to V6.");
-    }/**/
 }

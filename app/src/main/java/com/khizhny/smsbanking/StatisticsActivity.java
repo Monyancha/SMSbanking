@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.*;
@@ -34,7 +33,6 @@ import java.util.List;
 
 public class StatisticsActivity extends AppCompatActivity{
     private List<Transaction> transactions;
-    private Context context;
     private int step=0;
     private boolean showValues;
     private boolean showIncome;
@@ -53,12 +51,8 @@ public class StatisticsActivity extends AppCompatActivity{
         if (bank!=null) {
             transactions = Transaction.loadTransactions(bank,this);
         }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        context=this;
-        if (transactions.size()==0) {
-            Toast.makeText(this, getString(R.string.no_transactions_found), Toast.LENGTH_SHORT).show();
-            this.onDestroy();
-        }
     }
 
     @Override
@@ -112,7 +106,7 @@ public class StatisticsActivity extends AppCompatActivity{
                     @Override
                     public void onItemSelected(AdapterView<?> parentView, View v, int selectedPosition, long id) {
                         if (selectedPosition >= 1 && selectedPosition != step) {
-                            SharedPreferences.Editor settings = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                            SharedPreferences.Editor settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
                             settings.putInt("step", selectedPosition);
                             settings.apply();
                             onStart();
@@ -125,145 +119,147 @@ public class StatisticsActivity extends AppCompatActivity{
                 });
             }
 
-            if (transactions.size() > 1) {
-                Date start_date = transactions.get(transactions.size() - 1).getTransactionDate();
-                /*shifting to the beginning of the day*/
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(start_date);
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                start_date = cal.getTime();
+            if (transactions!=null) {
+                if (transactions.size() > 1) {
+                    Date start_date = transactions.get(transactions.size() - 1).getTransactionDate();
+                    /*shifting to the beginning of the day*/
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(start_date);
+                    cal.set(Calendar.HOUR_OF_DAY, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    start_date = cal.getTime();
 
-                int lastBarIndex = transactions.get(0).getDateIndex(start_date, step);
-                //int lastTransactionIndex = transactions.size() - 1;
-                // Filling categories array
-                List<String> cat = new ArrayList<String>(); // categories list
-                ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();  // list for positive BarValues
-                ArrayList<Entry> lineEntries = new ArrayList<Entry>();  // list for line value (max ballance state)
-                int transactionIndex = transactions.size() - 1;
-                int currentTransactionBarIndex = transactions.get(transactionIndex).getDateIndex(start_date, step);
+                    int lastBarIndex = transactions.get(0).getDateIndex(start_date, step);
+                    //int lastTransactionIndex = transactions.size() - 1;
+                    // Filling categories array
+                    List<String> cat = new ArrayList<String>(); // categories list
+                    ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();  // list for positive BarValues
+                    ArrayList<Entry> lineEntries = new ArrayList<Entry>();  // list for line value (max ballance state)
+                    int transactionIndex = transactions.size() - 1;
+                    int currentTransactionBarIndex = transactions.get(transactionIndex).getDateIndex(start_date, step);
 
-                Transaction t;
-                float diff;
-                float currentBalance;
-                if (transactions.get(transactionIndex).hasStateAfter) {
-                    currentBalance = transactions.get(transactionIndex).getStateAfter().floatValue();
-                } else {
-                    currentBalance = 0;
-                }
-                float balance;
-                float totalIncome;
-                float totalOutcome;
-
-                for (int barIndex = 0; barIndex <= lastBarIndex; barIndex++) { // i - Bar index
-                    balance = currentBalance;
-                    totalIncome = 0;
-                    totalOutcome = 0;
-                    // calculating total balance income and outcome and maximum balance
-                    while (currentTransactionBarIndex == barIndex && transactionIndex >= 0) {
-                        t = transactions.get(transactionIndex);
-                        if (t.hasStateAfter) {
-                            currentBalance = t.getStateAfter().floatValue();
-                        }
-                        if (currentBalance > balance) {
-                            balance = currentBalance;
-                        }
-                        diff = 0;
-                        if (t.hasStateDifference) {
-                            diff = t.getStateDifferenceInNativeCurrency().floatValue();
-                        }
-                        if (diff > 0) {
-                            totalIncome = totalIncome + diff;
-                        } else {
-                            totalOutcome = totalOutcome + diff;
-                        }
-                        transactionIndex = transactionIndex - 1;
-                        if (transactionIndex >= 0) {
-                            currentTransactionBarIndex = transactions.get(transactionIndex).getDateIndex(start_date, step);
-                        }
+                    Transaction t;
+                    float diff;
+                    float currentBalance;
+                    if (transactions.get(transactionIndex).hasStateAfter) {
+                        currentBalance = transactions.get(transactionIndex).getStateAfter().floatValue();
+                    } else {
+                        currentBalance = 0;
                     }
+                    float balance;
+                    float totalIncome;
+                    float totalOutcome;
 
-                    cat.add(barIndex, getDateIndexLabel(start_date, step, barIndex));
-                    if (totalIncome != 0 || totalOutcome != 0)
-                        if (showIncome) {
-                            if (showOutcome) {
-                                barEntries.add(new BarEntry(new float[]{totalIncome, totalOutcome}, barIndex));
-                            } else {
-                                barEntries.add(new BarEntry(new float[]{totalIncome, 0.0f}, barIndex));
+                    for (int barIndex = 0; barIndex <= lastBarIndex; barIndex++) { // i - Bar index
+                        balance = currentBalance;
+                        totalIncome = 0;
+                        totalOutcome = 0;
+                        // calculating total balance income and outcome and maximum balance
+                        while (currentTransactionBarIndex == barIndex && transactionIndex >= 0) {
+                            t = transactions.get(transactionIndex);
+                            if (t.hasStateAfter) {
+                                currentBalance = t.getStateAfter().floatValue();
                             }
-                        } else {
-                            if (showOutcome) {
-                                barEntries.add(new BarEntry(new float[]{0.0f, totalOutcome}, barIndex));
+                            if (currentBalance > balance) {
+                                balance = currentBalance;
+                            }
+                            diff = 0;
+                            if (t.hasStateDifference) {
+                                diff = t.getStateDifferenceInNativeCurrency().floatValue();
+                            }
+                            if (diff > 0) {
+                                totalIncome = totalIncome + diff;
                             } else {
-                                barEntries.add(new BarEntry(new float[]{0.0f, 0.0f}, barIndex));
+                                totalOutcome = totalOutcome + diff;
+                            }
+                            transactionIndex = transactionIndex - 1;
+                            if (transactionIndex >= 0) {
+                                currentTransactionBarIndex = transactions.get(transactionIndex).getDateIndex(start_date, step);
                             }
                         }
 
-                    lineEntries.add(new Entry(balance, barIndex));
-                }
+                        cat.add(barIndex, getDateIndexLabel(start_date, step, barIndex));
+                        if (totalIncome != 0 || totalOutcome != 0)
+                            if (showIncome) {
+                                if (showOutcome) {
+                                    barEntries.add(new BarEntry(new float[]{totalIncome, totalOutcome}, barIndex));
+                                } else {
+                                    barEntries.add(new BarEntry(new float[]{totalIncome, 0.0f}, barIndex));
+                                }
+                            } else {
+                                if (showOutcome) {
+                                    barEntries.add(new BarEntry(new float[]{0.0f, totalOutcome}, barIndex));
+                                } else {
+                                    barEntries.add(new BarEntry(new float[]{0.0f, 0.0f}, barIndex));
+                                }
+                            }
 
-                BarDataSet barDataSet = new BarDataSet(barEntries, "");
-                barDataSet.setStackLabels(new String[]{getString(R.string.stats_income), getString(R.string.stats_outcome)});
-                barDataSet.setValueTextColor(Color.RED);
-                barDataSet.setValueTextSize(10f);
-                barDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-                barDataSet.setColors(new int[]{Color.rgb(60, 220, 78), Color.rgb(250, 0, 0)});
-                //List <Integer> colors = new ArrayList<Integer>();
-                //colors.add(Color.rgb(60, 220, 78));
-                //colors.add(Color.rgb(250, 0, 0));
-                //barDataSet.setValueTextColors(colors);
-                barDataSet.setValueFormatter(new ValueFormatter() {
-
-                    @Override
-                    public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                        BigDecimal bd = new BigDecimal(Float.toString(value));
-                        bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
-                        switch (bd.signum()) {
-                            case 0:
-                                return "";
-                            case 1:
-                                return "+" + bd.toString();
-                            default:
-                                return bd.toString();
-                        }
+                        lineEntries.add(new Entry(balance, barIndex));
                     }
-                });
-                BarData barData = new BarData();
-                barData.addDataSet(barDataSet);
 
-                LineData maxLineData = new LineData();
-                LineDataSet maxLineDataSet = new LineDataSet(lineEntries, getString(R.string.stats_balance));
-                maxLineDataSet.setColor(Color.BLUE);
-                maxLineDataSet.setLineWidth(2.5f);
-                maxLineDataSet.setCircleColor(Color.BLUE);
-                maxLineDataSet.setCircleRadius(2f);
-                maxLineDataSet.setFillColor(Color.rgb(240, 238, 70));
-                maxLineDataSet.setDrawCubic(false);
-                maxLineDataSet.setValueTextSize(10f);
-                maxLineDataSet.setValueTextColor(Color.BLUE);
-                maxLineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-                if (showValues) {
-                    maxLineDataSet.setDrawValues(true);
-                } else {
-                    maxLineDataSet.setDrawValues(false);
+                    BarDataSet barDataSet = new BarDataSet(barEntries, "");
+                    barDataSet.setStackLabels(new String[]{getString(R.string.stats_income), getString(R.string.stats_outcome)});
+                    barDataSet.setValueTextColor(Color.RED);
+                    barDataSet.setValueTextSize(10f);
+                    barDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+                    barDataSet.setColors(new int[]{Color.rgb(60, 220, 78), Color.rgb(250, 0, 0)});
+                    //List <Integer> colors = new ArrayList<Integer>();
+                    //colors.add(Color.rgb(60, 220, 78));
+                    //colors.add(Color.rgb(250, 0, 0));
+                    //barDataSet.setValueTextColors(colors);
+                    barDataSet.setValueFormatter(new ValueFormatter() {
+
+                        @Override
+                        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                            BigDecimal bd = new BigDecimal(Float.toString(value));
+                            bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
+                            switch (bd.signum()) {
+                                case 0:
+                                    return "";
+                                case 1:
+                                    return "+" + bd.toString();
+                                default:
+                                    return bd.toString();
+                            }
+                        }
+                    });
+                    BarData barData = new BarData();
+                    barData.addDataSet(barDataSet);
+
+                    LineData maxLineData = new LineData();
+                    LineDataSet maxLineDataSet = new LineDataSet(lineEntries, getString(R.string.stats_balance));
+                    maxLineDataSet.setColor(Color.BLUE);
+                    maxLineDataSet.setLineWidth(2.5f);
+                    maxLineDataSet.setCircleColor(Color.BLUE);
+                    maxLineDataSet.setCircleRadius(2f);
+                    maxLineDataSet.setFillColor(Color.rgb(240, 238, 70));
+                    maxLineDataSet.setDrawCubic(false);
+                    maxLineDataSet.setValueTextSize(10f);
+                    maxLineDataSet.setValueTextColor(Color.BLUE);
+                    maxLineDataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+                    if (showValues) {
+                        maxLineDataSet.setDrawValues(true);
+                    } else {
+                        maxLineDataSet.setDrawValues(false);
+                    }
+                    maxLineData.addDataSet(maxLineDataSet);
+
+                    ArrayList<ILineDataSet> lineDataSets = new ArrayList<ILineDataSet>();
+                    lineDataSets.add(maxLineDataSet);
+
+                    LineData lineData = new LineData(cat, lineDataSets);
+
+                    CombinedData combinedData = new CombinedData(cat);
+
+                    if (showBalance) {
+                        combinedData.setData(lineData);
+                    }
+                    combinedData.setData(barData);
+                    chart.setData(combinedData);
+                    chart.animateXY(2500, 2500);
                 }
-                maxLineData.addDataSet(maxLineDataSet);
-
-                ArrayList<ILineDataSet> lineDataSets = new ArrayList<ILineDataSet>();
-                lineDataSets.add(maxLineDataSet);
-
-                LineData lineData = new LineData(cat, lineDataSets);
-
-                CombinedData combinedData = new CombinedData(cat);
-
-                if (showBalance) {
-                    combinedData.setData(lineData);
-                }
-                combinedData.setData(barData);
-                chart.setData(combinedData);
-                chart.animateXY(2500, 2500);
             }
         }
     }
@@ -326,14 +322,14 @@ public class StatisticsActivity extends AppCompatActivity{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_stat, menu);
+        getMenuInflater().inflate(R.menu.menu_statistics_activity, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Listener for Menu options
-        SharedPreferences.Editor settings = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        SharedPreferences.Editor settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
         switch (item.getItemId()){
             case R.id.item_stat_balance:
                 showBalance=!showBalance;
@@ -351,6 +347,8 @@ public class StatisticsActivity extends AppCompatActivity{
                 showOutcome=!showOutcome;
                 settings.putBoolean("showOutcome", showOutcome);
                 break;
+            case android.R.id.home:
+                finish();
         }
         settings.apply();
         onStart();

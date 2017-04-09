@@ -14,6 +14,7 @@ public class MyApplication extends Application {
     public static String defaultSmsApp;
     public final static String LOG = "SMS_BANKING";
     public static boolean hasReadSmsPermission=true;
+
     static Boolean hideMatchedMessages ;
     static Boolean hideNotMatchedMessages;
     static Boolean ignoreClones;

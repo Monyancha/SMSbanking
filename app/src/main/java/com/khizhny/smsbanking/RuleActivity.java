@@ -1,16 +1,20 @@
 package com.khizhny.smsbanking;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -18,22 +22,25 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class RuleActivity extends AppCompatActivity {
 	private List<Button> wordButtons;
 	private Rule rule;
 	private TextView ruleNameView;
 	private ImageView imageView;
+    private AlertDialog alertDialog;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-        Log.d(LOG,"RuleActivity starting...");
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onCreate(savedInstanceState, persistentState);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         setContentView(R.layout.activity_rule);
-		FlowLayout myLayout = (FlowLayout) this.findViewById(R.id.rule1_flow_layout);
 		Intent intent = getIntent();
         DatabaseAccess db = DatabaseAccess.getInstance(this);
         db.open();
@@ -82,45 +89,41 @@ public class RuleActivity extends AppCompatActivity {
 		// Creating "word buttons" on Flow Layout
 		String[] words = rule.getSmsBody().split(" ");
 		wordButtons = new ArrayList <Button>();
-		Button W;
+		Button wordButton;
 
-		W = new Button(this);
-		W.setText(R.string.begin);
-		W.setBackgroundColor(Color.GRAY);
-		// RuleActivity.setBackgroundColor(W,Color.GRAY);
-		wordButtons.add(W);
-        if (myLayout != null) {
-            myLayout.addView(W);
+		wordButton = new Button(this);
+		wordButton.setText(R.string.begin);
+		wordButton.setBackgroundColor(Color.GRAY);
+        wordButton.setMinHeight(0);
+        wordButton.setMinWidth(0);
+        wordButton.setMinimumHeight(0);
+        wordButton.setMinimumWidth(0);
+        wordButton.setPadding(16,8,16,8);
+		// RuleActivity.setBackgroundColor(wordButton,Color.GRAY);
+		wordButtons.add(wordButton);
+
+        FlowLayout flowLayout = (FlowLayout) this.findViewById(R.id.rule1_flow_layout);
+        if (flowLayout != null) {
+            flowLayout.addView(wordButton);
         }
 
         for (int i=1;i<=words.length;i++){
-			W=new Button(this);
-			W.setText(words[i-1]);
-			W.setBackgroundColor(Color.LTGRAY);
-			//RuleActivity.setBackgroundColor(W,Color.LTGRAY);
-			W.setOnClickListener(new View.OnClickListener() {
+			wordButton=new Button(this);
+			wordButton.setText(words[i-1]);
+			wordButton.setBackgroundColor(Color.LTGRAY);
+            wordButton.setMinHeight(0);
+            wordButton.setMinWidth(0);
+            wordButton.setMinimumHeight(0);
+            wordButton.setMinimumWidth(0);
+            wordButton.setPadding(16,8,16,8);
+            //RuleActivity.setBackgroundColor(wordButton,Color.LTGRAY);
+			wordButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					ColorDrawable buttonColor = (ColorDrawable) v.getBackground();
 					int wordIndex = wordButtons.indexOf(v);
-                    int colorInt=0;
+
 					// cheching the color of the word colorInt
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						colorInt=buttonColor.getColor();
-					}else {
-						try {
-							Field field = buttonColor.getClass().getDeclaredField("mState");
-							field.setAccessible(true);
-							Object object = field.get(buttonColor);
-							field = object.getClass().getDeclaredField("mUseColor");
-							field.setAccessible(true);
-							colorInt=field.getInt(object);
-						} catch (NoSuchFieldException e) {
-							e.printStackTrace();
-						} catch (IllegalAccessException e) {
-							e.printStackTrace();
-						}
-					}
-					if (colorInt == Color.GRAY) {
+					if (buttonColor.getColor() == Color.GRAY) {
 						v.setBackgroundColor(Color.LTGRAY);
 						rule.deSelectWord(wordIndex);
 					}
@@ -129,20 +132,27 @@ public class RuleActivity extends AppCompatActivity {
 						v.setBackgroundColor(Color.GRAY);
 						rule.selectWord(wordIndex);
 					}
+                    // refreshing rule name
+                    ruleNameView.setText(rule.getRuleNameSuggestion());
 				}
 			});
-			wordButtons.add(W);
-            if (myLayout != null) {
-                myLayout.addView(W);
+			wordButtons.add(wordButton);
+            if (flowLayout != null) {
+                flowLayout.addView(wordButton);
             }
         }
 
-		W=new Button(this);
-		W.setText(R.string.end);
-		W.setBackgroundColor(Color.GRAY);
-		wordButtons.add(W);
-        if (myLayout != null) {
-            myLayout.addView(W);
+		wordButton=new Button(this);
+		wordButton.setText(R.string.end);
+		wordButton.setBackgroundColor(Color.GRAY);
+        wordButton.setMinHeight(0);
+        wordButton.setMinWidth(0);
+        wordButton.setMinimumHeight(0);
+        wordButton.setMinimumWidth(0);
+        wordButton.setPadding(16,8,16,8);
+		wordButtons.add(wordButton);
+        if (flowLayout != null) {
+            flowLayout.addView(wordButton);
         }
 
         // Making "word buttons" colored acording to selected words parameter of the rule
@@ -164,9 +174,9 @@ public class RuleActivity extends AppCompatActivity {
                     db.open();
                     rule.setId(db.addOrEditRule(rule));
                     db.close();
-                    finish();
-                    Toast.makeText(v.getContext(), "New rule saved.", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(v.getContext(), SubRuleListActivity.class);
+                    //finish();
+                    //Toast.makeText(v.getContext(), "New rule saved.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(v.getContext(), TransactionActivity.class);
                     intent.putExtra("rule_id", rule.getId());
                     startActivity(intent);
                 }
@@ -174,4 +184,34 @@ public class RuleActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_rule_activity, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            case R.id.item_help:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getResources().getString(R.string.tip_rules_1));
+                alertDialog =builder.create();
+                alertDialog.show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    @Override
+    protected void onStop() {
+        if (alertDialog!=null) {
+            if (alertDialog.isShowing()) alertDialog.dismiss();
+        }
+        super.onStop();
+    }
 }

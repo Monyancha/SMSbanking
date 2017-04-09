@@ -1,13 +1,14 @@
 package com.khizhny.smsbanking;
 
-import java.util.ArrayList;
-import java.util.List;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.EditText;
@@ -20,10 +21,13 @@ public class BankActivity extends AppCompatActivity {
 	private TextView nameView;
 	private AppCompatSpinner currencyView;
 	private EditText phonesView;
+    private String[] senders;  // list for storing all available message senders for dropdown list
 
-	protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bank);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
@@ -52,34 +56,26 @@ public class BankActivity extends AppCompatActivity {
 			}
 		}
 
-		// getting phone list from messages
-		final AppCompatSpinner phoneListView = (AppCompatSpinner) findViewById(R.id.phone_list);
-
+		// getting sms senders list if granted
         Cursor c=null;
         if (MyApplication.hasReadSmsPermission) {
             Uri uri = Uri.parse("content://sms/inbox");
-            c = getContentResolver().query(uri, new String[]{"Distinct address"}, null, null, null);
+            c = getContentResolver().query(uri, new String[]{"Distinct address"}, null, null, "address desc");
         } else {
             Toast.makeText(BankActivity.this, "Read SMS permission denied.", Toast.LENGTH_SHORT).show();
         }
-        int msgCount;
-		List <String> list;  // list for storing all available message senders for dropdown list
-		list= new ArrayList<String>();
-		list.clear();
+
 		if (c != null) {
-			msgCount=c.getCount();
+            int sendersCount = c.getCount();
+            senders = new String[sendersCount];
 			if(c.moveToFirst()) {
-				for(int ii=0; ii < msgCount; ii++) {
-					list.add(c.getString(c.getColumnIndexOrThrow("address")));
+				for(int ii = 0; ii < sendersCount; ii++) {
+                    senders[ii]=c.getString(c.getColumnIndexOrThrow("address"));
 					c.moveToNext();
 				}
 			}
 			c.close();
 		}
-
-        if (phoneListView != null) {
-            phoneListView.setAdapter(new ArrayAdapter<String>(BankActivity.this, android.R.layout.simple_dropdown_item_1line, list));
-        }
 
         if (saveView != null) {
             saveView.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +83,9 @@ public class BankActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     if (phonesView.getText().toString().length() < 3) {
                         Toast.makeText(BankActivity.this, getString(R.string.phone_number_not_set), Toast.LENGTH_SHORT).show();
-                    } else {
+                    } else if (nameView.getText().toString().equals("")) {
+                        Toast.makeText(BankActivity.this, getString(R.string.bank_name_must_be_set), Toast.LENGTH_SHORT).show();
+                    }else {
                         Toast.makeText(BankActivity.this, getString(R.string.saving_changes), Toast.LENGTH_SHORT).show();
                         bank.setName(nameView.getText().toString());
                         bank.setPhone(phonesView.getText().toString());
@@ -106,14 +104,19 @@ public class BankActivity extends AppCompatActivity {
             addPhone.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String s=phonesView.getText().toString();
-                    if (!s.equals("")) s=s+";";
-                    if (phoneListView != null) {
-                        phonesView.setText(String.format("%s%s", s, phoneListView.getSelectedItem().toString()));
-                    }
-                    if (phoneListView != null) {
-                        phoneListView.setSelection(0);
-                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(BankActivity.this);
+                    builder.setTitle(R.string.pick_phone_number);
+                    builder.setItems(senders, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String s = phonesView.getText().toString();
+                                    if (!s.equals("")) s=s+";";
+                                    phonesView.setText(String.format("%s%s", s, senders[which]));
+                                }
+                            });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
                 }
             });
         }
@@ -156,4 +159,13 @@ public class BankActivity extends AppCompatActivity {
 		}
 		return index;
 	}
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId() ){
+            case android.R.id.home:
+                finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.util.Log;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
-public class SubRule implements java.io.Serializable {
+class SubRule implements java.io.Serializable {
 
 	private final static long serialVersionUID = 1; // Is used to indicate class version during Import/Export
 	private int id;
@@ -22,7 +22,7 @@ public class SubRule implements java.io.Serializable {
 	private int trimRight;
 	private boolean negate;
 
-	public enum Method {
+	enum Method {
 		WORD_AFTER_PHRASE,
 		WORD_BEFORE_PHRASE,
 		WORDS_BETWEEN_PHRASES,
@@ -33,7 +33,7 @@ public class SubRule implements java.io.Serializable {
 	 * Default SubRule constructor.
 	 * @param ruleId ID of parent Rule.
 	 */
-	SubRule(int ruleId) {
+	SubRule(int ruleId, Transaction.Parameters extractedParameter) {
 		this.id = -1;
 		this.ruleId = ruleId;
 		this.distanceToLeftPhrase = 1;
@@ -41,8 +41,8 @@ public class SubRule implements java.io.Serializable {
 		this.leftPhrase="";
 		this.rightPhrase="";
 		this.constantValue="";
-		this.extractedParameter = Transaction.Parameters.ACCOUNT_STATE_AFTER;
-		this.extractionMethod = Method.WORD_AFTER_PHRASE;
+		this.extractedParameter = extractedParameter;
+		this.extractionMethod = Method.WORDS_BETWEEN_PHRASES;
 		this.decimalSeparator = 0;
 		this.separator = ".";
 		this.trimLeft = 0;
@@ -80,75 +80,75 @@ public class SubRule implements java.io.Serializable {
 		this.id = id;
 	}
 
-	public int getDistanceToLeftPhrase() {
+	int getDistanceToLeftPhrase() {
 		return distanceToLeftPhrase;
 	}
 
-	public void setDistanceToLeftPhrase(int distanceToLeftPhrase) {
+	void setDistanceToLeftPhrase(int distanceToLeftPhrase) {
 		this.distanceToLeftPhrase = distanceToLeftPhrase;
 	}
 
-	public int getDistanceToRightPhrase() {
+	int getDistanceToRightPhrase() {
 		return distanceToRightPhrase;
 	}
 
-	public void setDistanceToRightPhrase(int distanceToRightPhrase) {
+	void setDistanceToRightPhrase(int distanceToRightPhrase) {
 		this.distanceToRightPhrase = distanceToRightPhrase;
 	}
 
-	public String getLeftPhrase() {
+	String getLeftPhrase() {
 		return leftPhrase;
 	}
 
-	public void setLeftPhrase(String leftPhrase) {
+	void setLeftPhrase(String leftPhrase) {
 		this.leftPhrase = leftPhrase;
 	}
 
-	public String getRightPhrase() {
+	String getRightPhrase() {
 		return rightPhrase;
 	}
 
-	public void setRightPhrase(String rightPhrase) {
+	 void setRightPhrase(String rightPhrase) {
 		this.rightPhrase = rightPhrase;
 	}
 
-	public int getExtractionMethodInt() {
+	int getExtractionMethodInt() {
 		return extractionMethod.ordinal();
 	}
 
-	public Method getExtractionMethod() {
+	Method getExtractionMethod() {
 		return extractionMethod;
 	}
 
-	public void setExtractionMethod(int extractionMethod) {
+	void setExtractionMethod(int extractionMethod) {
 		this.extractionMethod = Method.values()[extractionMethod];
 	}
 
-	public String getConstantValue() {
+	String getConstantValue() {
 		return constantValue;
 	}
 
-	public void setConstantValue(String constantValue) {
+	void setConstantValue(String constantValue) {
 		this.constantValue = constantValue;
 	}
 
-	public int getExtractedParameterInt() {
+    private int getExtractedParameterInt() {
 		return extractedParameter.ordinal();
 	}
 
-	public Transaction.Parameters getExtractedParameter() {
+	Transaction.Parameters getExtractedParameter() {
 		return extractedParameter;
 	}
 
-	public void setExtractedParameter(int extractedParameter) {
-		this.extractedParameter = Transaction.Parameters.values()[extractedParameter];
-	}
-
-	public int getDecimalSeparator() {
+	int getDecimalSeparator() {
         return decimalSeparator;
     }
 
-	public void setDecimalSeparator(int decimalSeparator) {
+    /**
+     * Sets decimal separator.
+     * @param decimalSeparator  1 for ","  or 0 for "."
+     */
+	 void setDecimalSeparator(int decimalSeparator) {
 		if (decimalSeparator == 0) {
             this.separator = ".";
 		} else {
@@ -157,28 +157,19 @@ public class SubRule implements java.io.Serializable {
 		this.decimalSeparator = decimalSeparator;
 	}
 
-    public void setDecimalSeparator(String decimalSeparator) {
-        if (decimalSeparator.equals(".")) {
-            this.decimalSeparator =0;
-        } else {
-            this.decimalSeparator =1;
-        }
-        this.separator= decimalSeparator;
-    }
-
-	public int getTrimLeft() {
+	int getTrimLeft() {
 		return trimLeft;
 	}
 
-	public void setTrimLeft(int trimLeft) {
+	void setTrimLeft(int trimLeft) {
 		this.trimLeft = trimLeft;
 	}
 
-	public int getTrimRight() {
+	int getTrimRight() {
 		return trimRight;
 	}
 
-	public void setTrimRight(int trimRight) {
+	void setTrimRight(int trimRight) {
 		this.trimRight = trimRight;
 	}
 
@@ -192,7 +183,7 @@ public class SubRule implements java.io.Serializable {
 	 * @param returnedType Zero for decimal, One for Alphabetical, Other for unchanged string.
 	 * @return Parameter value
 	 */
-	public String applySubRule(String msg, int returnedType) {
+	String applySubRule(String msg, int returnedType) {
 		msg = "<BEGIN> " + msg + " <END>";
 		String temp = "";
 		try {
@@ -270,7 +261,7 @@ public class SubRule implements java.io.Serializable {
 	 * @param transaction Transaction
 	 * @return False if subrule cannot be applied
 	 */
-	public Boolean applySubRule(String msg, Transaction transaction) {
+	Boolean applySubRule(String msg, Transaction transaction) {
 		switch (extractedParameter) {
 			case ACCOUNT_STATE_BEFORE: //Account state before transaction
 				transaction.setStateBefore(applySubRule(msg, 0));
@@ -306,15 +297,15 @@ public class SubRule implements java.io.Serializable {
 
 	}
 
-	public boolean isNegate() {
+	boolean isNegate() {
 		return negate;
 	}
 
-	public int getNegateInt() {
+	private int getNegateInt() {
 		return negate ? -1 : 0;
 	}
 
-	public void setNegate(boolean negate) {
+	void setNegate(boolean negate) {
 		this.negate = negate;
 	}
 
@@ -322,14 +313,14 @@ public class SubRule implements java.io.Serializable {
 	 * Changes Rule Id to make possible Template copy to myBanks
 	 * @param ruleId Rule ID in Db.
 	 */
-	public void changeRuleId(int ruleId) {
+	void changeRuleId(int ruleId) {
 		this.ruleId = ruleId;
 	}
 
 	/**
 	 * @return Content values used for database insert or update function.
 	 */
-	public ContentValues getContentValues() {
+	ContentValues getContentValues() {
 		ContentValues v = new ContentValues();
 		if (id >= 1) v.put("_id", id);
 		v.put("rule_id", ruleId);

@@ -1,10 +1,12 @@
 package com.khizhny.smsbanking;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
     private RuleListAdapter adapter;
 	int selected_row;
 	boolean tipWasSeen;
+    private AlertDialog alertDialog;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -47,8 +50,9 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
         		popupMenu.inflate(R.menu.popup_menu_rule_list);
         		popupMenu.show();
             }
-       }); 
-	
+       });
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 	
     @Override
@@ -62,14 +66,11 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
             adapter = new RuleListAdapter(this, activeBank.ruleList);
             listView.setAdapter(adapter);
             if (activeBank.ruleList.isEmpty() && !tipWasSeen) {
-                Intent intent = new Intent(this, TipActivity.class);
-                intent.putExtra("tip_res_id", R.string.tip_subrules_1);
-                startActivity(intent);
 
-                intent = new Intent(this, TipActivity.class);
-                intent.putExtra("tip_res_id", R.string.tip_rules_1);
-                startActivity(intent);
-
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getResources().getString(R.string.tip_rules_1));
+                alertDialog =builder.create();
+                alertDialog.show();
                 tipWasSeen = true;
             }
         }
@@ -104,7 +105,7 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.rules, menu);
+		getMenuInflater().inflate(R.menu.menu_rules_activity, menu);
 		return true;
 	}
 
@@ -114,6 +115,8 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
 			case R.id.rule_add:
 				Toast.makeText(this, getString(R.string.rule_add_tip), Toast.LENGTH_LONG).show();
 				return true;
+            case android.R.id.home:
+                finish();
 		}
 		return false;
 	}

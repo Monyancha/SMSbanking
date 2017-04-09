@@ -18,8 +18,8 @@ public class Bank  implements java.io.Serializable{
 	// Information   about your bank account
 	private int id;  // id in main DB. If -1 then it is new.
 	static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
-	private int editable; // true if user is allowed to modify
-	private int active;  // indicates that user want to watch this account info in program. test
+	private int editable; // 1 if user is allowed to modify
+	private int active;  // 1 indicates that user want to watch this account info in program. test
 	private String name;
 	private String phone;
 	private String defaultCurrency;
@@ -70,7 +70,9 @@ public class Bank  implements java.io.Serializable{
 	public boolean isActive() {
 		return active != 0;
 	}
-
+    public boolean isEditable() {
+        return editable != 0;
+    }
 	public String toString(){
 		return name;
 	}
@@ -87,20 +89,23 @@ public class Bank  implements java.io.Serializable{
 			}
 		}
 	}
-	public  void setEditable(int editable){
+    void setEditable(int editable){
 		this.editable=editable;
 	}
 
-	public  void setActive(int active){
+    void setActive(int active){
 		this.active=active;
 	}
+
 	public  void setName(String name){
 		this.name=name.replaceAll("'", "");
 	}
-	public  void setPhone(String phone){
+
+	void setPhone(String phone){
 		this.phone=phone.replace("'", "");
 	}
-	public  void setDefaultCurrency(String defaultCurrency){
+
+	void setDefaultCurrency(String defaultCurrency){
 		this.defaultCurrency =defaultCurrency;
 	}
 
@@ -166,7 +171,7 @@ public class Bank  implements java.io.Serializable{
 		this.currentAccountState = new BigDecimal(currentAccountState.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 
-	public String getCurrentAccountState() {
+	String getCurrentAccountState() {
 		return currentAccountState.toString();
 	}
 }

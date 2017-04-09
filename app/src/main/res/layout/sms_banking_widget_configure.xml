@@ -26,52 +26,55 @@
         android:layout_toEndOf="@+id/textView3" />
 
     <TextView
+        android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/font_size"
-        android:layout_alignParentTop="false"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="false"
         android:layout_alignParentStart="true"
-        android:id="@+id/textView5"
-        android:gravity="center"
+        android:layout_alignParentTop="false"
         android:layout_below="@+id/my_bank"
-        android:layout_alignParentRight="false" />
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/font_size"/>
 
     <SeekBar
+        android:id="@+id/font_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/font_size"
-        android:layout_below="@+id/textView5"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView5"
+        android:layout_marginTop="8dp"
         android:max="40"
-        android:progress="12" />
+        android:progress="12"/>
 
     <TableLayout
+        android:id="@+id/tableLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tableLayout"
-        android:layout_below="@+id/font_size">
+        android:layout_below="@+id/font_size"
+        android:layout_marginTop="8dp">
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_weight="1"
                 android:text="@string/text_color"
-                android:id="@+id/textView"
-                android:layout_weight="1" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <TextView
+                android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
-                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_weight="1"
                 android:text="@string/background_color"
-                android:id="@+id/textView4"
-                android:layout_weight="1" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         </TableRow>
 
@@ -80,17 +83,19 @@
             android:layout_height="match_parent">
 
             <com.khizhny.smsbanking.ColorPickerView
+                android:id="@+id/text_color"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:id="@+id/text_color"
+                android:layout_marginTop="8dp"
                 android:layout_weight="1"
-                android:alpha="1" />
+                android:alpha="1"/>
 
             <com.khizhny.smsbanking.ColorPickerView
+                android:id="@+id/text_background"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:id="@+id/text_background"
-                android:layout_weight="1" />
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"/>
 
         </TableRow>
 

@@ -1,7 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
@@ -10,9 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -25,7 +23,6 @@ import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,10 +43,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
     private RefreshTransactionsTask refreshTransactionsTask;
+    private AlertDialog alertDialog;
 
 
 
@@ -105,11 +101,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
 
         setContentView(R.layout.activity_main);
+        setTitle("");
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // List View popup menu listener
+                // Transaction list View popup menu listener
                 PopupMenu popupMenu = new PopupMenu(MainActivity.this, view);
                 popupMenu.setOnMenuItemClickListener(MainActivity.this);
                 selectedTransaction = (Transaction) listView.getItemAtPosition(position);
@@ -124,12 +121,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
 
         });
-
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-        hideAds = settings.getBoolean("hide_ads", false);
 
         if (transactions!=null) {
             transactionListAdapter = new TransactionListAdapter(transactions);
@@ -172,14 +163,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
         db.close();
         if (myBanks.size() == 0) {
-            // redirecting user to choose bank from template.
-            Intent intent = new Intent(this, BankListActivity.class);
-            intent.putExtra("bankFilter", "templates");
-            startActivity(intent);
-            // Showing the tip
-            intent = new Intent(this, TipActivity.class);
-            intent.putExtra("tip_res_id", R.string.tip_bank_1);
-            startActivity(intent);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(getResources().getString(R.string.tip_bank_1));
+            alertDialog =builder.create();
+            alertDialog.show();
         }
 
 
@@ -188,6 +175,15 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onStart() {
         super.onStart();
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideCurrency = settings.getBoolean("hide_currency", false);
+        inverseRate = settings.getBoolean("inverse_rate", false);
+        hideAds = settings.getBoolean("hide_ads", false);
+        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
+        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+        ignoreClones = settings.getBoolean("ignore_clones", false);
+
         // enabling ads banner
         AdView mAdView = (AdView) findViewById(R.id.adView);
         if (!hideAds) {
@@ -207,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         for (Bank b: myBanks){
             if (b.isActive()) activeBank=b;
         }
+
         db.close();
 
         // refreshing lists
@@ -217,73 +214,75 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.menu_main_activity, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Listener for Menu options
-        int id = item.getItemId();
-        if (id == R.id.action_preferences) {
-            Intent intent = new Intent(this, PrefActivity.class);
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_bank_list) {
-            Intent intent = new Intent(this, BankListActivity.class);
-            intent.putExtra("bankFilter", "templates");
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_bank_my_list) {
-            Intent intent = new Intent(this, BankListActivity.class);
-            intent.putExtra("bankFilter", "myBanks");
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_rule_list) {
-            Intent intent = new Intent(this, RuleListActivity.class);
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_statistics) {
-            Intent intent = new Intent(this, StatisticsActivity.class);
-            startActivity(intent);
-            return true;
-        }
-        if (id == R.id.action_export_transactions) {
-            exportToExcel();
+        Intent intent;
+        switch (item.getItemId()) {
+            case R.id.action_preferences:
+                intent = new Intent(this, PrefActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_bank_my_list:
+                intent = new Intent(this, BankListActivity.class);
+                intent.putExtra("bankFilter", "myBanks");
+                startActivity(intent);
+                break;
+            case R.id.action_rule_list:
+                intent = new Intent(this, RuleListActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_statistics:
+                intent = new Intent(this, StatisticsActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_export_transactions:
+                exportToExcel();
+                break;
+            case R.id.action_rate_app:
+                Uri uri = Uri.parse("market://details?id=" + getPackageName());
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                // To count with Play market backstack, After pressing back button,
+                // to taken back to our application, we need to add following flags to intent.
+                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
+                }
+                break;
 
-            return true;
+            case R.id.action_privacy:
+                String url = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+                break;
+            case R.id.action_cache:
+                if (activeBank!=null) {
+                    DatabaseAccess db = DatabaseAccess.getInstance(this);
+                    db.open();
+                    db.cacheTransactions(activeBank.getId(), transactions);
+                    db.close();
+                    Toast.makeText(getApplicationContext(), R.string.cache_created, Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getApplicationContext(), R.string.nothing_to_cache, Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.action_quit:
+                this.finish();
+                System.exit(0);
+                break;
+            default:
+                return false;
         }
-        if (id == R.id.action_rate_app) {
-            Uri uri = Uri.parse("market://details?id=" + getPackageName());
-            Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-            // To count with Play market backstack, After pressing back button,
-            // to taken back to our application, we need to add following flags to intent.
-            goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
-                    Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-            try {
-                startActivity(goToMarket);
-            } catch (ActivityNotFoundException e) {
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
-            }
-            return true;
-        }
-        if (id == R.id.action_privacy) {
-            String url = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(url));
-            startActivity(i);
-        }
-        if (id == R.id.action_quit) {
-            this.finish();
-            System.exit(0);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     public boolean onMenuItemClick(MenuItem item) {
@@ -292,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         switch (item.getItemId()) {
             case R.id.item_new_rule:
                 intent = new Intent(this, RuleActivity.class);
-                intent.putExtra("sms_body", selectedTransaction.getBody());
+                intent.putExtra("sms_body", selectedTransaction.getSmsBody());
                 intent.putExtra("todo", "add");
                 startActivity(intent);
                 return true;
@@ -343,6 +342,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onStop() {
         Log.d(MyApplication.LOG, "MainActivity stopping...");
+        if (alertDialog!=null){
+            if (alertDialog.isShowing()) alertDialog.dismiss();
+        }
         refreshScreenWidgets();
         super.onStop();
     }
@@ -419,13 +421,17 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Filling Massage text
             smsTextView = (TextView) rowView.findViewById(R.id.smsBody);
+            smsTextView.setText(t.getSmsBody());
+
+            // Warning sign
+            TextView warnView = (TextView) rowView.findViewById(R.id.warning_sign);
             if (t.ruleOptionsCount()>=2){
-                ((TextView) rowView.findViewById(R.id.warning_sign)).setText(String.format("(%d)", t.ruleOptionsCount()));
-                smsTextView.setText(t.getBody());
+                warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
+
             }else{
-                ((TextView) rowView.findViewById(R.id.warning_sign)).setText("");
-                smsTextView.setText(t.getBody());
+                warnView.setText("");
             }
+            if (t.isCached) warnView.setText("(c)");
 
             // Filling Before state
             TextView accountBeforeView = (TextView) rowView.findViewById(R.id.stateBefore);
@@ -436,11 +442,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             // Filling Transaction Date
             TextView dateView = (TextView) rowView.findViewById(R.id.transanction_date);
-            if (t.hasTransactionDate){
-                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
-            }else {
-                dateView.setText("");
-            }
+            dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
+
             // Filling After state
             TextView accountAfterView = (TextView) rowView.findViewById(R.id.stateAfter);
             if (t.hasStateAfter){
@@ -454,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 accountComissionView.setVisibility(View.GONE);
             } else {
                 accountComissionView.setVisibility(View.VISIBLE);
-                accountComissionView.setText(t.getCommissionAsString(hideCurrency));
+                accountComissionView.setText(t.getCommissionAsString(hideCurrency,true));
                 accountComissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
             }
             // Filling difference
@@ -530,72 +533,79 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         db.close();
 
         //file path
-        String FILE_NAME = bank.getName() + ".xls";
-        File file = new File(directory, FILE_NAME);
+        if (bank!=null) {
+            String FILE_NAME = bank.getName() + ".xls";
+            File file = new File(directory, FILE_NAME);
 
-        WorkbookSettings wbSettings = new WorkbookSettings();
-        wbSettings.setLocale(new Locale("en", "EN"));
-        WritableWorkbook workbook;
-
-        try {
-            workbook = Workbook.createWorkbook(file, wbSettings);
-            WritableSheet worksheet = workbook.createSheet(bank.getName(), 0);
+            WorkbookSettings wbSettings = new WorkbookSettings();
+            wbSettings.setLocale(new Locale("en", "EN"));
+            WritableWorkbook workbook;
 
             try {
-                int i = 0;
-                worksheet.addCell(new Label(0, i, "N"));
-                worksheet.addCell(new Label(1, i, "TransactionDate"));
-                worksheet.addCell(new Label(2, i, "State before"));
-                worksheet.addCell(new Label(3, i, "Difference"));
-                worksheet.addCell(new Label(4, i, "DifferenceInNativeCurrency"));
-                worksheet.addCell(new Label(5, i, "Rate"));
-                worksheet.addCell(new Label(6, i, "Commission"));
-                worksheet.addCell(new Label(7, i, "StateAfter"));
-                worksheet.addCell(new Label(8, i, "TransactionCurrency"));
-                worksheet.addCell(new Label(9, i, "ExtraParam1"));
-                worksheet.addCell(new Label(10, i, "ExtraParam2"));
-                worksheet.addCell(new Label(11, i, "ExtraParam3"));
-                worksheet.addCell(new Label(12, i, "ExtraParam4"));
-                worksheet.addCell(new Label(13, i, "TransactionType"));
-                worksheet.addCell(new Label(14, i, "SMS"));
+                workbook = Workbook.createWorkbook(file, wbSettings);
+                WritableSheet worksheet = workbook.createSheet(bank.getName(), 0);
 
-                for (Transaction t : transactions) {
-                    i = i + 1;
-                    worksheet.addCell(new Label(0, i, i + ""));
-                    worksheet.addCell(new Label(1, i, t.getTransactionDateAsString("yyyy-MM-dd hh:mm:ss")));
-                    if (t.hasStateBefore)     addBigDecimal(worksheet, 2, i, t.getStateBefore(),2);
-                    if (t.hasStateDifference) {
-                        addBigDecimal(worksheet, 3, i, t.getStateDifference(),2);
-                        addBigDecimal(worksheet, 4, i, t.getStateDifferenceInNativeCurrency(),2);
-                        if (!(t.getCurrencyRate().equals(new BigDecimal("1.000")))) addBigDecimal(worksheet, 5, i, t.getCurrencyRate(),3);
+                try {
+                    int i = 0;
+                    worksheet.addCell(new Label(0, i, "N"));
+                    worksheet.addCell(new Label(1, i, "TransactionDate"));
+                    worksheet.addCell(new Label(2, i, "State before"));
+                    worksheet.addCell(new Label(3, i, "Difference"));
+                    worksheet.addCell(new Label(4, i, "DifferenceInNativeCurrency"));
+                    worksheet.addCell(new Label(5, i, "Rate"));
+                    worksheet.addCell(new Label(6, i, "Commission"));
+                    worksheet.addCell(new Label(7, i, "StateAfter"));
+                    worksheet.addCell(new Label(8, i, "TransactionCurrency"));
+                    worksheet.addCell(new Label(9, i, "ExtraParam1"));
+                    worksheet.addCell(new Label(10, i, "ExtraParam2"));
+                    worksheet.addCell(new Label(11, i, "ExtraParam3"));
+                    worksheet.addCell(new Label(12, i, "ExtraParam4"));
+                    worksheet.addCell(new Label(13, i, "TransactionType"));
+                    worksheet.addCell(new Label(14, i, "SMS"));
+
+                    for (Transaction t : transactions) {
+                        i = i + 1;
+                        worksheet.addCell(new Label(0, i, i + ""));
+                        worksheet.addCell(new Label(1, i, t.getTransactionDateAsString("yyyy-MM-dd hh:mm:ss")));
+                        if (t.hasStateBefore) addBigDecimal(worksheet, 2, i, t.getStateBefore(), 2);
+                        if (t.hasStateDifference) {
+                            addBigDecimal(worksheet, 3, i, t.getStateDifference(), 2);
+                            addBigDecimal(worksheet, 4, i, t.getStateDifferenceInNativeCurrency(), 2);
+                            if (!(t.getCurrencyRate().equals(new BigDecimal("1.000"))))
+                                addBigDecimal(worksheet, 5, i, t.getCurrencyRate(), 3);
+                        }
+                        if (!(t.getCommission().equals(new BigDecimal("0.00"))))
+                            addBigDecimal(worksheet, 6, i, t.getCommission(), 2);
+                        if (t.hasStateAfter) addBigDecimal(worksheet, 7, i, t.getStateAfter(), 2);
+                        worksheet.addCell(new Label(8, i, t.getTransactionCurrency()));
+                        worksheet.addCell(new Label(9, i, t.getExtraParam1()));
+                        worksheet.addCell(new Label(10, i, t.getExtraParam2()));
+                        worksheet.addCell(new Label(11, i, t.getExtraParam3()));
+                        worksheet.addCell(new Label(12, i, t.getExtraParam4()));
+                        worksheet.addCell(new Label(13, i, t.getTransactionType()));
+                        worksheet.addCell(new Label(14, i, t.getSmsBody()));
                     }
-                    if (!(t.getCommission().equals(new BigDecimal("0.00")))) addBigDecimal(worksheet, 6, i, t.getCommission(),2);
-                    if (t.hasStateAfter)  addBigDecimal(worksheet, 7, i, t.getStateAfter(),2);
-                    worksheet.addCell(new Label(8, i, t.getTransactionCurrency()));
-                    worksheet.addCell(new Label(9, i, t.getExtraParam1()));
-                    worksheet.addCell(new Label(10, i, t.getExtraParam2()));
-                    worksheet.addCell(new Label(11, i, t.getExtraParam3()));
-                    worksheet.addCell(new Label(12, i, t.getExtraParam4()));
-                    worksheet.addCell(new Label(13, i, t.getTransactionType()));
-                    worksheet.addCell(new Label(14, i, t.getBody()));
+                    sheetAutoFitColumns(worksheet);
+                    workbook.write();
+                    workbook.close();
+                    Toast.makeText(this, "File saved to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.fromFile(file));
+                    startActivity(intent);
+                } catch (RowsExceededException e) {
+                    Toast.makeText(this, "Too many rows to save.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                } catch (WriteException e) {
+                    Toast.makeText(this, "Can't write to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
-                sheetAutoFitColumns(worksheet);
-                workbook.write();
-                workbook.close();
-                Toast.makeText(this, "File saved to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.fromFile(file));
-                startActivity(intent);
-            } catch (RowsExceededException e) {
-                Toast.makeText(this, "Too many rows to save.", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            } catch (WriteException e) {
+            } catch (IOException e) {
                 Toast.makeText(this, "Can't write to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
-        } catch (IOException e) {
-            Toast.makeText(this, "Can't write to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+        }else{
+            Toast.makeText(this, R.string.go_to_banks, Toast.LENGTH_SHORT).show();
+
         }
     }
 
@@ -656,31 +666,55 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      * Task loads a list of transactions from SMS using rules defined for Bank
      * Bank
      */
-    class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
-
+    private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
+        private int cacheSize;
         @Override
         protected void onPreExecute() {
+            Log.d(LOG,"RefreshTransactionsTask preExecuted. (hideMatchedMessages="+hideMatchedMessages);
             super.onPreExecute();
             swipeRefreshLayout.setRefreshing(true);
             if (pDialog != null) pDialog.dismiss();
             pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Reading messages ...");
+            pDialog.setMessage(getString(R.string.reading_messages));
             pDialog.setCancelable(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             pDialog.show();
+            // Restoring preferences
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            hideCurrency = settings.getBoolean("hide_currency", false);
+            inverseRate = settings.getBoolean("inverse_rate", false);
+            hideAds = settings.getBoolean("hide_ads", false);
         }
 
         @Override
         protected List<Transaction> doInBackground(Bank... params) {
+            Log.d(LOG,"RefreshTransactionsTask Executed. (hideMatchedMessages="+hideMatchedMessages);
             Bank activeBank = params[0];
             if (activeBank==null) return null;
-            List<Transaction> transactionList = new ArrayList<Transaction>();
-            String sms_body = "";
+
+            // Loading transactions from cache.
+            List<Transaction> transactionList;
+            DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
+            db.open();
+            Date lastCachedTransactionDate;
+            transactionList = db.getTransactionCache(activeBank.getId());
+            if (transactionList.size()>0) {
+                cacheSize=transactionList.size();
+                lastCachedTransactionDate = transactionList.get(0).getTransactionDate();
+            }else{
+                lastCachedTransactionDate=new Date(0);
+                cacheSize=0;
+            }
+            db.close();
+
+
+            // Loading transactions from SMS.
+            String smsBody = "";
             String phoneNumbers = activeBank.getPhone().replace(";", "','");
             Cursor c;
             if (MyApplication.hasReadSmsPermission) {
                 Uri uri = Uri.parse("content://sms/inbox");
-                c = getContentResolver().query(uri, null, "address IN ('" + phoneNumbers + "')", null, "date DESC");
+                c = getContentResolver().query(uri, null, "address IN ('" + phoneNumbers + "') and date>"+lastCachedTransactionDate.getTime(), null, "date DESC");
             } else {
                 return transactionList;
             }
@@ -689,21 +723,21 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 pDialog.setMax(msgCount-1);
                 if (c.moveToFirst()) {
                     for (int ii = 0; ii < msgCount; ii++) {
-                        if (ignoreClones && sms_body.equals(c.getString(c.getColumnIndexOrThrow("body")))) {
+                        boolean skipMessage=false;
+                        Date transactionDate = new Date(c.getLong(c.getColumnIndexOrThrow("date")));
+                        if (!transactionDate.after(lastCachedTransactionDate)) skipMessage=true;
+
+                        if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))) skipMessage=true;
+                        smsBody = c.getString(c.getColumnIndexOrThrow("body"));
+
+                        if (!skipMessage) {
                             // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
-                        } else {
-                            sms_body = c.getString(c.getColumnIndexOrThrow("body"));
-                            Transaction transaction = new Transaction();
+                            Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),transactionDate);
                             transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
-                            transaction.setAccountCurrency(activeBank.getDefaultCurrency());
-                            transaction.setTransactionDate(new Date(c.getLong(c.getColumnIndexOrThrow("date"))), MainActivity.this);
-                            sms_body = sms_body.replace("'", "").replace("\n", " ");
-                            transaction.setBody(sms_body);
-                            transaction.setTransactionCurrency(activeBank.getDefaultCurrency());
                             Boolean messageHasIgnoreTypeRule = false;
 
                             for (Rule rule : activeBank.ruleList) {
-                                if (sms_body.matches(rule.getMask())) {
+                                if (smsBody.matches(rule.getMask())) {
                                     if (rule.hasIgnoreType()) {
                                         messageHasIgnoreTypeRule = true;
                                     } else {
@@ -726,7 +760,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                                     transactionList.add(transaction);
                                 }
                                 if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
-                                    // redirecting user to choose bank from template.
                                     if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
                                         transaction.getSelectedRule().applyRule(transaction);
                                     } else { // if user did not picked rule choose any first.
@@ -754,7 +787,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             BigDecimal lastState = Transaction.getLastAccountState(Transaction.loadTransactions(activeBank, MainActivity.this));
 
             activeBank.setCurrentAccountState(lastState);
-            DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
             db.open();
             db.addOrEditBank(activeBank);
             db.close();
@@ -771,6 +803,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         @Override
         protected void onPostExecute(List<Transaction> t) {
             super.onPostExecute(t);
+            Log.d(LOG,"RefreshTransactionsTask postExecuted. (hideMatchedMessages="+hideMatchedMessages);
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
@@ -779,9 +812,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 transactions=t;
                 transactionListAdapter = new TransactionListAdapter(t);
                 listView.setAdapter(transactionListAdapter);
+                if (t.size()-cacheSize>200) {
+                    Toast.makeText(getApplicationContext(), R.string.cache_needed,Toast.LENGTH_SHORT).show();
+                }
             }
             if (transactionListAdapter!=null) transactionListAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
+
         }
     }
 }

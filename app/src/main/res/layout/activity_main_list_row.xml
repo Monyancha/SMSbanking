@@ -26,7 +26,7 @@
             android:contentDescription="@string/tip_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_transanction_unknown"
+            android:src="@drawable/ic_transaction_unknown"
             android:layout_below="@+id/transanction_date"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />

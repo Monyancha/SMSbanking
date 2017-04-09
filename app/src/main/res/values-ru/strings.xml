@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SMS банкинг</string>
-    <string name="SMS_TEXT">Текст SMS сообщения</string>
+    <string name="app_name">СМС банкинг</string>
+    <string name="SMS_TEXT">Текст СМС сообщения</string>
 
-	<string name="action_bank_list">Шаблоны банков</string>
-    <string name="action_rule_list">Настроить правила</string>
+    <string name="action_rule_list">Правила</string>
     <string name="action_sub_rule_list">Методы распознавания</string>
     <string name="action_preferences">Общие настройки</string>
 
 	<string name="action_quit">Выйти</string>
     <string name="action_save">Сохранить</string>
-    <string name="action_rule_text">Создать новое правило</string>
+    <string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оценить программу</string>
 
 	<string name="rule_message">Укажите неизменяемые слова:</string>
-    <string name="rule_next">Дальше>></string>
     <string name="rule_name">Имя правила:</string>
 	<string name="rule_add_tip">Для добавления нового правила нажмете на СМС в главном окне.</string>
 
@@ -27,18 +25,14 @@
 	<string name="bank_account_name">Имя банковского счёта:</string>
 	<string name="sms_bank_sender">Отправители SMS:</string>
 	<string name="rule_type">Тип транзакции:</string>
-	<string name="sub_rule_parameters">Укажите какие параметры будут извлекаться:</string>
     <string name="sub_rule_constant_value">Константа:</string>
-	<string name="sub_rule_parameter_prompt">Извлекаемый параметр:</string>
     <string name="sub_rule_method">Метод:</string>
 	<string name="sub_rule_phrase">Фраза:</string>
 	<string name="sub_rule_result_value">Результат:</string>
 	<string name="sub_rule_decimal_separator">разделитель</string>
-	<string name="sub_rule_trim_text">Игнор. n симв. (лев.,прав.):</string>
 
-	<string name="tip_icon">значок</string>
-	<string name="tip_tip">Совет:</string>
-	<string name="tip_type">тип транзакции</string>
+    <string name="tip_icon">значок</string>
+    <string name="tip_type">тип транзакции</string>
 	<string name="tip_rule_name">Имя правила</string>
 	<string name="tip_before">до</string>
 	<string name="tip_after">после</string>
@@ -55,18 +49,13 @@
 	<string name="pref_hide_matched_summary">Используйте для настройки правил.</string>
 	<string name="pref_hide_non_matched">Спрятать не обработанные SMS</string>
 	<string name="pref_hide_non_matched_summary">Включайте чтобы убрать не информативные SMS</string>
-	<string name="tip_bank_1">Перед исользованием программы её нужно правильно настроить.\n
-		Первым делом нужно настроить ваш банковский счет в меню \"Настройки Банка\".\n
-		Для этого нужно:\n
+	<string name="tip_bank_1">Привет!\n
+        Первым делом нужно настроить ваш банковский счет. Для этого:\n
+		1. Зайдите в меню банков и попробуйте найти готовий шаблон.\n
+		2. Если не нашли, то добавьте свой банк.\n
+		3. Вернитесь в главное меню.\n
 		\n
-		1. Перейдите в меню \"Шаблоны Банков\".\n
-		2. Добавьте свой банк или выберите существующий.\n
-		3. Укажите Название, отправителя SMS и валюту вашего счёта.\n
-		4. Сохраните настройки и активируйте их.\n
-		5. Вернитесь в главное меню.\n
-		\n
-		Если все сделано верно вы увидите список сообщений от вашего банка.
-		Далее нужно настроить правила обработки этих SMS.</string>
+		Если все сделано верно вы увидите список сообщений от вашего банка. Далее нужно будет настроить правила обработки этих сообщений нажимая на них в списке.</string>
 
 	<string name="tip_rules_1">
 		Очень важно правильно настроить правила. Для этого:\n
@@ -94,10 +83,8 @@
 		\n
 		Совет 1: Необходимо лишь два из первых трех параметров. Третий будет высчитан автоматически.\n
 		Совет 2: Если в сообщении есть только 1 из первых трех параметров программа восстановит недостающие данные из ближайших по времени сообщений. Иногда это приводит к неверным вычислениям если нарушена последовательность сообщений или такие сообщения отсутствуют.\n
-		Совет 3: Если  \"Валюта операции\" не указана то программа использует валюту вашего счёта.\n
-		Совет 4: Если  \"Валюта операции\" не совпадает с валютой вашего счёта будет посчитан обменный курс. Иногда курс может быть посчитан неправильно если в сообщении нет всех данных или данные были восстановлены неверно.\n
-		Совет 5: Если  \"Комиссия\" не указана она равна \"0\".\n
-		Совет 6: Для удаления метода обработки снимите галочку в углу.
+		Совет 3: Если  \"Валюта операции\" не совпадает с валютой вашего счёта будет посчитан обменный курс. Иногда курс может быть посчитан неправильно если в сообщении нет всех данных или данные были восстановлены неверно.\n
+
 	</string>
 	<string name="saving_changes">Сохраняю…</string>
 	<string name="pref_title">Общие настройки</string>
@@ -105,10 +92,8 @@
 	<string name="activity_title_bank_list">Список Банков</string>
 	<string name="activity_title_bank">Настройки Банка</string>
     <string name="negate">\"минус\"</string>
-	<string name="close">закрыть</string>
 
-    <string name="bank_copy">Использовать шаблон</string>
-	<string name="bank_import">Импортировать</string>
+    <string name="bank_import">Импортировать</string>
 	<string name="bank_export">Экспортировать</string>
 	<string name="bank_activate">Активировать</string>
 	<string name="mybank_activity_title">Мои банки</string>
@@ -117,8 +102,7 @@
 	<string name="bank_edit">Изменить</string>
 	<string name="bank_delete">Удалить</string>
 	<string name="bank_activate_tip">сделан активным.</string>
-	<string name="bank_default_name">Мой банк</string>
-	<string name="add_phone_button_description">плюс</string>
+    <string name="add_phone_button_description">плюс</string>
 	<string name="phone_number_not_set">Номер телефона не указан</string>
 	<string name="export_sucessfull">Экспорт удался</string>
 	<string name="export_failed">Не получилось экспортировать</string>
@@ -141,7 +125,6 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Интервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="no_transactions_found">нет транзакций</string>
     <string name="rule_add">Новое правило</string>
     <string name="stat_show_balance">Кривая баланса</string>
     <string name="stat_show_outcome">Расход</string>
@@ -158,5 +141,32 @@
     <string name="export_to_xls">Экспортировать в XLS</string>
     <string name="add">Добавить</string>
     <string name="done">Готово</string>
+    <string name="pick_phone_number">Выберите отправителя СМС</string>
+    <string name="pick_a_template">Выберите шаблон</string>
+    <string name="Ignore">Игнорировать</string>
+    <string name="left_characters_and">левых символов и</string>
+    <string name="right">правых</string>
+    <string name="bank_name_must_be_set">Укажите название</string>
+    <string name="action_help">Помощь</string>
+    <string name="now_customize_transaction_details">Теперь настройте сведения о транзакции.</string>
+    <string name="state_after_transaction">Балланс после:</string>
+    <string name="transaction_value">Сумма транзакции:</string>
+    <string name="transaction_currency">Валюта транзакции:</string>
+    <string name="bank_commision">Комиссия:</string>
+    <string name="state_before_transaction">Балланс до:</string>
+    <string name="extra1">Доп. параметр 1:</string>
+    <string name="extra2">Доп. параметр 2:</string>
+    <string name="extra3">Доп. параметр 3:</string>
+    <string name="n_a">Н/Д</string>
+    <string name="extra4">Доп. параметр 4:</string>
+    <string name="transaction_editor">Редактор транзакци</string>
+    <string name="clear_cache">Очистить кеш</string>
+    <string name="cache_transactions">Кешировать транзакции</string>
+    <string name="cache_needed">Кешируйте сообшения для большей скорости обновления</string>
+    <string name="cache_created">Транзакции кешированы успешно.</string>
+    <string name="cache_deleted">Кеш транзакций очищен</string>
+    <string name="reading_messages">Идет обработка СМС</string>
+    <string name="go_to_banks">Пока нечего єкспортировать в Excel</string>
+    <string name="nothing_to_cache">Нечего кешировать</string>
 </resources>
 

@@ -8,18 +8,16 @@
     <string name="app_name">SMS banking</string>
     <string name="SMS_TEXT">SMS TEXT</string>
 
-    <string name="action_bank_list">Manage bank templates</string>
-    <string name="action_rule_list">Manage rules</string>
+    <string name="action_rule_list">Rules</string>
     <string name="action_sub_rule_list">Extraction rules</string>
     <string name="action_preferences">Preferences</string>
 
     <string name="action_quit">Quit</string>
     <string name="action_save">Save</string>
-    <string name="action_rule_text">Creating new rule</string>
+    <string name="action_rule_text">Rule editor</string>
     <string name="action_rate_app">Rate application</string>
 
     <string name="rule_message">Pick constant words:</string>
-    <string name="rule_next">Next>></string>
     <string name="rule_name">Rule name:</string>
     <string name="rule_add_tip">To add new rule click on the SMS message in the main window.</string>
 
@@ -31,17 +29,13 @@
     <string name="bank_account_name">Bank account name:</string>
     <string name="sms_bank_sender">SMS senders:</string>
     <string name="rule_type">Transaction type:</string>
-    <string name="sub_rule_parameters">Choose parameters to extract:</string>
     <string name="sub_rule_constant_value">Value:</string>
-    <string name="sub_rule_parameter_prompt">Choose parameter to extract</string>
     <string name="sub_rule_method">Method:</string>
     <string name="sub_rule_phrase">Phrase:</string>
     <string name="sub_rule_result_value">Result:</string>
     <string name="sub_rule_decimal_separator">decimal separator</string>
-    <string name="sub_rule_trim_text">Ignore n characters (first,last):</string>
 
     <string name="tip_icon">icon</string>
-    <string name="tip_tip">Tip</string>
     <string name="tip_type">transaction type</string>
     <string name="tip_rule_name">Rule Name</string>
     <string name="tip_before">before</string>
@@ -63,35 +57,29 @@
     <string name="pref_hide_ads_summary">Leave it to support developer</string>
 
 
+    <string name="tip_bank_1">Hello, friend!\n
+ 		First of all you need to setup your \"Bank Account\":\n
+        1. In banks menu try to find your bank in templates.\n
+		2. If no luck add a new bank.\n
+		3. Return to the main window.\n
+        \n
+		You should see a list of messages from the bank.\n
+		Then you will be ready to set up rules.</string>
 
-	<string name="tip_bank_1">Welcome!\n
-		To use this program you have to set it up properly. Here is a little guide.\n
-		First of all you need set up your \"Bank Account\" information.\n
-		To do this you need:\n\n
-		1. Go to "Bank Templates".\n
-		2. Add new bank or choose it from the list.\n
-		3. Pick up the Name, SMS sender and default currency of your account.\n
-		4. Save your bank settings and make it active.\n
-		5. Return to the main window.\n\n
-		Do you see a list of messages from the bank?\n
-		Congratulations! Your bank account is set and you are now ready to set up rules :)</string>
-
-	<string name="tip_rules_1">
+    <string name="tip_rules_1">
 		The most important part is to set up the rules.\n
 		To do this you will need:\n
 		\n
 		1. Go back to messages list\n
-		2. One by one pick up the messages from the list which is marked with \"?\" icon.\n
+		2. One by one pick up the messages from the list.\n
 		3. Choose \"Create new rule\" from the popup menu.\n
-		4. Give any name to the rule.\n
-		5. Pick up transaction type from the list.\n
-		6. Pick all the words from the message which will never change in this type of messages. These words will be used later for extracting values. \n
-		7. Press \"Next\" button and add extraction rules.\n
+		4. Pick all the words from the message which will never change in this type of messages. These words will be used later for extracting values.\n
+		5. Press \"Next\" button and add extraction rules.\n
 		\n
 		TIP: You can use card number or bank account number as constant word to split messages between several accounts of the same bank.
 	</string>
 
-	<string name="tip_subrules_1">
+    <string name="tip_subrules_1">
 		For each rule you need to specify a set of sub rules which can be used to extract 5 transaction parameters:\n
 		\n
 		1. \"Account state before transaction\"\n
@@ -104,13 +92,8 @@
 		\n
 		Note 2: If just 1 of first 3 parameters is set program will use \"Account state\" from previous or next transaction. Sometimes it leads to wrong calculations if some previous transaction missed.\n
 		\n
-		Note 3: If \"Transaction currency\" is not set the default value is used from bank account settings.\n
-		\n
-		Note 4: If \"Transaction currency\" differs from default value set in bank account settings the exchange rate will be calculated. Sometimes it leads to wrong calculations if some previous transaction missed.\n
-		\n
-		Note 5: If \"Transaction commission\" is not set the default value is zero.\n
-		\n
-		Note 6: To delete the rule just uncheck the checkbox.
+		Note 3: If \"Transaction currency\" differs from default value set in bank account settings the exchange rate will be calculated. Sometimes it leads to wrong calculations if some previous transaction missed.\n
+
 	</string>
 
     <string name="saving_changes">Saving changes…</string>
@@ -119,9 +102,7 @@
     <string name="activity_title_bank_list">Bank list</string>
     <string name="activity_title_bank">Bank settings</string>
     <string name="negate">negate</string>
-    <string name="close">close</string>
 
-    <string name="bank_copy">Use this template</string>
     <string name="bank_import">Import bank</string>
     <string name="bank_export">Export bank</string>
     <string name="bank_activate">Activate</string>
@@ -131,7 +112,6 @@
     <string name="bank_edit">Edit</string>
     <string name="bank_delete">Delete</string>
     <string name="bank_activate_tip">is set active.</string>
-    <string name="bank_default_name">My Bank</string>
     <string name="add_phone_button_description">plus</string>
     <string name="phone_number_not_set">Phone number must be set.</string>
     <string name="export_sucessfull">Export successful</string>
@@ -155,7 +135,6 @@
     <string name="title_activity_statistics">Statistics</string>
     <string name="statistics">Statistics</string>
     <string name="quot_interval_quot">Interval:</string>
-    <string name="no_transactions_found">No transactions found</string>
     <string name="rule_add">Add rule</string>
     <string name="stat_show_balance">Balance curve</string>
     <string name="stat_show_outcome">Outcome</string>
@@ -170,5 +149,32 @@
     <string name="export_to_xls">Export to XLS</string>
     <string name="add">Add</string>
     <string name="done">Done</string>
+    <string name="pick_phone_number">Pick a sender</string>
+    <string name="pick_a_template">Pick a template</string>
+    <string name="Ignore">Ignore</string>
+    <string name="left_characters_and">left characters and</string>
+    <string name="right">right</string>
+    <string name="bank_name_must_be_set">Bank name must be set.</string>
+    <string name="action_help">Help</string>
+    <string name="now_customize_transaction_details">Now customize transaction details</string>
+    <string name="state_after_transaction">State after transaction:</string>
+    <string name="transaction_value">Transaction value:</string>
+    <string name="transaction_currency">Transaction currency:</string>
+    <string name="bank_commision">Bank commision:</string>
+    <string name="state_before_transaction">State before transaction:</string>
+    <string name="extra1">Extra1:</string>
+    <string name="extra2">Extra2:</string>
+    <string name="extra3">Extra3:</string>
+    <string name="n_a">N/A</string>
+    <string name="extra4">Extra4:</string>
+    <string name="transaction_editor">Transaction editor</string>
+    <string name="clear_cache">Clear cache</string>
+    <string name="cache_transactions">Cache transactions</string>
+    <string name="cache_needed">Cache transactions for better performance</string>
+    <string name="cache_created">Transactions cached successfully</string>
+    <string name="cache_deleted">Cache deleted successfully</string>
+    <string name="reading_messages">Reading messages ...</string>
+    <string name="go_to_banks">Nothing to export jet.</string>
+    <string name="nothing_to_cache">Nothing to cache jet.</string>
 </resources>
 

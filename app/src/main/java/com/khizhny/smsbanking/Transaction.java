@@ -1,11 +1,13 @@
 package com.khizhny.smsbanking;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,9 +23,11 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.android.gms.internal.zzt.TAG;
+
 public class Transaction implements Comparable<Transaction> {
     public int icon;
-    private String body;
+    private String smsBody;
     public long smsId;
     private Date transactionDate;
     private String accountCurrency;
@@ -58,8 +62,7 @@ public class Transaction implements Comparable<Transaction> {
     public boolean hasStateBefore =false;
     public boolean hasStateAfter =false;
     public boolean hasStateDifference =false;
-    public boolean hasTransactionDate =false;
-
+    public boolean isCached=false;
     public boolean hasCalculatedAccountStateBefore=false;
     public boolean hasCalculatedAccountStateAfter=false;
     public boolean hasCalculatedAccountDifference=false;
@@ -74,24 +77,28 @@ public class Transaction implements Comparable<Transaction> {
         }
     }
 
-    Transaction(){
-        this.icon=R.drawable.ic_transanction_unknown;
+    Transaction(String smsBody, String accountCurrency, Date transactionDate){
+        this.icon=R.drawable.ic_transaction_unknown;
         selectedRuleId=-1;
+        this.smsBody =smsBody.replace("'", "").replace("\n", " ");;
+        this.transactionDate=transactionDate;
+        this.accountCurrency=accountCurrency;
+        this.transactionCurrency=accountCurrency;
         this.currencyRate=new BigDecimal(1).setScale(3, RoundingMode.HALF_UP);
         this.setCommission(new BigDecimal(0).setScale(2, RoundingMode.HALF_UP));
         this.stateAfter=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateBefore=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateDifference=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
-        applicableRules = new ArrayList <Rule>();
-        extraParam1="";
-        extraParam2="";
-        extraParam3="";
-        extraParam4="";
+        this.applicableRules = new ArrayList <Rule>();
+        this.extraParam1="";
+        this.extraParam2="";
+        this.extraParam3="";
+        this.extraParam4="";
     }
 
     //=======================================================GETs============================
-    public String getBody() {
-        return body;
+    public String getSmsBody() {
+        return smsBody;
     }
 
     public Date getTransactionDate() {
@@ -137,11 +144,11 @@ public class Transaction implements Comparable<Transaction> {
         return commission;
     }
 
-    public String getCommissionAsString(boolean hideCurrency){
-        if (commission.signum()!=0)
+    public String getCommissionAsString(boolean hideCurrency, boolean hideZero){
+        if (commission.signum()!=0 || !hideZero)
         {
             if (!hideCurrency) {
-                return commission.toString()+accountCurrency;
+                return commission.toString()+" " +accountCurrency;
             }else{
                 return commission.toString();
             }
@@ -154,14 +161,14 @@ public class Transaction implements Comparable<Transaction> {
     public String getTransactionType()
     {
         switch (icon){
-            case R.drawable.ic_transanction_unknown : return "UNKNOWN";
-            case R.drawable.ic_transanction_plus : return "INCOME";
-            case R.drawable.ic_transanction_minus : return "WITHDRAW";
-            case R.drawable.ic_transanction_transfer_to : return "TRANSFER_IN";
-            case R.drawable.ic_transanction_transfer_from : return "TRANSFER_OUT";
-            case R.drawable.ic_transanction_pay : return "PURCHASE";
-            case R.drawable.ic_transanction_failed : return "FAILED";
-            case R.drawable.ic_transanction_missed : return "CALCULATED";
+            case R.drawable.ic_transaction_unknown: return "UNKNOWN";
+            case R.drawable.ic_transaction_income: return "INCOME";
+            case R.drawable.ic_transaction_withdraw: return "WITHDRAW";
+            case R.drawable.ic_transaction_transfer_out : return "TRANSFER_IN";
+            case R.drawable.ic_transaction_transfer_in : return "TRANSFER_OUT";
+            case R.drawable.ic_transaction_shopping: return "PURCHASE";
+            case R.drawable.ic_transaction_failed : return "FAILED";
+            case R.drawable.ic_transaction_calculated: return "CALCULATED";
             default : return "unknown";
         }
 
@@ -263,24 +270,49 @@ public class Transaction implements Comparable<Transaction> {
     public void setCurrencyRate(BigDecimal currencyRate){
         this.currencyRate=currencyRate;
     }
+
+    public void setCurrencyRate(String currencyRate){
+        try{
+            this.setCurrencyRate(new BigDecimal(currencyRate.replace(",", ".")).setScale(3, BigDecimal.ROUND_HALF_UP));
+        }catch (Exception e) {
+            Log.e(TAG,"Setting rate error:" + currencyRate);
+        }
+    }
+
     public BigDecimal getCurrencyRate(){
         return currencyRate;
     }
 
-
-    public void setBody(String body) {
-        this.body = body;
+    public ContentValues getContentValues() {
+        ContentValues v = new ContentValues();
+        v.put("transaction_date",transactionDate.getTime());
+        v.put("account_currency",accountCurrency);
+        v.put("sms_body",smsBody);
+        v.put("sms_id",smsId);
+        v.put("icon",icon);
+        v.put("transaction_currency",transactionCurrency);
+        v.put("state_before",stateBefore.toString());
+        v.put("state_after",stateAfter.toString());
+        v.put("state_difference",stateDifference.toString());
+        v.put("commission",commission.toString());
+        v.put("extra1",extraParam1);
+        v.put("extra2",extraParam2);
+        v.put("extra3",extraParam3);
+        v.put("extra4",extraParam4);
+        v.put("exchange_rate",currencyRate.toString());
+        return v;
     }
 
-    public void setTransactionDate(Date transactionDate, Context context) {
-        this.transactionDate =transactionDate;
-        if (context!=null) {
+
+    /**
+     * Updates selectedRuleId if user selected specific rulu from severa avalable.
+     * @param context
+     */
+    public void performMultipleRuleCheck(Context context) {
             DatabaseAccess db = DatabaseAccess.getInstance(context);
             db.open();
             selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
             db.close();
-        }
-        hasTransactionDate =true;
     }
 
     public void setAccountCurrency(String accountCurrency) {
@@ -446,13 +478,11 @@ public class Transaction implements Comparable<Transaction> {
                 // adding extra transactions if account state changed unexpectedly
                 if (prev.hasStateAfter && curr.hasStateBefore) {
                     if (!prev.getStateAfter().equals(curr.getStateBefore())) {
-                        Transaction new_transaction = new Transaction();
-                        new_transaction.setBody("");
-                        new_transaction.setTransactionCurrency(prev.getAccountCurrency());
-                        new_transaction.setTransactionDate(new Date((curr.getTransactionDate().getTime() + prev.getTransactionDate().getTime()) / 2),null);
+                        Transaction new_transaction = new Transaction("", prev.getAccountCurrency(),new Date((curr.getTransactionDate().getTime() + prev.getTransactionDate().getTime()) / 2));
+                        new_transaction.performMultipleRuleCheck(null);
                         new_transaction.hasCalculatedTransactionDate = true;
                         new_transaction.setAccountCurrency(prev.getAccountCurrency());
-                        new_transaction.icon = R.drawable.ic_transanction_missed;
+                        new_transaction.icon = R.drawable.ic_transaction_calculated;
                         new_transaction.setStateBefore(prev.getStateAfter());
                         new_transaction.setStateAfter(curr.getStateBefore());
                         new_transaction.calculateMissedData();
@@ -478,7 +508,7 @@ public class Transaction implements Comparable<Transaction> {
         Boolean hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
         Boolean ignoreClones = settings.getBoolean("ignore_clones", false);
         List<Transaction> transactionList = new ArrayList<Transaction>();
-        String sms_body="";
+        String smsBody="";
         String phoneNumbers = activeBank.getPhone().replace(";", "','");
         Cursor c;
         if (MyApplication.hasReadSmsPermission) {
@@ -491,21 +521,16 @@ public class Transaction implements Comparable<Transaction> {
             int msgCount = c.getCount();
             if (c.moveToFirst()) {
                 for (int ii = 0; ii < msgCount; ii++) {
-                    if (ignoreClones && sms_body.equals(c.getString(c.getColumnIndexOrThrow("body")))){
-                        // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
+                    if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))){
+                        // if sms smsBody is duplicating previous one and ignoreClones flag is set - just skip message
                     }else {
-                        sms_body = c.getString(c.getColumnIndexOrThrow("body"));
-                        Transaction transaction = new Transaction();
+                        smsBody = c.getString(c.getColumnIndexOrThrow("body"));
+                        Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),new Date(c.getLong(c.getColumnIndexOrThrow("date"))));
                         transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
-                        transaction.setAccountCurrency(activeBank.getDefaultCurrency());
-                        transaction.setTransactionDate(new Date(c.getLong(c.getColumnIndexOrThrow("date"))), context);
-                        sms_body = sms_body.replace("'", "").replace("\n", " ");
-                        transaction.setBody(sms_body);
-                        transaction.setTransactionCurrency(activeBank.getDefaultCurrency());
-                        Boolean messageHasIgnoreTypeRule = false;
 
+                        Boolean messageHasIgnoreTypeRule = false;
                         for (Rule rule : activeBank.ruleList) {
-                            if (sms_body.matches(rule.getMask())) {
+                            if (smsBody.matches(rule.getMask())) {
                                 if (rule.hasIgnoreType()) {
                                     messageHasIgnoreTypeRule = true;
                                 } else {
@@ -547,6 +572,7 @@ public class Transaction implements Comparable<Transaction> {
         transactionList=Transaction.addMissingTransactions(transactionList);
         return transactionList;
     }
+
     public Rule getSelectedRule(){
         for (Rule r : applicableRules) {
             if (r.getId()==selectedRuleId) return r;

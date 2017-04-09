@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string-array name="parameter_entries">
-        <item>Баланс до операції</item>
-        <item>Баланс після операції</item>
-        <item>Зміна баланса</item>
-        <item>Комісія</item>
-        <item>Валюта операції</item>
-        <item>Додатковий параметр 1</item>
-        <item>Додатковий параметр 2</item>
-        <item>Додатковий параметр 3</item>
-        <item>Додатковий параметр 4</item>
-    </string-array>
-
     <string-array name="interval_entries">
         <item>Не вказан</item>
         <item>Рік</item>

@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string name="app_name">SMS банкінг</string>
+	<string name="app_name">СМС банкінг</string>
 	<string name="SMS_TEXT">Текст SMS повідомлення</string>
 
-	<string name="action_bank_list">Шаблони банків</string>
-	<string name="action_rule_list">Налаштовані правила</string>
+    <string name="action_rule_list">Правила</string>
 	<string name="action_sub_rule_list">Методи розпізнавання</string>
 	<string name="action_preferences">Загальні налаштування</string>
 
 	<string name="action_quit">Вийти</string>
 	<string name="action_save">Зберегти</string>
-	<string name="action_rule_text">Створити нове правило</string>
+	<string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оцінити програму</string>
 
 	<string name="rule_message">Вкажіть незмінні слова:</string>
-	<string name="rule_next">Далі>></string>
 	<string name="rule_name">Назва правила:</string>
 	<string name="rule_add_tip">Щоб додати нове правило натисніть на SMS в основному вікні.</string>
 
@@ -27,18 +25,14 @@
 	<string name="bank_account_name">Назва банківського рахунка:</string>
 	<string name="sms_bank_sender">Відправники SMS:</string>
 	<string name="rule_type">Тип транзакції:</string>
-	<string name="sub_rule_parameters">Вкажіть які параметри будуть витягуватись:</string>
-    <string name="sub_rule_constant_value">Константа:</string>
-	<string name="sub_rule_parameter_prompt">Параметр, що буде витягуватись:</string>
+	<string name="sub_rule_constant_value">Константа:</string>
     <string name="sub_rule_method">Метод:</string>
 	<string name="sub_rule_phrase">Фраза:</string>
 	<string name="sub_rule_result_value">Результат:</string>
 	<string name="sub_rule_decimal_separator">Розподільчий символ</string>
-	<string name="sub_rule_trim_text">Ігнор. N симв. (лів.,прав.):</string>
 
-	<string name="tip_icon">позначка</string>
-	<string name="tip_tip">Порада:</string>
-	<string name="tip_type">тип транзакції</string>
+    <string name="tip_icon">позначка</string>
+    <string name="tip_type">тип транзакції</string>
 	<string name="tip_rule_name">Назва правила</string>
 	<string name="tip_before">до</string>
 	<string name="tip_after">після</string>
@@ -56,22 +50,18 @@
 	<string name="pref_hide_non_matched">Приховати неопрацьовані SMS</string>
 	<string name="pref_hide_non_matched_summary">Вмикайте, щоб приховати неінформативні SMS</string>
 
-<string name="tip_bank_1">Перед використанням програму необхідно налаштувати.\n
-		Спочатку необхідно налаштувати Ваш банківський рахунок.\n
-		Для цього:\n
+<string name="tip_bank_1">Привіт!\n
+        Cпочатку необхідно налаштувати ваш банківський рахунок. Для цього:\n
+		1. Перейдіть в меню банків та спробуйте знайти готовий шаблон для вашого банку.\n
+        2. Якщо не знайшли додайте свій банк до переліку.\n
+		3. Поверніться в основне меню.\n
 		\n
-		1. Перейдіть в меню \"Шаблони банків\".\n
-		2. Додайте свій банк до переліку або ж оберіть існуючий.\n
-		3. Вкажіть назву, відправників SMS та валюту Вашого рахунка.\n
-		4. Збережіть налаштування та активуйте їх.\n
-		5. Поверніться в основне меню.\n
-		\n
-		Якщо все зроблено вірно Ви побачите список повідомлень від Вашого банка.
-		Далі треба налаштувати правила обробки цих SMS.</string>
+		Якщо все зроблено вірно Ви побачите список повідомлень від вашого банка.
+		Далі треба буде налаштувати правила обробки цих SMS.
+    </string>
 
-<string name="tip_rules_1">
-		Надважливо налаштувати правила коректно. Для цього:\n
-		\n
+    <string name="tip_rules_1">
+		Щоб налаштувати правила:\n
 		1. Перейдіть до переліка SMS повідомлень в основному вікні.\n
 		2. В меню \"Загальні налаштування\" встановіть прапорець \"Приховати опрацьовані SMS\" та зніміть прапорець \"Приховати неопрацьовані SMS\".\n
 		3. Натисніть на SMS повідомленні та оберіть \"Створити нове правило\".\n
@@ -84,7 +74,7 @@
 		Порада: Якщо у Вас 2 рахунки у одному банку, то в якості слова-константи можна обрати номер рахунка або картки. Тоді зможете налаштувати програму для кожної окремої картки.
 	</string>
 
-<string name="tip_subrules_1">
+    <string name="tip_subrules_1">
 		Для кожного правила треба налаштувати методи обробки для витягнення наступних 5 параметрів:\n
 		\n
 		1. \"Баланс до операції\"\n
@@ -95,10 +85,7 @@
 		\n
 		Порада 1: Необхідними є лише 2 з перших трьох параметрів. Третій буде обраховано автоматично.\n
 		Порада 2: Якщо в повідомленні є тільки 1 з перших трьох параметрів, то програма відновить відсутні дані з найближчих по часу повідомлень. Інколи це призводить до невірних обрахунків - якщо порушена послідовність повідомлень або такі повідомлення відсутні.\n
-		Порада 3: Якщо  \"Валюта операції\" не вказана, то програма використає валюту Вашого рахунка.\n
-		Порада 4: Якщо  \"Валюта операції\" відрізняється від валюти Вашого рахунка, то буде обраховано курс обміну. Інколи курс може бути обрахований невірно - якщо в повідомленні відсутня необхідна інформація або ж дані були відновлені неправильно.\n
-		Порада 5: Якщо  \"Комісія\" не вказана, то вона дорівнює \"0\".\n
-		Порада 6: Для видалення метода обробки зніміть \'пташку\' в куточку.
+		Порада 3: Якщо  \"Валюта операції\" відрізняється від валюти Вашого рахунка, то буде обраховано курс обміну. Інколи курс може бути обрахований невірно - якщо в повідомленні відсутня необхідна інформація або ж дані були відновлені неправильно.\n
 	</string>
 
 	<string name="saving_changes">Зберігаю…</string>
@@ -107,20 +94,17 @@
 	<string name="activity_title_bank_list">Перелік банків</string>
 	<string name="activity_title_bank">Налаштування банку</string>
     <string name="negate">\"мінус\"</string>
-	<string name="close">закрити</string>
 
     <string name="bank_import">Імпортувати</string>
 	<string name="bank_export">Експортувати</string>
 	<string name="bank_activate">Активувати</string>
-	<string name="bank_copy">Використати шаблон</string>
-	<string name="mybank_activity_title">Мої банки</string>
+    <string name="mybank_activity_title">Мої банки</string>
 	<string name="bank_templates_title">Шаблони банків</string>
 	<string name="bank_add">Додати</string>
 	<string name="bank_edit">Редагувати</string>
 	<string name="bank_delete">Видалити</string>
 	<string name="bank_activate_tip">встановлено активним.</string>
-	<string name="bank_default_name">Мій банк</string>
-	<string name="add_phone_button_description">плюс</string>
+    <string name="add_phone_button_description">плюс</string>
 	<string name="phone_number_not_set">Телефон не вказан</string>
 	<string name="export_sucessfull">Экспортування успішне</string>
 	<string name="export_failed">Экспортував невдало</string>
@@ -143,7 +127,6 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Інтервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="no_transactions_found">нема транзакцій</string>
     <string name="rule_add">Нове правило</string>
     <string name="stat_show_balance">Крива балансу</string>
     <string name="stat_show_outcome">Витрати</string>
@@ -160,4 +143,31 @@
     <string name="export_to_xls">Експортувати в XLS</string>
     <string name="add">Додати</string>
     <string name="done">Готово</string>
+    <string name="pick_phone_number">Оберіть відправника СМС</string>
+    <string name="pick_a_template">Оберіть шаблон</string>
+    <string name="Ignore">Ігнорувати</string>
+    <string name="left_characters_and">лівих символів та</string>
+    <string name="right">правих</string>
+    <string name="bank_name_must_be_set">Вкажіть назву</string>
+    <string name="action_help">Допомога</string>
+    <string name="now_customize_transaction_details">Тепер налаштуйте транзакцію.</string>
+    <string name="state_after_transaction">Стан після транзакції:</string>
+    <string name="transaction_value">Сума транзакції:</string>
+    <string name="transaction_currency">Валюта транзакції:</string>
+    <string name="bank_commision">Комісія банку:</string>
+    <string name="state_before_transaction">Стан до транзакції:</string>
+    <string name="extra1">Додатковий 1:</string>
+    <string name="extra2">Додатковий 2:</string>
+    <string name="extra3">Додатковий 3:</string>
+    <string name="n_a">Н/Д</string>
+    <string name="extra4">Додатковий 4:</string>
+    <string name="transaction_editor">Редактор транзакції</string>
+    <string name="clear_cache">Очистити кеш</string>
+    <string name="cache_transactions">Кешувати транзакції</string>
+    <string name="cache_needed">Кешуйте транзакції для пришвидшення</string>
+    <string name="cache_created">Успішно кешував транзакції</string>
+    <string name="cache_deleted">Кеш транзакції відалено успішно</string>
+    <string name="reading_messages">Іде обробка СМС</string>
+    <string name="go_to_banks">Нема чого єкспортувати в Excel</string>
+    <string name="nothing_to_cache">Нема чого кешувати</string>
 </resources>

@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
@@ -33,12 +34,12 @@ import java.util.List;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class BankListActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
-
+    private AlertDialog alertDialog;
     private ListView listView;
 	private List<Bank> bankList;
+    private List<Bank> bankTemplates;
 	private BankListAdapter adapter;
 	private int selected_row;
-	private String bankFilter;
     private final static String EXPORT_FILE_EXTENSION="dat";
     private final static String EXPORT_PATH="/SMS banking/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
     private static int REQUEST_CODE_ASK_PERMISSIONS=111;
@@ -46,6 +47,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bank_list);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
+
 		listView = (ListView) findViewById(R.id.listView);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -54,20 +58,13 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
                 PopupMenu popupMenu = new PopupMenu(BankListActivity.this, view);
 				popupMenu.setOnMenuItemClickListener(BankListActivity.this);
-				if (bankFilter.equals("myBanks")) {
-					popupMenu.inflate(R.menu.popup_menu_my_banks);
-				}
-				if (bankFilter.equals("templates")) {
-					popupMenu.inflate(R.menu.popup_menu_bank_templates_list);
-				}
+                popupMenu.inflate(R.menu.popup_menu_my_banks);
 				popupMenu.show();
 			}
 		});
 
 		PopupMenu popupMenu = new PopupMenu(BankListActivity.this, listView);
 		popupMenu.setOnMenuItemClickListener(BankListActivity.this);
-		bankFilter = getIntent().getExtras().getString("bankFilter");
-
         requestPermissions();
     }
 
@@ -75,18 +72,13 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	@Override
 	protected void onStart() {
 		super.onStart();
-		bankList=new ArrayList<Bank>();
-		bankFilter = getIntent().getExtras().getString("bankFilter");
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
+
+        bankList=new ArrayList<Bank>();
+		DatabaseAccess db = DatabaseAccess.getInstance(this);
         db.open();
-		if (bankFilter.equals("templates")){
-			setTitle(getString(R.string.bank_templates_title));
-			bankList=db.getBankTemplates();
-		}
-		if (bankFilter.equals("myBanks")){
-			setTitle(getString(R.string.mybank_activity_title));
-			bankList=db.getMyBanks();
-		}
+		setTitle(getString(R.string.mybank_activity_title));
+        bankList=db.getMyBanks();
+        bankTemplates = db.getBankTemplates();
         db.close();
 
 		for (int i=0;i<bankList.size();i++) {
@@ -94,20 +86,23 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				selected_row=i;
 			}
 		}
+
 		adapter  = new BankListAdapter(this, bankList);
+
 		listView.setAdapter(adapter);
 	}
 
+    @Override
+    protected void onStop() {
+        if (alertDialog!=null) {
+            if (alertDialog.isShowing()) alertDialog.dismiss();
+        }
+        super.onStop();
+    }
 
-	@Override
+    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu if Munu button pressed
-		if (bankFilter.equals("templates")){
-			getMenuInflater().inflate(R.menu.banks_templates, menu);
-		}
-		if (bankFilter.equals("myBanks")){
-			getMenuInflater().inflate(R.menu.banks_my, menu);
-		}
+        getMenuInflater().inflate(R.menu.menu_banks, menu);
 		return true;
 	}
 
@@ -116,7 +111,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		// Handles Menu item Clicks
 		Intent intent = new Intent(this, BankActivity.class);
 		switch (item.getItemId()) {
-			// these options just for My Banks
+            case android.R.id.home:
+                finish();
+                return true;
 			case R.id.bank_import:  // Importing Bank from sdcard to myBanks
 				PickFileForImport(EXPORT_FILE_EXTENSION, Environment.getExternalStorageDirectory().getPath());
 				return true;
@@ -127,6 +124,30 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				startActivity(intent);
 				adapter.notifyDataSetChanged();
 				return true;
+            // these options just for bank Templates
+            case R.id.bank_template: // Copying bank settings from template to myBanks
+                String templates[] = new String[bankTemplates.size()];
+                for (int i=0; i<bankTemplates.size(); i++){
+                    templates[i]=bankTemplates.get(i).getName();
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.pick_a_template);
+                builder.setCancelable(true);
+                builder.setItems(templates, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DatabaseAccess db = DatabaseAccess.getInstance(BankListActivity.this);
+                        db.open();
+                        db.useTemplate(bankTemplates.get(which));
+                        db.close();
+                        // Going back to Main Activity
+                        BankListActivity.this.finish();
+
+                    }
+                });
+                alertDialog = builder.create();
+                alertDialog.show();
+                return true;
 		}
 		return false;
 	}
@@ -134,26 +155,33 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		// handles popup items clicks
-		Bank b=adapter.getItem(selected_row);
+		Bank selectedBank=adapter.getItem(selected_row);
 		Intent intent;
         DatabaseAccess db = DatabaseAccess.getInstance(this);
         switch (item.getItemId()) {
-			// these options just for My Banks
 			case R.id.bank_activate:// Marking selected bank as Active in DB
                 db.open();
-                db.setActiveBank(b.getId());
+                db.setActiveBank(selectedBank.getId());
 				bankList.clear();
 				bankList.addAll(db.getMyBanks());
                 db.close();
 
 				adapter.notifyDataSetChanged();
-				Toast.makeText(BankListActivity.this, b.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
+				Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
 				return true;
+
+            case R.id.bank_clear_cache:
+                db.open();
+                db.deleteBankCache(selectedBank.getId());
+                db.close();
+                Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
+                return true;
+
 			case R.id.bank_share:
 			case R.id.bank_export:
 				String exportPath=Environment.getExternalStorageDirectory().getPath()+EXPORT_PATH;
-				if (Bank.exportBank(b, exportPath)) {
-					Toast.makeText(BankListActivity.this, getString(R.string.export_sucessfull)+" "+exportPath, Toast.LENGTH_SHORT).show();
+				if (Bank.exportBank(selectedBank, exportPath)) {
+					Toast.makeText(BankListActivity.this, getString(R.string.export_sucessfull)+" "+exportPath, Toast.LENGTH_LONG).show();
 					if (item.getItemId()==R.id.bank_share) {
 						Uri path = Uri.fromFile(new File(exportPath));
 						Intent emailIntent = new Intent(Intent.ACTION_SEND); // set the type to 'email'
@@ -165,49 +193,39 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 						startActivity(Intent.createChooser(emailIntent , "Send email..."));
 					}
 				} else {
-					Toast.makeText(BankListActivity.this, getString(R.string.export_failed), Toast.LENGTH_SHORT).show();
+					Toast.makeText(BankListActivity.this, getString(R.string.export_failed), Toast.LENGTH_LONG).show();
 				}
 				return true;
+
 			case R.id.bank_import:
                 requestPermissions();
 				PickFileForImport(EXPORT_FILE_EXTENSION,Environment.getExternalStorageDirectory().getPath());
 				return true;
+
 			case R.id.bank_edit: // Editing Active Bank from myBanks to sdcard
 				intent= new Intent(this, BankActivity.class);
 				intent.putExtra("todo", "edit");
 				startActivity(intent);
 				adapter.notifyDataSetChanged();
 				return true;
-			// these options just for bank Templates
-			case R.id.bank_copy: // Copying bank settings from template to myBanks
-                db.open();
-                db.useTemplate(b);
-                db.close();
-				// Going back to Main Activity
-				BankListActivity.this.finish();
-				return true;
-			// and these are common options
+
 			case R.id.bank_add: // Adding new Bank to myBanks manualy
 				intent= new Intent(this, BankActivity.class);
 				intent.putExtra("todo", "add");
 				startActivity(intent);
 				adapter.notifyDataSetChanged();
 				return true;
+
             case R.id.bank_delete: // Deleting selected Bank from myBanks
                 db.open();
-                if (b.isActive()) {
-                    db.deleteBank(b.getId());
+                if (selectedBank.isActive()) {
+                    db.deleteBank(selectedBank.getId());
                     db.setActiveAnyBank();
                 }else{
-                    db.deleteBank(b.getId());
+                    db.deleteBank(selectedBank.getId());
                 }
                 bankList.clear();
-                if (bankFilter.equals("myBanks")) {
-                    bankList.addAll(db.getMyBanks());
-                }
-                if (bankFilter.equals("templates")) {
-                    bankList.addAll(db.getBankTemplates());
-                }
+                bankList.addAll(db.getMyBanks());
                 db.close();
                 adapter.notifyDataSetChanged();
                 return true;
@@ -309,6 +327,18 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
             TextView bankValueView = (TextView) rowView.findViewById(R.id.bankValue);
             bankValueView.setText(bankList.get(position).getCurrentAccountState());
+
+            if (!bankList.get(position).isEditable()) {
+                // IF activity used for showing templates
+                rowView.findViewById(R.id.active).setVisibility(View.GONE);
+                rowView.findViewById(R.id.bankValue).setVisibility(View.GONE);
+                rowView.findViewById(R.id.bankCurrency).setVisibility(View.GONE);
+            } else {
+                // IF activity used for showing My Banks
+                rowView.findViewById(R.id.active).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.bankValue).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.bankCurrency).setVisibility(View.VISIBLE);
+            }
 
             RadioButton RadioButtonView = (RadioButton) rowView.findViewById(R.id.active);
             RadioButtonView.setChecked(bankList.get(position).isActive());

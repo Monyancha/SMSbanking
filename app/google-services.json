@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "338602878108",
+    "firebase_url": "https://admob-app-id-1467948092.firebaseio.com",
+    "project_id": "admob-app-id-1467948092",
+    "storage_bucket": "admob-app-id-1467948092.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338602878108:android:8a60e37a81642869",
+        "android_client_info": {
+          "package_name": "com.khizhny.smsbanking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338602878108-8487drnu7vhgp4nue0p3uf4mmcmmeb6i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdRrusmB-yxxPd2kYVaJ99dStNgox4THM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

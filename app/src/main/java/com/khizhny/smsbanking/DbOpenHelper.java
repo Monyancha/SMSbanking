@@ -9,7 +9,7 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 public class DbOpenHelper  extends SQLiteAssetHelper {
 
         private static final String DATABASE_NAME = "database.db";
-        private static final int DATABASE_VERSION = 6;
+        private static final int DATABASE_VERSION = 7;
 
         public DbOpenHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -39,6 +39,7 @@ public class DbOpenHelper  extends SQLiteAssetHelper {
                                 ");");
                 db.execSQL("UPDATE version SET version=6");
                 Log.v(LOG, "DB Updated from 5 to 6");
+                ///UPDATE DATABASE_VERSION on top !!!!!
                 // no return for further updates.
         }
         Log.d(LOG, "DATABASE UPGRADED.");

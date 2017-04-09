@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class Rule implements java.io.Serializable {
 	private String name;
 	private String smsBody;
 	private String mask;
+    private String nameSuggestion;
 	private transactionType ruleType;
 	public int wordsCount;
 	public boolean[] wordIsSelected;
@@ -25,15 +27,15 @@ public class Rule implements java.io.Serializable {
 	 * Transaction type icons array.
 	 */
 	public static int[] ruleTypeIcons ={
-			R.drawable.ic_transanction_unknown,
-			R.drawable.ic_transanction_plus,
-			R.drawable.ic_transanction_minus,
-			R.drawable.ic_transanction_transfer_to,
-			R.drawable.ic_transanction_transfer_from,
-			R.drawable.ic_transanction_pay,
-			R.drawable.ic_transanction_failed,
-			R.drawable.ic_transanction_missed, // Calculated
-			R.drawable.ic_transanction_failed // ignore
+			R.drawable.ic_transaction_unknown,
+			R.drawable.ic_transaction_income,
+			R.drawable.ic_transaction_withdraw,
+			R.drawable.ic_transaction_transfer_out,
+			R.drawable.ic_transaction_transfer_in,
+			R.drawable.ic_transaction_shopping,
+			R.drawable.ic_transaction_failed,
+			R.drawable.ic_transaction_calculated, // Calculated
+			R.drawable.ic_transaction_ignore // ignore
 	};
 	public enum transactionType {
 		UNKNOWN,
@@ -56,6 +58,7 @@ public class Rule implements java.io.Serializable {
 		this.id=-1;
 		this.bankId=bankId;
 		this.name=name;
+        this.nameSuggestion=name;
 		this.smsBody="";
 		this.mask="";
         this.ruleType=transactionType.UNKNOWN;
@@ -74,6 +77,7 @@ public class Rule implements java.io.Serializable {
 		this.id=-1;
 		this.bankId=bankId;
 		this.name=rule.name;
+        this.nameSuggestion=rule.name;
 		this.smsBody=rule.smsBody;
 		this.mask=rule.mask;
 		this.ruleType=rule.ruleType;
@@ -89,9 +93,12 @@ public class Rule implements java.io.Serializable {
 		return name;
 	}
 
-	public int getId() {
-		return id;
-	}
+    public int getId() {
+        return id;
+    }
+    public int getBankId() {
+        return bankId;
+    }
 
 	public void setId(int id) {
 		this.id = id;
@@ -140,6 +147,10 @@ public class Rule implements java.io.Serializable {
 		return r;
 	}
 
+    public String getRuleNameSuggestion() {
+        return nameSuggestion;
+    }
+
 	public void setSelectedWords(String selectedWords) {
 		// function sets selected words flags from string.
 		String[] a = selectedWords.split(",");
@@ -156,6 +167,22 @@ public class Rule implements java.io.Serializable {
 		updateMask();
 	}
 
+    /**
+     * Returns a Transaction example based on origin sms used to create rule and
+     * all of the subrules within the rule.
+     * @return Transaction object
+     */
+	public Transaction getSampleTransaction(Context ctx){
+        DatabaseAccess db = DatabaseAccess.getInstance(ctx);
+        db.open();
+        Bank bank=db.getBank(bankId);
+        db.close();
+        Transaction transaction = new Transaction(smsBody,bank.getDefaultCurrency(),null);
+        applyRule(transaction);
+        transaction.calculateMissedData();
+        return  transaction;
+    }
+
 	public void selectWord(int WordIndex){
 		wordIsSelected[WordIndex]=true;
 		updateMask();
@@ -171,12 +198,14 @@ public class Rule implements java.io.Serializable {
 	 */
 	private void updateMask(){
 		mask="";
+        nameSuggestion="";
 		String delimiter="";
 		String[] words=smsBody.split(" ");
 		boolean skip_wildcard=false;
 		for (int i=1; i<=wordsCount; i++){
 			if (wordIsSelected[i]){
 				mask+=delimiter+"\\Q"+words[i-1]+"\\E";
+                nameSuggestion+=delimiter+words[i-1];
 				skip_wildcard=false;
 			}else{
 				if (!skip_wildcard) {
@@ -260,7 +289,7 @@ public class Rule implements java.io.Serializable {
      */
 	public Boolean applyRule(Transaction transaction ){
 		if (transaction!=null) {
-            String sms_body = transaction.getBody();
+            String sms_body = transaction.getSmsBody();
             if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
                 return false;  //  rule is not for this SMS.
             } else {
@@ -276,5 +305,22 @@ public class Rule implements java.io.Serializable {
 		return ruleType == Rule.transactionType.IGNORE;
 	}
 
+    /**
+     * Function gets existing subrule for parameter or creates a new one for it.
+     * @param transactionParameter
+     * @return
+     */
+	public SubRule getOrCreateSubRule(Transaction.Parameters transactionParameter){
+        // looking for existing subrule.
+        for (SubRule sr: subRuleList) {
+            if (sr.getExtractedParameter()==transactionParameter){
+                return sr;
+            }
+        }
+        // if no luck - creating it.
+        SubRule sr = new SubRule(id,transactionParameter);
+        subRuleList.add(sr);
+        return sr;
+    }
 }
 

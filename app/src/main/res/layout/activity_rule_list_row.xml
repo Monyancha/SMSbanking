@@ -6,12 +6,12 @@
     android:orientation="horizontal" >
 
     <TextView
-        android:drawableLeft="@drawable/ic_transanction_unknown"
         android:id="@+id/ruleName"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/tip_rule_name"
+        android:drawableLeft="@drawable/ic_transaction_unknown"
         android:gravity="center_vertical"
-        />
+        android:text="@string/tip_rule_name"
+        android:textSize="16sp"/>
 
 </LinearLayout>

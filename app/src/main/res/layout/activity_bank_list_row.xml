@@ -1,62 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
-    android:id="@+id/LinearLayout1"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:id="@+id/LinearLayout1"
+                                             android:layout_width="fill_parent"
+                                             android:layout_height="wrap_content"
+                                             android:orientation="horizontal">
 
     <RadioButton
         android:id="@+id/active"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="false"
-        android:layout_alignBottom="@+id/bankCurrency"
-        android:layout_alignTop="@+id/label" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/bankValue"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="0dp"/>
 
     <TextView
         android:id="@+id/label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/tip_bank_name"
-        android:layout_toRightOf="@+id/active"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/active"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"/>
 
     <TextView
         android:id="@+id/bankPhone"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="start|center_vertical"
         android:gravity="start|center_vertical"
         android:text="@string/tip_bank_phone"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/label"
-        android:layout_toRightOf="@+id/active" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/label"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginTop="-1dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/label"/>
 
     <TextView
         android:id="@+id/bankValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="start|center_vertical"
         android:gravity="start|center_vertical"
         android:text="@string/appwidget_text"
-        android:layout_below="@+id/bankPhone"
-        android:layout_toRightOf="@+id/active"
         android:textColor="#29b000"
-        android:layout_alignParentBottom="false" />
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="-1dp"
+        app:layout_constraintTop_toBottomOf="@+id/bankPhone"
+        app:layout_constraintLeft_toLeftOf="@+id/bankPhone"/>
 
     <TextView
         android:id="@+id/bankCurrency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="start|center_vertical"
         android:gravity="start|center_vertical"
-        android:layout_below="@+id/bankPhone"
         android:textColor="#29b000"
         android:text="@string/appwidget_currency"
-        android:layout_toRightOf="@+id/bankValue"
-        android:layout_marginLeft="12sp" />
+        tools:layout_constraintTop_creator="1"
+        android:layout_marginTop="-1dp"
+        app:layout_constraintTop_toBottomOf="@+id/bankPhone"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toRightOf="@+id/bankValue"
+        android:layout_marginLeft="8dp"/>
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

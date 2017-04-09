@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string-array name="parameter_entries">
-        <item>Account state before transaction</item>
-        <item>Account state after transaction</item>
-        <item>Account difference</item>
-        <item>Transaction commission</item>
-        <item>Transaction currency</item>
-        <item>Extra parameter 1</item>
-        <item>Extra parameter 2</item>
-        <item>Extra parameter 3</item>
-        <item>Extra parameter 4</item>
-    </string-array>
-
     <string-array name="interval_entries">
         <item>Unknown</item>
         <item>Year</item>

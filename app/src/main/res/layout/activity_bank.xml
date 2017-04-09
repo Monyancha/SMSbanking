@@ -1,116 +1,114 @@
-<?xml version="1.0" encoding="utf-8"?>	
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/label"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:text="@string/bank_account_name"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_alignParentTop="false"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentStart="false"
-        android:layout_alignParentRight="false"
-        android:layout_alignParentEnd="false"
-        android:layout_alignParentBottom="false" />
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:orientation="vertical">
 
     <EditText
-        android:inputType="text"
         android:id="@+id/name"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/bank_default_name"
-        android:layout_alignParentStart="false"
         android:ems="10"
-        android:layout_alignLeft="@+id/label"
-        android:layout_below="@+id/label"
-        android:layout_alignParentLeft="false"/>
-
-    <TextView
-        android:id="@+id/sms_senders_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:text="@string/sms_bank_sender"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_below="@+id/name"
-        android:layout_alignBottom="@+id/add_phone_button"
-        android:gravity="center_vertical" />
+        android:hint="@string/bank_account_name"
+        android:inputType="text"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/add_phone_button"
-        android:src="@drawable/ic_add"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/name"
-        android:contentDescription="@string/add_phone_button_description" />
-
-    <android.support.v7.widget.AppCompatSpinner
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/phone_list"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentTop="false"
-        android:layout_toRightOf="@+id/sms_senders_label"
-        android:layout_toLeftOf="@+id/add_phone_button"
-        android:layout_below="@+id/name"
-        android:layout_alignBottom="@+id/add_phone_button" />
+        android:src="@drawable/ic_action_add"
+        android:contentDescription="@string/add_phone_button_description"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        android:layout_marginTop="8dp"
+        app:layout_constraintRight_toLeftOf="@+id/clear_phones"
+        android:layout_marginRight="8dp"/>
 
     <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/bank_phones"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="false"
-        android:layout_alignParentRight="false"
-        android:layout_below="@+id/add_phone_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/sms_bank_sender"
         android:inputType="text"
-        android:layout_toLeftOf="@+id/clear_phones"
-        android:layout_alignBottom="@+id/clear_phones" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/add_phone_button"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"/>
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/clear_phones"
-        android:src="@drawable/ic_delete_black_24dp"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/add_phone_button"
-        android:contentDescription="@string/add_phone_button_description" />
+        android:src="@drawable/ic_action_remove"
+        android:contentDescription="@string/add_phone_button_description"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        />
 
     <TextView
         android:id="@+id/bank_default_currency_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="start"
         android:text="@string/account_default_currency"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/clear_phones" />
+        tools:layout_constraintTop_creator="1"
+        app:layout_constraintTop_toBottomOf="@+id/bank_phones"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"/>
 
     <android.support.v7.widget.AppCompatSpinner
         android:id="@+id/currency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:entries="@array/currency_values"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentTop="false"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/bank_default_currency_label" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        android:layout_marginRight="7dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/bank_default_currency_label"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/bank_phones"/>
 
     <Button
         android:id="@+id/sub_rule_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:text="@string/action_save"
-        android:layout_below="@+id/currency"
-        android:layout_alignParentRight="false"
-        android:layout_centerHorizontal="true" />
-    
-</RelativeLayout>
+        tools:layout_constraintTop_creator="1"
+        android:layout_marginStart="33dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/currency"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+</android.support.constraint.ConstraintLayout>
