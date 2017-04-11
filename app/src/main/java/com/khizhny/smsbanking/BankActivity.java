@@ -16,6 +16,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import static com.khizhny.smsbanking.MyApplication.db;
+
 public class BankActivity extends AppCompatActivity {
 	private Bank bank;
 	private TextView nameView;
@@ -44,10 +46,7 @@ public class BankActivity extends AppCompatActivity {
 		String todo = getIntent().getExtras().getString("todo");
 		if (todo != null) {
 			if (todo.equals("edit")) { // Form is used for editing active bank info. Filling bank info from DB
-                DatabaseAccess db = DatabaseAccess.getInstance(this);
-                db.open();
 				bank=db.getActiveBank();
-                db.close();
 				nameView.setText(bank.getName());
 				phonesView.setText(bank.getPhone());
 				currencyView.setSelection(getIndex(currencyView, bank.getDefaultCurrency()));
@@ -90,10 +89,7 @@ public class BankActivity extends AppCompatActivity {
                         bank.setName(nameView.getText().toString());
                         bank.setPhone(phonesView.getText().toString());
                         bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
-                        DatabaseAccess db = DatabaseAccess.getInstance(BankActivity.this);
-                        db.open();
                         db.addOrEditBank(bank);
-                        db.close();
                         BankActivity.this.finish();
                     }
                 }

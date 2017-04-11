@@ -52,6 +52,10 @@
         android:title="@string/cache_transactions"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/bank_clear_cache"
+        android:title="@string/clear_cache"
+        android:visible="true"/>
+    <item
         android:id="@+id/action_privacy"
         android:orderInCategory="111"
         android:title="@string/action_privacy"

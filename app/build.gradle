@@ -13,8 +13,8 @@ android {
         applicationId "com.khizhny.smsbanking"
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 125
-        versionName '1.25'
+        versionCode 128
+        versionName '1.28'
     }
     repositories {
         maven { url 'http://repo1.maven.org/maven2' }

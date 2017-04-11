@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 public class TransactionActivity extends AppCompatActivity implements View.OnClickListener {
     private Rule rule;
@@ -30,10 +31,7 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     protected void onPause() {
         super.onPause();
         // Saving all then subrules in our list.
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         db.addOrEditRule(rule);
-        db.close();
     }
 
     @Override
@@ -57,10 +55,7 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         Log.d(MyApplication.LOG, "Getting Rule from db.");//
 
         // loading Rule and Bank objects
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         rule = db.getRule(ruleId);
-        db.close();
 
         transaction = rule.getSampleTransaction(this);
 
@@ -170,10 +165,7 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         SubRule subRule = rule.getOrCreateSubRule(selectedParameter);
         // if no subrule already defined adding it to db
         if (subRule.getId() == -1) {
-            DatabaseAccess db = DatabaseAccess.getInstance(TransactionActivity.this);
-            db.open();
-            db.addOrEditSubRule(subRule);
-            db.close();
+           db.addOrEditSubRule(subRule);
         }
         Intent intent = new Intent(this, SubRuleActivity.class);
         intent.putExtra("subRuleId", subRule.getId());

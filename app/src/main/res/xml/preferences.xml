@@ -30,10 +30,10 @@
             android:title="@string/pref_ignore_clones"
             android:summary="@string/pref_ignore_clones_summary">
         </CheckBoxPreference>
-        <CheckBoxPreference
+        <!--CheckBoxPreference
             android:key="hide_ads"
             android:title="@string/pref_hide_ads"
             android:summary="@string/pref_hide_ads_summary">
-        </CheckBoxPreference>
+        </CheckBoxPreference>-->
     </PreferenceCategory>
 </PreferenceScreen>

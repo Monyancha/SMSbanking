@@ -23,6 +23,8 @@ import android.widget.ImageView;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.TextView;
 
+import static com.khizhny.smsbanking.MyApplication.db;
+
 public class RuleActivity extends AppCompatActivity {
 	private List<Button> wordButtons;
 	private Rule rule;
@@ -42,8 +44,6 @@ public class RuleActivity extends AppCompatActivity {
         super.onResume();
         setContentView(R.layout.activity_rule);
 		Intent intent = getIntent();
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         Bank bank = db.getActiveBank();
 		String todo = intent.getExtras().getString("todo");
 		if (todo!=null){
@@ -56,7 +56,6 @@ public class RuleActivity extends AppCompatActivity {
 				rule=db.getRule(intent.getExtras().getInt("rule_id"));
 			}
 		}
-        db.close();
 
 		imageView = (ImageView) this.findViewById(R.id.image);
 
@@ -170,10 +169,7 @@ public class RuleActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     rule.setName(ruleNameView.getText().toString());
                     // Saving or Updating Rule in DB.
-                    DatabaseAccess db = DatabaseAccess.getInstance(v.getContext());
-                    db.open();
                     rule.setId(db.addOrEditRule(rule));
-                    db.close();
                     //finish();
                     //Toast.makeText(v.getContext(), "New rule saved.", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(v.getContext(), TransactionActivity.class);

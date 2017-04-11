@@ -35,7 +35,7 @@ public class DatabaseAccess {
      * @param context the Context
      * @return the instance of DabaseAccess
      */
-    public static DatabaseAccess getInstance(Context context) {
+    public static synchronized DatabaseAccess getInstance(Context context) {
         if (instance == null) {
             instance = new DatabaseAccess(context);
         }
@@ -98,35 +98,27 @@ public class DatabaseAccess {
     public synchronized List<Bank> getMyBanks () {
         List<Bank> bankList = new ArrayList<Bank>();
         String selectQuery = "SELECT _id, name, phone, active, default_currency,current_account_state FROM banks WHERE editable<>0";
-        Cursor cursor;
-        if (!db.isOpen()) open();
-        try {
-            cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor= db.rawQuery(selectQuery, null);
             // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
-                    Bank bank = new Bank();
-                    bank.setId(Integer.parseInt(cursor.getString(0)));
-                    bank.setName(cursor.getString(1));
-                    bank.setPhone(cursor.getString(2));
-                    bank.setActive(Integer.parseInt(cursor.getString(3)));
-                    bank.setDefaultCurrency(cursor.getString(4));
-                    bank.setCurrentAccountState(cursor.getString(5));
-                    // Adding Rules
-                    bank.ruleList=getAllRules(bank.getId());
-                    bankList.add(bank);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e){
-            Log.e(LOG, "Error reading MyBanks from db. ");
-            e.printStackTrace();
+        if (cursor.moveToFirst()) {
+            do {
+                Bank bank = new Bank();
+                bank.setId(Integer.parseInt(cursor.getString(0)));
+                bank.setName(cursor.getString(1));
+                bank.setPhone(cursor.getString(2));
+                bank.setActive(Integer.parseInt(cursor.getString(3)));
+                bank.setDefaultCurrency(cursor.getString(4));
+                bank.setCurrentAccountState(cursor.getString(5));
+                // Adding Rules
+                bank.ruleList=getAllRules(bank.getId());
+                bankList.add(bank);
+            } while (cursor.moveToNext());
         }
+        cursor.close();
         return bankList;
     }
 
     public synchronized void setActiveBank (int bankId) {
-        if (!db.isOpen()) open();
         db.execSQL("UPDATE banks SET active=0");
         db.execSQL("UPDATE banks SET active=1 WHERE _id=" + bankId + " and editable<>0");
     }
@@ -138,7 +130,6 @@ public class DatabaseAccess {
      */
     public synchronized Bank getBank (int bankId) {
         Bank b = new Bank();
-        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery("SELECT _id, name, phone, active, default_currency,editable,current_account_state FROM banks WHERE _id="+bankId, null);
         if (cursor.moveToFirst()) {
             b.setId(cursor.getInt(0));
@@ -161,17 +152,12 @@ public class DatabaseAccess {
      * @return Bank object or null if not found.
      */
     public Bank getActiveBank () {
-        if (db.isOpen()){
-            Cursor c=db.rawQuery("SELECT _id FROM banks where active=1 and editable=1", null);
-            int bankId=0;
-            if (c.moveToFirst()) bankId=c.getInt(0);
-            c.close();
-
-            if (bankId>0) {
-                return getBank(bankId);
-            }
-        } else {
-            Log.e(LOG,"DB already closed.");
+        Cursor c=db.rawQuery("SELECT _id FROM banks where active=1 and editable=1", null);
+        int bankId=0;
+        if (c.moveToFirst()) bankId=c.getInt(0);
+        c.close();
+        if (bankId>0) {
+            return getBank(bankId);
         }
         return null;
     }
@@ -180,7 +166,6 @@ public class DatabaseAccess {
      * Sets any bank from myBanks as active. Used after bank is deleted.
      */
     public synchronized void setActiveAnyBank () {
-        if (!db.isOpen()) open();
         db.execSQL("UPDATE banks SET active=0");
         db.execSQL("UPDATE banks SET active=1 WHERE _id=(SELECT MAX(_id) FROM banks WHERE editable=1)");
     }
@@ -191,7 +176,6 @@ public class DatabaseAccess {
      */
     public synchronized void deleteBank (int bankId) {
         // deleting all subrules and rules of active bank
-        if (!db.isOpen()) open();
         db.execSQL("DELETE FROM subrules WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rule_conflicts WHERE rule_id IN (SELECT _id FROM rules WHERE bank_id="+bankId+")");
         db.execSQL("DELETE FROM rules WHERE bank_id=" + bankId);
@@ -201,36 +185,44 @@ public class DatabaseAccess {
 
     public synchronized void deleteBankCache (int bankId) {
         // deleting all subrules and rules of active bank
-        if (!db.isOpen()) open();
         db.execSQL("DELETE FROM transactions WHERE bank_id=" + bankId);
     }
 
     /**
      * If bank ID<=0 then new bank will be added to db.
      * Otherwise bank will be updated
-     * @param b Bank Object to Add or Edit.
+     * @param bank Bank Object to Add or Edit.
      */
-    public synchronized void addOrEditBank (Bank b) {
+    public synchronized void addOrEditBank (Bank bank) {
         if (db.isReadOnly())
         {
             Log.d(LOG,"Cant open db with WR rights");
             return;
         }
-        if (b.getId()<=0){	// Adding new bank
+        if (bank.getId()<=0){	// Adding new bank
             ContentValues v = new ContentValues();
             // making all banks not active
             v.put("active", 0);
             db.update("banks", v, "editable <> ?", new String[]{"0"});
             // making new bank active
-            b.setActive(1);
-            b.setEditable(1);
+            bank.setActive(1);
+            bank.setEditable(1);
             // saving Bank info
-            v = b.getContentValues();
+            v = bank.getContentValues();
             db.insert("banks",null,v);
+
+            // querying id
+            Cursor c=db.rawQuery("SELECT MAX(_id) FROM banks",null);
+            // returning new rule id
+            int id=0;
+            if (c.moveToFirst()) id=c.getInt(0);
+            c.close();
+            bank.setId(id);
+
         }else
         {	// Updating bank info
-            ContentValues v =  b.getContentValues();
-            db.update("banks", v, "_id=? and editable<>?", new String[]{b.getId()+"","0"});
+            ContentValues v =  bank.getContentValues();
+            db.update("banks", v, "_id=? and editable<>?", new String[]{bank.getId()+"","0"});
         }
     }
 
@@ -240,7 +232,6 @@ public class DatabaseAccess {
      */
     public synchronized List<Rule> getAllRules(int bankId){
         List<Rule> ruleList = new ArrayList<Rule>();
-        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE bank_id=" + bankId, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -270,7 +261,6 @@ public class DatabaseAccess {
 
     public synchronized List<Transaction> getTransactionCache(int bankId){
         List<Transaction> transactionList = new ArrayList<Transaction>();
-        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery("SELECT transaction_date,account_currency,sms_body,icon,transaction_currency,state_before,state_after,state_difference,commission,extra1,extra2,extra3,extra4,exchange_rate,sms_id FROM transactions WHERE bank_id=" + bankId, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -279,9 +269,9 @@ public class DatabaseAccess {
                 Transaction t = new Transaction(cursor.getString(2),cursor.getString(1),transactionDate); // transaction_date,account_currency, sms_body,
                 t.icon=cursor.getInt(3); // icon,
                 t.setTransactionCurrency(cursor.getString(4));// transaction_currency,
-                t.setStateBefore(cursor.getString(5));// state_before,
-                t.setStateAfter(cursor.getString(6));// state_after,
-                t.setDifference(cursor.getString(7));// state_difference,
+                if (cursor.getString(5)!=null) t.setStateBefore(cursor.getString(5));// state_before,
+                if (cursor.getString(6)!=null)t.setStateAfter(cursor.getString(6));// state_after,
+                if (cursor.getString(7)!=null)t.setDifference(cursor.getString(7));// state_difference,
                 t.setComission(cursor.getString(8));// commission,
                 t.setExtraParam1(cursor.getString(9));// extra1,
                 t.setExtraParam2(cursor.getString(10));// extra2,
@@ -290,7 +280,6 @@ public class DatabaseAccess {
                 t.setCurrencyRate(cursor.getString(13));// exchange_rate
                 t.smsId=cursor.getLong(14);
                 t.isCached=true;
-
                 transactionList.add(t);
             } while (cursor.moveToNext());
         }
@@ -306,7 +295,6 @@ public class DatabaseAccess {
      * @return Saved Rule ID.
      */
     public synchronized int addOrEditRule(Rule r){
-        if (!db.isOpen()) open();
         if (r.getId()>=1) {
             //Updating existing rule with same ID
             int id = r.getId();
@@ -325,6 +313,7 @@ public class DatabaseAccess {
             int id=0;
             if (c.moveToFirst()) id=c.getInt(0);
             c.close();
+            r.setId(id);
             return id;
         }
     }
@@ -336,9 +325,8 @@ public class DatabaseAccess {
      */
     public synchronized Rule getRule(int ruleId){
         String selectQuery = "SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE _id="+ruleId;
-        if (!db.isOpen()) open();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        Rule r;
+        Rule r=null;
         if (cursor.moveToFirst()) {
             r = new Rule(cursor.getInt(5),cursor.getString(1));
             r.setId(cursor.getInt(0));
@@ -347,13 +335,10 @@ public class DatabaseAccess {
             r.setSelectedWords(cursor.getString(4));
             r.setRuleType(cursor.getInt(6));
             r.subRuleList=getSubRules(cursor.getInt(0));
-            cursor.close();
-        }
-        else {
-            cursor.close();
+        }  else {
             Log.e("DatabaseHelper.getRule", "rule id duplicated or not found.");
-            return null;
         }
+        cursor.close();
         return r;
     }
     /**
@@ -362,7 +347,6 @@ public class DatabaseAccess {
      */
     public synchronized void deleteRule (int ruleId) {
         // deleting all subrules and rule
-        if (!db.isOpen()) open();
         db.execSQL("DELETE FROM rule_conflicts WHERE rule_id="+ruleId);
         db.execSQL("DELETE FROM subrules WHERE rule_id="+ruleId);
         db.execSQL("DELETE FROM rules WHERE _id=" + ruleId);
@@ -373,7 +357,6 @@ public class DatabaseAccess {
      * @return a list of subrules for particular Rule
      */
     public synchronized List<SubRule> getSubRules(int ruleId){
-        if (!db.isOpen()) open();
         List<SubRule> subRuleList = new ArrayList<SubRule>();
         String selectQuery = "SELECT _id, left_phrase,right_phrase, distance_to_left_phrase, distance_to_right_phrase, constant_value, extracted_parameter,extraction_method,decimal_separator,trim_left,trim_right,negate  FROM subrules WHERE rule_id="+ruleId;
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -470,6 +453,7 @@ public class DatabaseAccess {
             int newBankId=0;
             if (c.moveToFirst()) newBankId=c.getInt(0);
             c.close();
+
             for (Rule r: b.ruleList) { //Saving rules
                 r.setId(-1); // set to -1 will make new record instead updating
                 r.changeBankId(newBankId);

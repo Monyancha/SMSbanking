@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 public class BankListActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     private AlertDialog alertDialog;
@@ -41,7 +42,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	private BankListAdapter adapter;
 	private int selected_row;
     private final static String EXPORT_FILE_EXTENSION="dat";
-    private final static String EXPORT_PATH="/SMS banking/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
+    private final static String EXPORT_FOLDER="/SMS banking";
+    private final static String EXPORT_PATH=EXPORT_FOLDER+"/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
     private static int REQUEST_CODE_ASK_PERMISSIONS=111;
 
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +76,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		super.onStart();
 
         bankList=new ArrayList<Bank>();
-		DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
 		setTitle(getString(R.string.mybank_activity_title));
         bankList=db.getMyBanks();
         bankTemplates = db.getBankTemplates();
-        db.close();
 
 		for (int i=0;i<bankList.size();i++) {
 			if (bankList.get(i).isActive()) {
@@ -136,10 +135,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 builder.setItems(templates, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        DatabaseAccess db = DatabaseAccess.getInstance(BankListActivity.this);
                         db.open();
                         db.useTemplate(bankTemplates.get(which));
-                        db.close();
                         // Going back to Main Activity
                         BankListActivity.this.finish();
 
@@ -157,23 +154,18 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		// handles popup items clicks
 		Bank selectedBank=adapter.getItem(selected_row);
 		Intent intent;
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        switch (item.getItemId()) {
+         switch (item.getItemId()) {
 			case R.id.bank_activate:// Marking selected bank as Active in DB
-                db.open();
                 db.setActiveBank(selectedBank.getId());
 				bankList.clear();
 				bankList.addAll(db.getMyBanks());
-                db.close();
 
 				adapter.notifyDataSetChanged();
 				Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
 				return true;
 
             case R.id.bank_clear_cache:
-                db.open();
                 db.deleteBankCache(selectedBank.getId());
-                db.close();
                 Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
                 return true;
 
@@ -217,7 +209,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				return true;
 
             case R.id.bank_delete: // Deleting selected Bank from myBanks
-                db.open();
                 if (selectedBank.isActive()) {
                     db.deleteBank(selectedBank.getId());
                     db.setActiveAnyBank();
@@ -226,7 +217,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 }
                 bankList.clear();
                 bankList.addAll(db.getMyBanks());
-                db.close();
+
                 adapter.notifyDataSetChanged();
                 return true;
 		}/**/
@@ -256,11 +247,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                     Log.d(LOG, "File picked " + importPath);
                     Bank b = (Bank) Bank.importBank(importPath);
                     if (!(b == null)) {
-                        DatabaseAccess db = DatabaseAccess.getInstance(BankListActivity.this);
-                        db.open();
                         db.useTemplate(b);
-                        db.close();
-                        BankListActivity.this.finish();
+                       BankListActivity.this.finish();
                     } else {
                         Toast.makeText(BankListActivity.this, getString(R.string.import_failed), Toast.LENGTH_SHORT).show();
                     }

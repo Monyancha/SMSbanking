@@ -7,6 +7,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.khizhny.smsbanking.MyApplication.db;
+
 public class Rule implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
@@ -173,10 +175,7 @@ public class Rule implements java.io.Serializable {
      * @return Transaction object
      */
 	public Transaction getSampleTransaction(Context ctx){
-        DatabaseAccess db = DatabaseAccess.getInstance(ctx);
-        db.open();
         Bank bank=db.getBank(bankId);
-        db.close();
         Transaction transaction = new Transaction(smsBody,bank.getDefaultCurrency(),null);
         applyRule(transaction);
         transaction.calculateMissedData();
@@ -201,7 +200,8 @@ public class Rule implements java.io.Serializable {
         nameSuggestion="";
 		String delimiter="";
 		String[] words=smsBody.split(" ");
-		boolean skip_wildcard=false;
+		if (!smsBody.trim().equals(smsBody)) mask= ".*";
+        boolean skip_wildcard=false;
 		for (int i=1; i<=wordsCount; i++){
 			if (wordIsSelected[i]){
 				mask+=delimiter+"\\Q"+words[i-1]+"\\E";
@@ -215,6 +215,7 @@ public class Rule implements java.io.Serializable {
 			}
 			delimiter=" ";
 		}
+        if (!smsBody.trim().equals(smsBody)) mask+= ".*";
 	}
 
 	public int getRuleTypeInt() {

@@ -11,10 +11,11 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.khizhny.smsbanking.Bank;
-import com.khizhny.smsbanking.DatabaseAccess;
 import com.khizhny.smsbanking.MainActivity;
 import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.Transaction;
+
+import static com.khizhny.smsbanking.MyApplication.db;
 
 /**
  * Implementation of App Widget functionality.
@@ -35,10 +36,7 @@ public class SmsBankingWidget extends AppWidgetProvider {
         //delete widget if it has no bank id
 
         Log.d(LOG,"Opening db for bankId="+bankId);
-        DatabaseAccess db = DatabaseAccess.getInstance(context);
-        db.open();
         Bank bank= db.getBank(bankId);
-        db.close();
         if (bank!=null) {
             Log.d(LOG,"Recalculating balance for bank:"+bank.getName());
 

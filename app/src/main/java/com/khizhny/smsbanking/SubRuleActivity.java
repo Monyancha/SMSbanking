@@ -19,12 +19,13 @@ import android.widget.TextView;
 import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 public class SubRuleActivity extends AppCompatActivity implements View.OnClickListener
 {
 
     private Rule rule;
-    private SubRule subRule; // Subrule thich is editing in activity
+    private SubRule subRule; // Sub rule which is editing in activity
     private List<String> phrases;
 
     @Override
@@ -40,10 +41,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         int ruleId = getIntent().getIntExtra("ruleId",-1);
         setTitle(getIntent().getStringExtra("caption"));
         if (subRuleId>=0) {
-            DatabaseAccess db = DatabaseAccess.getInstance(getApplicationContext());
-            db.open();
             rule=db.getRule(ruleId);
-            db.close();
             for (SubRule sr: rule.subRuleList) {
                 if (sr.getId()==subRuleId) {
                     subRule=sr;
@@ -147,7 +145,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         rightPhraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-               if (!phrases.get(selectedPosition).equals(subRule.getRightPhrase())) {
+                if (!phrases.get(selectedPosition).equals(subRule.getRightPhrase())) {
                     subRule.setRightPhrase(phrases.get(selectedPosition));
                     refreshResult();
                 }
@@ -352,10 +350,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()){
             case R.id.subrule_delete:
                 // Deleting subrule and going back in stack
-                DatabaseAccess db= DatabaseAccess.getInstance(getApplicationContext());
-                db.open();
                 db.deleteSubRule(subRule.getId());
-                db.close();
                 finish();
                 break;
             default:
@@ -365,11 +360,8 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onBackPressed() {
-        //Saving subrule changes to db and going back in stack
-        DatabaseAccess db= DatabaseAccess.getInstance(getApplicationContext());
-        db.open();
+        //Saving sub rule changes to db and going back in stack
         db.addOrEditSubRule(subRule);
-        db.close();
         super.onBackPressed();
     }
 
@@ -377,11 +369,8 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                //Saving subrule changes to db and going back in stack
-                DatabaseAccess db= DatabaseAccess.getInstance(getApplicationContext());
-                db.open();
+                //Saving sub rule changes to db and going back in stack
                 db.addOrEditSubRule(subRule);
-                db.close();
                 finish();
                 return true;
         }

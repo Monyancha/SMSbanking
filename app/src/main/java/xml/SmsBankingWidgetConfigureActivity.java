@@ -17,10 +17,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import com.khizhny.smsbanking.Bank;
 import com.khizhny.smsbanking.ColorPickerView;
-import com.khizhny.smsbanking.DatabaseAccess;
 import com.khizhny.smsbanking.R;
 
 import java.util.List;
+
+import static com.khizhny.smsbanking.MyApplication.db;
 
 /**
  * The configuration screen for the {@link SmsBankingWidget SmsBankingWidget} AppWidget.
@@ -154,10 +155,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         }
 
         // Filling Spinner vith myBanks options
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         List <Bank> banks = db.getMyBanks();
-        db.close();
         ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter <Bank>(this,
                 android.R.layout.simple_spinner_item, banks);
         myBank = (Spinner) findViewById(R.id.my_bank);

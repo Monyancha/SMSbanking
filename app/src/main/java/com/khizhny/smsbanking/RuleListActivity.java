@@ -26,6 +26,7 @@ import android.widget.Toast;
 import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 public class RuleListActivity extends AppCompatActivity implements OnMenuItemClickListener{
 	private ListView listView;
@@ -58,10 +59,7 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
     @Override
     protected void onStart() {
         super.onStart();
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
-		activeBank=db.getActiveBank();
-        db.close();
+        activeBank=db.getActiveBank();
         if (activeBank!=null) {
             adapter = new RuleListAdapter(this, activeBank.ruleList);
             listView.setAdapter(adapter);
@@ -92,11 +90,8 @@ public class RuleListActivity extends AppCompatActivity implements OnMenuItemCli
 		    startActivity(intent);		    
 			return true;
 		case R.id.item_delete_rule:
-            DatabaseAccess db = DatabaseAccess.getInstance(this);
-            db.open();
             db.deleteRule(r.getId());
-            db.close();
-			activeBank.ruleList.remove(selected_row);
+            activeBank.ruleList.remove(selected_row);
 			adapter.notifyDataSetChanged();
 		    return true;
 		}

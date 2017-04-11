@@ -24,6 +24,7 @@ import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,10 +45,7 @@ public class StatisticsActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         Log.d(LOG,"Statistics Activity Creating...");
         setContentView(R.layout.activity_statistics);
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         Bank bank=db.getActiveBank();
-        db.close();
         if (bank!=null) {
             transactions = Transaction.loadTransactions(bank,this);
         }

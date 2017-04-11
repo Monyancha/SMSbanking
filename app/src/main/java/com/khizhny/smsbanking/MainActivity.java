@@ -21,6 +21,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -138,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             if (activeBank != null) {
                 refreshTransactionsTask = new RefreshTransactionsTask();
                 refreshTransactionsTask.execute(activeBank);
+            }else{
+                swipeRefreshLayout.setRefreshing(false);
             }
             }
         });
@@ -149,19 +152,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         int widget_bank_id = this.getIntent().getIntExtra("bank_id", 0);
         if (widget_bank_id > 0) {
             Log.d(MyApplication.LOG, "Main Activity launched from widget click and bank_id=" + widget_bank_id);
-            DatabaseAccess db = DatabaseAccess.getInstance(this);
-            db.open();
             db.setActiveBank(widget_bank_id);
-            db.close();
         }
 
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         myBanks = db.getMyBanks();
         for (Bank b: myBanks){
             if (b.isActive()) activeBank=b;
         }
-        db.close();
         if (myBanks.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(getResources().getString(R.string.tip_bank_1));
@@ -197,14 +194,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 
         //Getting activeBank
-        DatabaseAccess db = DatabaseAccess.getInstance(this);
-        db.open();
         myBanks = db.getMyBanks();
         for (Bank b: myBanks){
             if (b.isActive()) activeBank=b;
         }
-
-        db.close();
 
         // refreshing lists
         RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
@@ -266,15 +259,22 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 break;
             case R.id.action_cache:
                 if (activeBank!=null) {
-                    DatabaseAccess db = DatabaseAccess.getInstance(this);
-                    db.open();
                     db.cacheTransactions(activeBank.getId(), transactions);
-                    db.close();
                     Toast.makeText(getApplicationContext(), R.string.cache_created, Toast.LENGTH_SHORT).show();
+                    refreshTransactionsTask = new RefreshTransactionsTask();
+                    refreshTransactionsTask.execute(activeBank);
                 }else{
                     Toast.makeText(getApplicationContext(), R.string.nothing_to_cache, Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case R.id.bank_clear_cache:
+                db.deleteBankCache(activeBank.getId());
+                Toast.makeText(MainActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
+                if (activeBank != null) {
+                    refreshTransactionsTask = new RefreshTransactionsTask();
+                    refreshTransactionsTask.execute(activeBank);
+                }
+                return true;
             case R.id.action_quit:
                 this.finish();
                 System.exit(0);
@@ -308,19 +308,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
                 try {
                     Uri uriSms = Uri.parse("content://sms/inbox");
-                    Cursor c = getContentResolver().query(
-                            uriSms,
-                            new String[]{"_id", "thread_id", "address", "person",
-                                    "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
-                    if (c != null && c.moveToFirst()) {
-                        long id = c.getLong(0);
-                        ContentValues values = new ContentValues();
-                        values.put("read", true);
-                        getContentResolver().update(Uri.parse("content://sms/"),
-                                values, "_id=" + id, null);
-                        getContentResolver().delete(
-                                Uri.parse("content://sms/" + id), "date=?",
-                                new String[]{c.getString(4)});
+                    Cursor c = getContentResolver().query(uriSms, new String[]{"_id", "thread_id", "address", "person", "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
+                    if (c != null) {
+                        if (c.moveToFirst()) {
+                            ContentValues values = new ContentValues();
+                            values.put("read", true);
+                            getContentResolver().update(Uri.parse("content://sms/"), values, "_id=" + c.getLong(0), null);
+                            getContentResolver().delete(Uri.parse("content://sms/" + c.getLong(0)), "date=?",new String[]{c.getString(4)});
+                        }
                         c.close();
                         // refreshing.
                         transactions.remove(selectedTransaction);
@@ -425,13 +420,15 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Warning sign
             TextView warnView = (TextView) rowView.findViewById(R.id.warning_sign);
-            if (t.ruleOptionsCount()>=2){
+            warnView.setTextColor(Color.DKGRAY);
+            if (t.isCached) {
+                warnView.setText("(c)");
+            }else {
                 warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
-
-            }else{
-                warnView.setText("");
+                if (t.ruleOptionsCount()!=1) warnView.setTextColor(Color.RED);
             }
-            if (t.isCached) warnView.setText("(c)");
+
+
 
             // Filling Before state
             TextView accountBeforeView = (TextView) rowView.findViewById(R.id.stateBefore);
@@ -489,32 +486,21 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 ((TextView) rowView.findViewById(R.id.extra2)).setText(t.getExtraParam2());
                 ((TextView) rowView.findViewById(R.id.extra3)).setText(t.getExtraParam3());
                 ((TextView) rowView.findViewById(R.id.extra4)).setText(t.getExtraParam4());
-                rowView.findViewById(R.id.extras_ll).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.extra1).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.extra2).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.extra3).setVisibility(View.VISIBLE);
+                rowView.findViewById(R.id.extra4).setVisibility(View.VISIBLE);
             } else {
-                rowView.findViewById(R.id.extras_ll).setVisibility(View.GONE);
+                rowView.findViewById(R.id.extra1).setVisibility(View.GONE);
+                rowView.findViewById(R.id.extra2).setVisibility(View.GONE);
+                rowView.findViewById(R.id.extra3).setVisibility(View.GONE);
+                rowView.findViewById(R.id.extra4).setVisibility(View.GONE);
             }
 
             return rowView;
         }
 
     }
-
-   /* private void refreshTransactionsList() {
-        DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
-        db.open();
-        Bank bank = db.getActiveBank();
-        db.close();
-
-        if (bank != null) {
-            // setting list view to show active bank transactions
-            Log.d(MyApplication.LOG, "LoadTransactions for " + bank.getName());
-            transactions = Transaction.loadTransactions(bank, MainActivity.this);
-        }
-        if (transactions != null) {
-
-        }
-        swipeRefreshLayout.setRefreshing(false);
-    }/**/
 
     private void exportToExcel() {        //Saving in external storage
         File sdCard = Environment.getExternalStorageDirectory();
@@ -527,10 +513,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
         }
 
-        DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
-        db.open();
         Bank bank = db.getActiveBank();
-        db.close();
 
         //file path
         if (bank!=null) {
@@ -590,8 +573,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     workbook.close();
                     Toast.makeText(this, "File saved to " + directory + "/" + FILE_NAME, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.fromFile(file));
-                    startActivity(intent);
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".provider", file);
+                    intent.setData(uri);
+                    try {
+                        startActivity(intent);
+                    }catch (Exception e){
+                        //Toast.makeText(this,"",Toast.LENGTH_LONG);
+                    }
                 } catch (RowsExceededException e) {
                     Toast.makeText(this, "Too many rows to save.", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
@@ -678,6 +667,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             pDialog.setMessage(getString(R.string.reading_messages));
             pDialog.setCancelable(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            pDialog.setProgress(1);
             pDialog.show();
             // Restoring preferences
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
@@ -694,8 +684,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Loading transactions from cache.
             List<Transaction> transactionList;
-            DatabaseAccess db = DatabaseAccess.getInstance(MainActivity.this);
-            db.open();
             Date lastCachedTransactionDate;
             transactionList = db.getTransactionCache(activeBank.getId());
             if (transactionList.size()>0) {
@@ -705,8 +693,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 lastCachedTransactionDate=new Date(0);
                 cacheSize=0;
             }
-            db.close();
-
 
             // Loading transactions from SMS.
             String smsBody = "";
@@ -723,13 +709,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 pDialog.setMax(msgCount-1);
                 if (c.moveToFirst()) {
                     for (int ii = 0; ii < msgCount; ii++) {
+                        if (!isCancelled()) {
+                            publishProgress(ii + 1);
+                        } else{
+                            if (pDialog.isShowing()) pDialog.dismiss();
+                            return null;
+                        }
                         boolean skipMessage=false;
                         Date transactionDate = new Date(c.getLong(c.getColumnIndexOrThrow("date")));
                         if (!transactionDate.after(lastCachedTransactionDate)) skipMessage=true;
 
                         if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))) skipMessage=true;
                         smsBody = c.getString(c.getColumnIndexOrThrow("body"));
-
+                        smsBody = smsBody.replace("\n"," ");
+                        smsBody = smsBody.trim();
                         if (!skipMessage) {
                             // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
                             Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),transactionDate);
@@ -771,26 +764,17 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                             }
                         }
                         c.moveToNext();
-                        if (!isCancelled()) {
-                            publishProgress(ii + 1);
-                        } else{
-                            if (pDialog.isShowing()) pDialog.dismiss();
-                            return null;
-                        }
                     }
-                    c.close();
                 }
+                c.close();
             }
             transactionList = Transaction.addMissingTransactions(transactionList);
 
             // saving last bank account state to db for later usage
-            BigDecimal lastState = Transaction.getLastAccountState(Transaction.loadTransactions(activeBank, MainActivity.this));
-
-            activeBank.setCurrentAccountState(lastState);
-            db.open();
-            db.addOrEditBank(activeBank);
-            db.close();
-
+            if (transactionList.size()>0) {
+                activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
+                db.addOrEditBank(activeBank);
+            }
             return transactionList;
         }
 
@@ -818,7 +802,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             if (transactionListAdapter!=null) transactionListAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
-
         }
     }
 }

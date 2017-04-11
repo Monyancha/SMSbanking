@@ -15,6 +15,9 @@ public class MyApplication extends Application {
     public final static String LOG = "SMS_BANKING";
     public static boolean hasReadSmsPermission=true;
 
+    public static DatabaseAccess db;
+
+
     static Boolean hideMatchedMessages ;
     static Boolean hideNotMatchedMessages;
     static Boolean ignoreClones;
@@ -23,6 +26,8 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Log.d(LOG,"=========================");
+        db = DatabaseAccess.getInstance(this);
+        db.open();
         Log.d(LOG,"New Application created...");
         // remembering default SMS application to restore on exit. Needed for SMS deleting.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -39,5 +44,11 @@ public class MyApplication extends Application {
         hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
         hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
         ignoreClones = settings.getBoolean("ignore_clones", false);
+    }
+
+    @Override
+    public void onTerminate() {
+        db.close();
+        super.onTerminate();
     }
 }

@@ -24,6 +24,7 @@ import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.android.gms.internal.zzt.TAG;
+import static com.khizhny.smsbanking.MyApplication.db;
 
 public class Transaction implements Comparable<Transaction> {
     public int icon;
@@ -80,7 +81,7 @@ public class Transaction implements Comparable<Transaction> {
     Transaction(String smsBody, String accountCurrency, Date transactionDate){
         this.icon=R.drawable.ic_transaction_unknown;
         selectedRuleId=-1;
-        this.smsBody =smsBody.replace("'", "").replace("\n", " ");;
+        this.smsBody =smsBody.replace("'", "").replace("\n", " ");
         this.transactionDate=transactionDate;
         this.accountCurrency=accountCurrency;
         this.transactionCurrency=accountCurrency;
@@ -291,9 +292,9 @@ public class Transaction implements Comparable<Transaction> {
         v.put("sms_id",smsId);
         v.put("icon",icon);
         v.put("transaction_currency",transactionCurrency);
-        v.put("state_before",stateBefore.toString());
-        v.put("state_after",stateAfter.toString());
-        v.put("state_difference",stateDifference.toString());
+        if (hasStateBefore) v.put("state_before",stateBefore.toString());
+        if (hasStateAfter)v.put("state_after",stateAfter.toString());
+        if (hasStateDifference) v.put("state_difference",stateDifference.toString());
         v.put("commission",commission.toString());
         v.put("extra1",extraParam1);
         v.put("extra2",extraParam2);
@@ -309,11 +310,8 @@ public class Transaction implements Comparable<Transaction> {
      * @param context
      */
     public void performMultipleRuleCheck(Context context) {
-            DatabaseAccess db = DatabaseAccess.getInstance(context);
-            db.open();
             selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
-            db.close();
-    }
+}
 
     public void setAccountCurrency(String accountCurrency) {
         this.accountCurrency = accountCurrency;
@@ -321,7 +319,7 @@ public class Transaction implements Comparable<Transaction> {
 
     public void setTransactionCurrency(String transactionCurrency) {
         this.transactionCurrency = transactionCurrency;
-        this.hasTransactionCurrency =true;
+        //this.hasTransactionCurrency =true;
 
     }
     public void setStateBefore(BigDecimal stateBefore) {
@@ -413,7 +411,7 @@ public class Transaction implements Comparable<Transaction> {
         }
         // calculating exchange rates if it is possible.
         if (    hasStateDifference &&
-                hasTransactionCurrency &&
+                //hasTransactionCurrency &&
                 hasStateBefore &&
                 hasStateAfter) {
             if (!transactionCurrency.equals(accountCurrency) &&
@@ -446,10 +444,10 @@ public class Transaction implements Comparable<Transaction> {
         Transaction curr;
         Transaction prev;
         Transaction next;
-        int transanctionsCount;
-        transanctionsCount = transactionList.size();
-        if (transanctionsCount > 1) {
-            for (int i = transanctionsCount - 1; i >= 1; i--) {
+        int transactionsCount;
+        transactionsCount = transactionList.size();
+        if (transactionsCount > 1) {
+            for (int i = transactionsCount - 1; i >= 1; i--) {
                 curr = transactionList.get(i - 1);
                 prev = transactionList.get(i);
                 // if there is previous transaction we restore account state if needed from/to message
@@ -495,6 +493,8 @@ public class Transaction implements Comparable<Transaction> {
         return transactionList;
     }
 
+
+
     /**
      * Function loads a list of transactions from SMS to a List
      * @param activeBank Bank object with all extraction settings and rules.
@@ -507,7 +507,18 @@ public class Transaction implements Comparable<Transaction> {
         Boolean hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
         Boolean hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
         Boolean ignoreClones = settings.getBoolean("ignore_clones", false);
-        List<Transaction> transactionList = new ArrayList<Transaction>();
+
+        // Loading transactions from cache.
+        List<Transaction> transactionList;
+        Date lastCachedTransactionDate;
+        transactionList = db.getTransactionCache(activeBank.getId());
+        if (transactionList.size()>0) {
+            lastCachedTransactionDate = transactionList.get(0).getTransactionDate();
+        }else{
+            lastCachedTransactionDate=new Date(0);
+        }
+
+        // Loading transactions from SMS.
         String smsBody="";
         String phoneNumbers = activeBank.getPhone().replace(";", "','");
         Cursor c;
@@ -521,14 +532,21 @@ public class Transaction implements Comparable<Transaction> {
             int msgCount = c.getCount();
             if (c.moveToFirst()) {
                 for (int ii = 0; ii < msgCount; ii++) {
-                    if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))){
-                        // if sms smsBody is duplicating previous one and ignoreClones flag is set - just skip message
-                    }else {
-                        smsBody = c.getString(c.getColumnIndexOrThrow("body"));
-                        Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),new Date(c.getLong(c.getColumnIndexOrThrow("date"))));
-                        transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
+                    boolean skipMessage=false;
+                    Date transactionDate = new Date(c.getLong(c.getColumnIndexOrThrow("date")));
+                    if (!transactionDate.after(lastCachedTransactionDate)) skipMessage=true;
 
+                    if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))) skipMessage=true;
+                    smsBody = c.getString(c.getColumnIndexOrThrow("body"));
+                    smsBody = smsBody.replace("\n"," ");
+                    smsBody = smsBody.trim();
+
+                    if (!skipMessage) {
+                        // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
+                        Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),transactionDate);
+                        transaction.smsId = c.getLong(c.getColumnIndexOrThrow("_id"));
                         Boolean messageHasIgnoreTypeRule = false;
+
                         for (Rule rule : activeBank.ruleList) {
                             if (smsBody.matches(rule.getMask())) {
                                 if (rule.hasIgnoreType()) {
@@ -553,7 +571,6 @@ public class Transaction implements Comparable<Transaction> {
                                 transactionList.add(transaction);
                             }
                             if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
-                                // redirecting user to choose bank from template.
                                 if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
                                     transaction.getSelectedRule().applyRule(transaction);
                                 } else { // if user did not picked rule choose any first.
@@ -566,12 +583,18 @@ public class Transaction implements Comparable<Transaction> {
                     }
                     c.moveToNext();
                 }
+
             }
             c.close();
         }
         transactionList=Transaction.addMissingTransactions(transactionList);
+        // saving last bank account state to db for later usage
+        if (transactionList.size()>0){
+            activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
+            db.addOrEditBank(activeBank);
+        }
         return transactionList;
-    }
+    }/**/
 
     public Rule getSelectedRule(){
         for (Rule r : applicableRules) {
@@ -600,10 +623,7 @@ public class Transaction implements Comparable<Transaction> {
                 }
             }
         }
-        DatabaseAccess db = DatabaseAccess.getInstance(ctx);
-        db.open();
         db.saveRuleConflictChoice(selectedRuleId, transactionDate);
-        db.close();
     }
 
     /**
