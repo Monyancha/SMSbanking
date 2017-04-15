@@ -18,6 +18,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
@@ -46,6 +47,7 @@ import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,6 +74,9 @@ import xml.SmsBankingWidget;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener {
 
+    private static final String LIST_STATE = "listState";
+    private static final String LIST_TRANSACTIONS = "transactions";
+
     private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -87,8 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private static final String EXPORT_FOLDER = "SMS banking";
     private RefreshTransactionsTask refreshTransactionsTask;
     private AlertDialog alertDialog;
-
-
+    private Parcelable listState = null;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,12 +126,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
 
         });
-
-        if (transactions!=null) {
-            transactionListAdapter = new TransactionListAdapter(transactions);
-            listView.setAdapter(transactionListAdapter);
-        }
-
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.blue, R.color.green);
@@ -167,41 +165,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
 
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-        hideAds = settings.getBoolean("hide_ads", false);
-        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
-        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
-        ignoreClones = settings.getBoolean("ignore_clones", false);
-
-        // enabling ads banner
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        if (!hideAds) {
-            // real: ca-app-pub-1260562111804726/2944681295
-            MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
-            AdRequest adRequest = new AdRequest.Builder().build();
-            mAdView.loadAd(adRequest);
-        } else {
-            mAdView.setVisibility(View.GONE);
-        }
-
-
-        //Getting activeBank
-        myBanks = db.getMyBanks();
-        for (Bank b: myBanks){
-            if (b.isActive()) activeBank=b;
-        }
-
-        // refreshing lists
-        RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
-        refreshTransactionsTask.execute(activeBank);
     }
 
     @Override
@@ -343,6 +306,68 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         refreshScreenWidgets();
         super.onStop();
     }
+
+    @Override
+    protected void onResume() {
+        Log.d(LOG, "MainActivity resuming...");
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideCurrency = settings.getBoolean("hide_currency", false);
+        inverseRate = settings.getBoolean("inverse_rate", false);
+        hideAds = settings.getBoolean("hide_ads", false);
+        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
+        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+        ignoreClones = settings.getBoolean("ignore_clones", false);
+
+
+        // enabling ads banner
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        if (!hideAds) {
+            // real: ca-app-pub-1260562111804726/2944681295
+            MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+        } else {
+            mAdView.setVisibility(View.GONE);
+        }
+
+        //Getting activeBank
+        myBanks = db.getMyBanks();
+        for (Bank b: myBanks){
+            if (b.isActive()) activeBank=b;
+        }
+
+        if (transactions!=null) {
+            transactionListAdapter = new TransactionListAdapter(transactions);
+            listView.setAdapter(transactionListAdapter);
+            if (listState != null) {
+                listView.onRestoreInstanceState(listState);
+            }
+        } else {
+            // reloading transactions to list
+            RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
+            refreshTransactionsTask.execute(activeBank);
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        Log.d(LOG, "MainActivity instance saved...");
+        super.onSaveInstanceState(state);
+        listState = listView.onSaveInstanceState();
+        state.putParcelable(LIST_STATE,listState);
+        state.putSerializable(LIST_TRANSACTIONS,(Serializable) transactions);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        listState = state.getParcelable(LIST_STATE);
+        transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
+        Log.d(LOG, "MainActivity instance restored...");
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -795,13 +820,25 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             if (t!=null) {
                 transactions=t;
                 transactionListAdapter = new TransactionListAdapter(t);
+                // Save the ListView state (= includes scroll position) as a Parceble
+                Parcelable state = listView.onSaveInstanceState();
                 listView.setAdapter(transactionListAdapter);
+                // Restore previous state (including selected item index and scroll position)
+                listView.onRestoreInstanceState(state);
                 if (t.size()-cacheSize>200) {
                     Toast.makeText(getApplicationContext(), R.string.cache_needed,Toast.LENGTH_SHORT).show();
                 }
             }
             if (transactionListAdapter!=null) transactionListAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
+            // restoring position if possible
+            try {
+                if (listState != null)
+                    listView.onRestoreInstanceState(listState);
+            } catch (Exception e) {
+
+            }
+            listState = null;
         }
     }
 }
