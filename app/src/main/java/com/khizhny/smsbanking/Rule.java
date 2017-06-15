@@ -215,14 +215,20 @@ public class Rule implements java.io.Serializable {
 			}
 			delimiter=" ";
 		}
+        nameSuggestion.trim();
         if (!smsBody.trim().equals(smsBody)) mask+= ".*";
 	}
+
 
 	public int getRuleTypeInt() {
 		return ruleType.ordinal();
 	}
 
-	/**
+    public transactionType getRuleType() {
+        return ruleType;
+    }
+
+    /**
 	 *
 	 * @return Drawable ID of the icon to be shown in transaction list.
 	 */

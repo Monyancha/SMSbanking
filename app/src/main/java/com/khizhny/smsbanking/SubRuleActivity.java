@@ -353,6 +353,8 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
                 db.deleteSubRule(subRule.getId());
                 finish();
                 break;
+            case R.id.subrule_finish_button:
+                onBackPressed();
             default:
                 Log.e(LOG, "Unsupported view!");
         }

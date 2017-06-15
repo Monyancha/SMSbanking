@@ -8,4 +8,16 @@
         android:id="@+id/item_delete_sms"
         android:title="@string/popup_delete_sms"
         android:visible="true"/>
+    <item
+        android:id="@+id/item_switch_rule"
+        android:title="@string/popup_switch_rule"
+        android:visible="true"/>
+    <item
+        android:id="@+id/item_edit_rule"
+        android:title="@string/popup_edit_rule"
+        android:visible="true"/>
+    <item
+        android:id="@+id/item_delete_rule"
+        android:title="@string/popup_delete_rule"
+        android:visible="true"/>
 </menu>

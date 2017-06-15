@@ -3,8 +3,11 @@
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="fill_parent"
-                                             android:layout_height="match_parent"
-                                             android:orientation="vertical">
+                                             android:layout_height="wrap_content"
+                                             android:layout_margin="5dp"
+                                             android:orientation="vertical"
+                                             tools:layout_editor_absoluteY="86dp"
+                                             tools:layout_editor_absoluteX="5dp">
 
     <TextView
         android:id="@+id/smsBody"
@@ -67,12 +70,12 @@
 
     <ImageView
         android:id="@+id/transanctionIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_below="@+id/transanction_date"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="-1dp"
+        android:layout_marginTop="1dp"
         android:layout_toLeftOf="@+id/linearLayout"
         android:contentDescription="@string/tip_icon"
         android:src="@drawable/ic_transaction_unknown"

@@ -250,13 +250,16 @@ public class DatabaseAccess {
         return ruleList;
     }
 
-    public void cacheTransactions(int bankId, List<Transaction> transactionList){
+   /* public void cacheTransactions(int bankId, List<Transaction> transactionList){
         deleteBankCache(bankId);
         for (Transaction t:transactionList) {
             ContentValues cv = t.getContentValues();
             cv.put("bank_id",bankId);
             db.insert("transactions", null, cv);
         }
+    }*/
+    public void cacheTransaction  (ContentValues cv){
+        db.insert("transactions", null, cv);
     }
 
     public synchronized List<Transaction> getTransactionCache(int bankId){

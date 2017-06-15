@@ -23,6 +23,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.READ_PROFILE"/>
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -87,10 +91,6 @@
             android:label="@string/activity_title_bank_list"
             android:windowSoftInputMode="stateHidden"/>
         <activity
-            android:name=".RuleListActivity"
-            android:label="@string/action_rule_list"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity
             android:name=".TransactionActivity"
             android:label="@string/transaction_editor"
             android:windowSoftInputMode="adjustPan"/>
@@ -130,6 +130,16 @@
                 <data android:scheme="mmsto"/>
             </intent-filter>
         </service>
+        <service android:name=".gcm.MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name=".gcm.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
 
         <receiver android:name="xml.SmsBankingWidget">
             <intent-filter>
@@ -146,7 +156,10 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login">
+        </activity>
     </application>
 
 </manifest>

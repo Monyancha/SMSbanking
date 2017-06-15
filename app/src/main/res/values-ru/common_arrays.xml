@@ -198,6 +198,4 @@
 	</string-array>
 
 
-	<string name="begin"><![CDATA[<BEGIN>]]></string>
-	<string name="end"><![CDATA[<END>]]></string>
 </resources>

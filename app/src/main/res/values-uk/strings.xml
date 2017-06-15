@@ -14,12 +14,12 @@
     <string name="action_rate_app">Оцінити програму</string>
 
 	<string name="rule_message">Вкажіть незмінні слова:</string>
-	<string name="rule_name">Назва правила:</string>
+	<string name="rule_name">Назва правила (не обов\'язкова)</string>
 	<string name="rule_add_tip">Щоб додати нове правило натисніть на SMS в основному вікні.</string>
 
     <string name="popup_create_rule">Створити нове правило</string>
-	<string name="popup_edit_rule">Редагувати</string>
-	<string name="popup_delete_rule">Видалити</string>
+	<string name="popup_edit_rule">Редагувати правило</string>
+	<string name="popup_delete_rule">Видалити правило</string>
 
     <string name="account_default_currency">Валюта рахунка:</string>
 	<string name="bank_account_name">Назва банківського рахунка:</string>
@@ -116,8 +116,7 @@
 	<string name="appwidget_currency">UAH</string>
 	<string name="bank_share">Поділитися</string>
 	<string name="popup_switch_rule">Застосувати інше правило</string>
-	<string name="warning_sign">(!)</string>
-	<string name="extra_parameter">Єкстра1</string>
+    <string name="extra_parameter">Єкстра1</string>
     <string name="text_color">Колір тексту:</string>
     <string name="background_color">Фон:</string>
     <string name="bank_name">Назва банку</string>
@@ -170,4 +169,16 @@
     <string name="reading_messages">Іде обробка СМС</string>
     <string name="go_to_banks">Нема чого єкспортувати в Excel</string>
     <string name="nothing_to_cache">Нема чого кешувати</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_cancel">Відміна</string>
+    <string name="action_sign_in_short">Увійти</string>
+    <string name="title_activity_login">Увійти</string>
+    <string name="error_incorrect_password">Невірний пароль</string>
+    <string name="error_invalid_email">Невірний Email</string>
+    <string name="error_field_required">Обов\'язкове поле</string>
+    <string name="action_sign_in">Вхід або реєстрація</string>
+    <string name="error_invalid_password">Занадто короткий пароль</string>
+    <string name="permission_rationale">Портібні права на доступ до контактів</string>
+    <string name="action_delete">Видалити</string>
+    <string name="action_edit">Редагувати</string>
 </resources>

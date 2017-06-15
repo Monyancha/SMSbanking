@@ -14,12 +14,12 @@
     <string name="action_rate_app">Оценить программу</string>
 
 	<string name="rule_message">Укажите неизменяемые слова:</string>
-    <string name="rule_name">Имя правила:</string>
+    <string name="rule_name">Имя правила(необязательно)</string>
 	<string name="rule_add_tip">Для добавления нового правила нажмете на СМС в главном окне.</string>
 
     <string name="popup_create_rule">Создать новое правило</string>
-	<string name="popup_edit_rule">Редактировать</string>
-	<string name="popup_delete_rule">Удалить</string>
+	<string name="popup_edit_rule">Редактировать правило</string>
+	<string name="popup_delete_rule">Удалить правило</string>
 
     <string name="account_default_currency">Валюта счёта:</string>
 	<string name="bank_account_name">Имя банковского счёта:</string>
@@ -114,8 +114,7 @@
 	<string name="appwidget_currency">RUB</string>
 	<string name="bank_share">Поделиться</string>
 	<string name="popup_switch_rule">Применить другое правило</string>
-	<string name="warning_sign">(!)</string>
-	<string name="extra_parameter">Экстра1</string>
+    <string name="extra_parameter">Экстра1</string>
     <string name="text_color">Цвет текста:</string>
     <string name="background_color">Фон:</string>
     <string name="bank_name">Название банка</string>
@@ -168,5 +167,17 @@
     <string name="reading_messages">Идет обработка СМС</string>
     <string name="go_to_banks">Пока нечего єкспортировать в Excel</string>
     <string name="nothing_to_cache">Нечего кешировать</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_sign_in_short">Войти</string>
+    <string name="title_activity_login">Войти</string>
+    <string name="error_incorrect_password">Неправильный пароль</string>
+    <string name="error_invalid_email">Неправильный Email</string>
+    <string name="error_invalid_password">Слишком короткий пароль</string>
+    <string name="permission_rationale">Нужны права на доступ к контактам.</string>
+    <string name="action_sign_in">Вход или Регистрация</string>
+    <string name="error_field_required">Обязательное поле</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_edit">Редактировать</string>
 </resources>
 

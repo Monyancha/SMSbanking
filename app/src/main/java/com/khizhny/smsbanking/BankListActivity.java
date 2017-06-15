@@ -33,6 +33,7 @@ import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
+import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
 public class BankListActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     private AlertDialog alertDialog;
@@ -138,8 +139,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                         db.open();
                         db.useTemplate(bankTemplates.get(which));
                         // Going back to Main Activity
+                        forceRefresh=true;
                         BankListActivity.this.finish();
-
                     }
                 });
                 alertDialog = builder.create();
@@ -159,13 +160,14 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 db.setActiveBank(selectedBank.getId());
 				bankList.clear();
 				bankList.addAll(db.getMyBanks());
-
+                forceRefresh=true;
 				adapter.notifyDataSetChanged();
 				Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
 				return true;
 
             case R.id.bank_clear_cache:
                 db.deleteBankCache(selectedBank.getId());
+                forceRefresh=true;
                 Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
                 return true;
 

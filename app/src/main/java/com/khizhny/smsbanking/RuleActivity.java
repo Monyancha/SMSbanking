@@ -24,8 +24,9 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.widget.TextView;
 
 import static com.khizhny.smsbanking.MyApplication.db;
+import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
-public class RuleActivity extends AppCompatActivity {
+public class RuleActivity extends AppCompatActivity implements View.OnClickListener {
 	private List<Button> wordButtons;
 	private Rule rule;
 	private TextView ruleNameView;
@@ -49,7 +50,7 @@ public class RuleActivity extends AppCompatActivity {
 		if (todo!=null){
 			if (todo.equals("add")){
 				// adding new rule
-				rule = new Rule(bank.getId(),"New rule");
+				rule = new Rule(bank.getId(),"");
 				rule.setSmsBody(intent.getExtras().getString("sms_body"));
 			} else	{
 				// loading existing rule for editing.
@@ -132,7 +133,7 @@ public class RuleActivity extends AppCompatActivity {
 						rule.selectWord(wordIndex);
 					}
                     // refreshing rule name
-                    ruleNameView.setText(rule.getRuleNameSuggestion());
+                    //ruleNameView.setText(rule.getRuleNameSuggestion());
 				}
 			});
 			wordButtons.add(wordButton);
@@ -165,18 +166,7 @@ public class RuleActivity extends AppCompatActivity {
 		// Adding Next button click handler
 		Button nextBtn = (Button) this.findViewById(R.id.rule_next);
         if (nextBtn != null) {
-            nextBtn.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    rule.setName(ruleNameView.getText().toString());
-                    // Saving or Updating Rule in DB.
-                    rule.setId(db.addOrEditRule(rule));
-                    //finish();
-                    //Toast.makeText(v.getContext(), "New rule saved.", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(v.getContext(), TransactionActivity.class);
-                    intent.putExtra("rule_id", rule.getId());
-                    startActivity(intent);
-                }
-            });
+            nextBtn.setOnClickListener(this);
         }
     }
 
@@ -209,5 +199,36 @@ public class RuleActivity extends AppCompatActivity {
             if (alertDialog.isShowing()) alertDialog.dismiss();
         }
         super.onStop();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            // next button click handler
+            case R.id.rule_next:
+                if (ruleNameView.getText().toString().equals("")) {
+                    ruleNameView.setText(rule.getRuleNameSuggestion());
+                    rule.setName(ruleNameView.getText().toString());
+                }else{
+                    rule.setName(ruleNameView.getText().toString());
+                }
+
+                // Saving or Updating Rule in DB.
+                rule.setId(db.addOrEditRule(rule));
+
+                if (rule.getRuleType()== Rule.transactionType.IGNORE) {
+                    forceRefresh=true;
+                    super.onBackPressed();
+
+                } else {
+                    Intent intent = new Intent(v.getContext(), TransactionActivity.class);
+                    intent.putExtra("rule_id", rule.getId());
+                    startActivity(intent);
+                }
+                break;
+            default:
+                break;
+
+        }
     }
 }

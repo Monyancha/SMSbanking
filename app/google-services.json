@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "338602878108-b98f4inrolb1sah2germu7ddhq2g2e35.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.khizhny.smsbanking",
+            "certificate_hash": "31d11bc9abd8acc059fd4c3ba83740d8e466ee0d"
+          }
+        },
+        {
           "client_id": "338602878108-8487drnu7vhgp4nue0p3uf4mmcmmeb6i.apps.googleusercontent.com",
           "client_type": 3
         }

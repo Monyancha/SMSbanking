@@ -78,11 +78,14 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
             return 0;
         }
     }
+    public  static String removeBadChars(String s){
+        return s.replace("'", "").replace("\n", " ").trim();
+    }
 
     Transaction(String smsBody, String accountCurrency, Date transactionDate){
         this.icon=R.drawable.ic_transaction_unknown;
         selectedRuleId=-1;
-        this.smsBody =smsBody.replace("'", "").replace("\n", " ");
+        this.smsBody =removeBadChars(smsBody);
         this.transactionDate=transactionDate;
         this.accountCurrency=accountCurrency;
         this.transactionCurrency=accountCurrency;
@@ -306,14 +309,6 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
     }
 
 
-    /**
-     * Updates selectedRuleId if user selected specific rulu from severa avalable.
-     * @param context
-     */
-    public void performMultipleRuleCheck(Context context) {
-            selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
-}
-
     public void setAccountCurrency(String accountCurrency) {
         this.accountCurrency = accountCurrency;
     }
@@ -478,7 +473,6 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
                 if (prev.hasStateAfter && curr.hasStateBefore) {
                     if (!prev.getStateAfter().equals(curr.getStateBefore())) {
                         Transaction new_transaction = new Transaction("", prev.getAccountCurrency(),new Date((curr.getTransactionDate().getTime() + prev.getTransactionDate().getTime()) / 2));
-                        new_transaction.performMultipleRuleCheck(null);
                         new_transaction.hasCalculatedTransactionDate = true;
                         new_transaction.setAccountCurrency(prev.getAccountCurrency());
                         new_transaction.icon = R.drawable.ic_transaction_calculated;
@@ -521,6 +515,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
 
         // Loading transactions from SMS.
         String smsBody="";
+        String prevSmsBody="";
         String phoneNumbers = activeBank.getPhone().replace(";", "','");
         Cursor c;
         if (MyApplication.hasReadSmsPermission) {
@@ -537,10 +532,9 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
                     Date transactionDate = new Date(c.getLong(c.getColumnIndexOrThrow("date")));
                     if (!transactionDate.after(lastCachedTransactionDate)) skipMessage=true;
 
-                    if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))) skipMessage=true;
-                    smsBody = c.getString(c.getColumnIndexOrThrow("body"));
-                    smsBody = smsBody.replace("\n"," ");
-                    smsBody = smsBody.trim();
+                    smsBody = Transaction.removeBadChars(c.getString(c.getColumnIndexOrThrow("body")));
+
+                    if (ignoreClones && prevSmsBody.equals(smsBody)) skipMessage=true;
 
                     if (!skipMessage) {
                         // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
@@ -572,6 +566,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
                                 transactionList.add(transaction);
                             }
                             if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
+                                transaction.selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
                                 if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
                                     transaction.getSelectedRule().applyRule(transaction);
                                 } else { // if user did not picked rule choose any first.
@@ -582,6 +577,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
                             }
                         }
                     }
+                    prevSmsBody=smsBody;
                     c.moveToNext();
                 }
 
@@ -607,23 +603,28 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
     public int ruleOptionsCount(){
         return applicableRules.size();
     }
+
     /**
      * Changes selected rule ID by the user to next possible value.
      * Seves changes to db.
      */
-    public void switchRule(Context ctx){
+    public void switchToNextRule(){
         if (applicableRules.size()<2) return;
         int originSelectedRuleId=selectedRuleId;
         for (int i = 0; i< applicableRules.size(); i++) {
             if (applicableRules.get(i).getId()==originSelectedRuleId || selectedRuleId==-1) {
                 if (i+1== applicableRules.size()){
-                    selectedRuleId= applicableRules.get(0).getId();
+                    switchToRule(applicableRules.get(0));
                 }else{
-                    selectedRuleId= applicableRules.get(i+1).getId();
+                    switchToRule(applicableRules.get(i+1));
                     break;
                 }
             }
         }
+    }
+
+    public void switchToRule(Rule rule){
+        selectedRuleId= rule.getId();
         db.saveRuleConflictChoice(selectedRuleId, transactionDate);
     }
 

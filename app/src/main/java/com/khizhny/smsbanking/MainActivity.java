@@ -8,11 +8,13 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -34,6 +37,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.support.v7.widget.PopupMenu;
@@ -44,12 +48,15 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -72,31 +79,47 @@ import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 import xml.SmsBankingWidget;
 
-public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
+        OnItemClickListener,
+        SwipeRefreshLayout.OnRefreshListener{
 
     private static final String LIST_STATE = "listState";
     private static final String LIST_TRANSACTIONS = "transactions";
+    private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
+    private static final String EXPORT_FOLDER = "SMS banking";
 
+    private DatabaseReference mDatabase;
+    private FirebaseAuth mAuth;
     private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressDialog pDialog;
     Transaction selectedTransaction;
     private TransactionListAdapter transactionListAdapter;
+    private RuleListAdapter ruleListAdapter;
     private Boolean hideCurrency;
     private Boolean inverseRate;
     private Boolean hideAds;
     private List<Bank> myBanks;
     private Bank activeBank;
-    final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
-    private static final String EXPORT_FOLDER = "SMS banking";
+
     private RefreshTransactionsTask refreshTransactionsTask;
-    private AlertDialog alertDialog;
     private Parcelable listState = null;
+    private Menu optionsMenu;
+    private AlertDialog firstRunDialog;
+    private AlertDialog pickRuleDialog;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG, "MainActivity creating...");
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+        if (getIntent().getBooleanExtra("update_available", false)) {
+            goToMarket();
+        }
+
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             MyApplication.hasReadSmsPermission = (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
@@ -108,40 +131,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         setContentView(R.layout.activity_main);
         setTitle("");
         listView = (ListView) findViewById(R.id.listView);
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Transaction list View popup menu listener
-                PopupMenu popupMenu = new PopupMenu(MainActivity.this, view);
-                popupMenu.setOnMenuItemClickListener(MainActivity.this);
-                selectedTransaction = (Transaction) listView.getItemAtPosition(position);
-                if (!selectedTransaction.hasCalculatedTransactionDate) {
-                    if (selectedTransaction.ruleOptionsCount() >= 2) {
-                        popupMenu.inflate(R.menu.popup_menu_main_with_switch_option);
-                    } else {
-                        popupMenu.inflate(R.menu.popup_menu_main);
-                    }
-                    popupMenu.show();
-                }
-            }
+        listView.setOnItemClickListener(this);
 
-        });
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.blue, R.color.green);
+            swipeRefreshLayout.setOnRefreshListener(this);
         }
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-            if (activeBank != null) {
-                refreshTransactionsTask = new RefreshTransactionsTask();
-                refreshTransactionsTask.execute(activeBank);
-            }else{
-                swipeRefreshLayout.setRefreshing(false);
-            }
-            }
-        });
 
 
         // Checking if Activity was called by widget clicking.
@@ -160,8 +156,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         if (myBanks.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(getResources().getString(R.string.tip_bank_1));
-            alertDialog =builder.create();
-            alertDialog.show();
+            firstRunDialog =builder.create();
+            firstRunDialog.show();
         }
 
 
@@ -171,6 +167,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main_activity, menu);
+
+        // Check auth on Activity start
+        if (mAuth.getCurrentUser() != null) {
+            menu.removeItem(R.id.action_sign_in);
+        } else{
+            menu.removeItem(R.id.action_sign_out);
+        }
+        optionsMenu=menu;
         return true;
     }
 
@@ -180,8 +184,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         Intent intent;
         switch (item.getItemId()) {
             case R.id.action_preferences:
-                intent = new Intent(this, PrefActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(this, PrefActivity.class));
                 break;
             case R.id.action_bank_my_list:
                 intent = new Intent(this, BankListActivity.class);
@@ -189,8 +192,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 startActivity(intent);
                 break;
             case R.id.action_rule_list:
-                intent = new Intent(this, RuleListActivity.class);
-                startActivity(intent);
+                //intent = new Intent(this, RuleListActivity.class);
+                //startActivity(intent);
+                createRulePickerDialog(activeBank.ruleList, null);
                 break;
             case R.id.action_statistics:
                 intent = new Intent(this, StatisticsActivity.class);
@@ -200,20 +204,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 exportToExcel();
                 break;
             case R.id.action_rate_app:
-                Uri uri = Uri.parse("market://details?id=" + getPackageName());
-                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                // To count with Play market backstack, After pressing back button,
-                // to taken back to our application, we need to add following flags to intent.
-                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
-                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                try {
-                    startActivity(goToMarket);
-                } catch (ActivityNotFoundException e) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
-                }
+                goToMarket();
                 break;
-
             case R.id.action_privacy:
                 String url = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -222,10 +214,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 break;
             case R.id.action_cache:
                 if (activeBank!=null) {
-                    db.cacheTransactions(activeBank.getId(), transactions);
-                    Toast.makeText(getApplicationContext(), R.string.cache_created, Toast.LENGTH_SHORT).show();
-                    refreshTransactionsTask = new RefreshTransactionsTask();
-                    refreshTransactionsTask.execute(activeBank);
+
+                    //db.cacheTransactions(activeBank.getId(), transactions);
+                    CacheTransactionsTask cacheTransactionsTask=new CacheTransactionsTask();
+                    cacheTransactionsTask.execute(transactions);
+                    //Toast.makeText(getApplicationContext(), R.string.cache_created, Toast.LENGTH_SHORT).show();
+                    //onRefresh();
                 }else{
                     Toast.makeText(getApplicationContext(), R.string.nothing_to_cache, Toast.LENGTH_SHORT).show();
                 }
@@ -233,14 +227,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             case R.id.bank_clear_cache:
                 db.deleteBankCache(activeBank.getId());
                 Toast.makeText(MainActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
-                if (activeBank != null) {
-                    refreshTransactionsTask = new RefreshTransactionsTask();
-                    refreshTransactionsTask.execute(activeBank);
-                }
+                onRefresh();
                 return true;
             case R.id.action_quit:
                 this.finish();
                 System.exit(0);
+                break;
+            case R.id.action_sign_in:
+                intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_sign_out:
+                mAuth.signOut();
+                optionsMenu.clear();
+                onCreateOptionsMenu(optionsMenu);
                 break;
             default:
                 return false;
@@ -248,17 +248,58 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         return true;
     }
 
+    /**
+     * Listener for popup rule menu clicks
+     * @param item
+     * @return
+     */
     public boolean onMenuItemClick(MenuItem item) {
-        // Listener for transactions popup menu
         Intent intent;
         switch (item.getItemId()) {
+
+            // delete rule option
+            case R.id.item_delete_rule:
+                if (selectedTransaction.applicableRules.size()==1) {
+                    db.deleteRule(selectedTransaction.applicableRules.get(0).getId());
+                    onRefresh();
+                } else {
+                    // Creating dialog for rule picking
+                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                }
+                return true;
+
+            // edit rule option
+            case R.id.item_edit_rule :
+                if (selectedTransaction.applicableRules.size()==1) {
+                    intent = new Intent(this, RuleActivity.class);
+                    intent.putExtra("rule_id", selectedTransaction.applicableRules.get(0).getId());
+                    intent.putExtra("todo", "edit");
+                    startActivity(intent);
+                } else {
+                    // Creating dialog for rule edition
+                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                }
+                return true;
+
+            // switch rule option
+            case R.id.item_switch_rule:
+                if (selectedTransaction.applicableRules.size()==2){
+                    selectedTransaction.switchToNextRule();
+                    onRefresh();
+                } else { // if 3 or more rules showing dialog to pick up the rule
+                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                }
+                return true;
+
+            // create new rule option
             case R.id.item_new_rule:
                 intent = new Intent(this, RuleActivity.class);
                 intent.putExtra("sms_body", selectedTransaction.getSmsBody());
                 intent.putExtra("todo", "add");
                 startActivity(intent);
                 return true;
-            //deleting SMS
+
+            //deleting SMS option
             case R.id.item_delete_sms:
                 String defaultSmsApp;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -288,11 +329,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     Log.e("log>>>", e.toString());
                 }
                 return true;
-            case R.id.item_switch_rule:
-                // if user clicked to change Rule
-                selectedTransaction.switchRule(this);
-                this.onStart();
-                return true;
+
         }
         return false;
     }
@@ -300,8 +337,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onStop() {
         Log.d(MyApplication.LOG, "MainActivity stopping...");
-        if (alertDialog!=null){
-            if (alertDialog.isShowing()) alertDialog.dismiss();
+        if (firstRunDialog !=null){
+            if (firstRunDialog.isShowing()) firstRunDialog.dismiss();
         }
         refreshScreenWidgets();
         super.onStop();
@@ -345,8 +382,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
         } else {
             // reloading transactions to list
-            RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
-            refreshTransactionsTask.execute(activeBank);
+            forceRefresh=false;
+            onRefresh();
+
+        }
+        if (forceRefresh) {
+            forceRefresh=false;
+            onRefresh();
+
         }
         super.onResume();
     }
@@ -363,9 +406,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
-        listState = state.getParcelable(LIST_STATE);
-        transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
-        Log.d(LOG, "MainActivity instance restored...");
+        if (!forceRefresh) {
+            listState = state.getParcelable(LIST_STATE);
+            transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
+            Log.d(LOG, "MainActivity instance restored...");
+        }
     }
 
 
@@ -394,8 +439,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     MyApplication.hasReadSmsPermission = true;
-                    RefreshTransactionsTask refreshTransactionsTask = new RefreshTransactionsTask();
-                    refreshTransactionsTask.execute(activeBank);
+                    onRefresh();
                 } else {
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "READ_SMS permision denied", Toast.LENGTH_SHORT)
@@ -404,6 +448,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private void goToMarket(){
+        Uri uri = Uri.parse("market://details?id=" + getPackageName());
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+        // To count with Play market backstack, After pressing back button,
+        // to taken back to our application, we need to add following flags to intent.
+        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        try {
+            startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
         }
     }
 
@@ -419,6 +477,48 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             MainActivity.this.sendBroadcast(update);
         }
         Log.d(MyApplication.LOG, "UpdateMyAccountsState finished...");
+    }
+
+    /**
+     *  Handler for item click in transaction list
+     * @param parent
+     * @param view
+     * @param position
+     * @param id
+     */
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // Transaction list View popup menu listener
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.setOnMenuItemClickListener(this);
+        selectedTransaction = transactionListAdapter.getItem(position);
+        if (!selectedTransaction.hasCalculatedTransactionDate) { // show popup menu only for non calculated transactions
+            popupMenu.inflate(R.menu.popup_menu_main);
+            if (selectedTransaction.ruleOptionsCount() < 2) { // hiding switch rule option if not needed
+                popupMenu.getMenu().removeItem(R.id.item_switch_rule);
+            }
+            if (selectedTransaction.ruleOptionsCount() < 1) { // hiding delete rule option if not needed
+                popupMenu.getMenu().removeItem(R.id.item_delete_rule);
+            }
+            if (selectedTransaction.ruleOptionsCount() < 1) { // hiding edit rule option if not needed
+                popupMenu.getMenu().removeItem(R.id.item_edit_rule);
+            }
+            popupMenu.show();
+        }
+    }
+
+    /**
+     * Refreshes transaction list
+     */
+    @Override
+    public void onRefresh() {
+        activeBank = db.getActiveBank();
+        if (activeBank != null) {
+            refreshTransactionsTask = new RefreshTransactionsTask();
+            refreshTransactionsTask.execute(activeBank);
+        } else {
+            swipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     private class TransactionListAdapter extends ArrayAdapter<Transaction> {
@@ -437,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 rowView = inflater.inflate(R.layout.activity_main_list_row, parent, false);
             }
             Transaction t = transactions.get(position);
+
             TextView smsTextView;
 
             // Filling Massage text
@@ -525,6 +626,140 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             return rowView;
         }
 
+    }
+
+
+    private class RuleListAdapter extends ArrayAdapter<Rule> {
+        private Rule selectedRule;
+        private Transaction selectedTransaction;
+
+        public RuleListAdapter(List<Rule> ruleList, Transaction t) {
+            super(MainActivity.this,R.layout.activity_rule_list_row, ruleList);
+            selectedTransaction=t;
+        }
+
+        /**
+         * Handrer for rule picker dialog
+         * @param position
+         * @param rowView
+         * @param parent
+         * @return
+         */
+        @Override
+        public View getView(int position, View rowView , ViewGroup parent) {
+            if (rowView == null) {
+                LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = vi.inflate(R.layout.activity_rule_list_row, parent, false);
+            }
+
+            TextView ruleNameView = (TextView) rowView.findViewById(R.id.ruleName);
+            Rule r = ruleListAdapter.getItem(position);
+            ruleNameView.setText(r.getName());
+
+            Drawable icon = ResourcesCompat.getDrawable(getResources(), r.getRuleTypeDrawable(), null);
+            if (icon != null) {
+                icon.setBounds(0, 0, icon.getMinimumWidth(), icon.getMinimumHeight());
+            }
+            ruleNameView.setCompoundDrawables(icon,null,null,null);
+            rowView.setTag(r);
+
+            // witching rule
+            ruleNameView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (selectedTransaction!=null) {
+                        selectedRule=(Rule) ((View)v.getParent()).getTag();
+                        selectedTransaction.switchToRule(selectedRule);
+                        onRefresh();
+                        pickRuleDialog.dismiss();
+                    }
+                }
+            });
+
+            ImageButton vDeleteRule = (ImageButton) rowView.findViewById(R.id.delete_rule_button);
+            vDeleteRule.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedRule=(Rule) ((View)v.getParent()).getTag();
+                    db.deleteRule(selectedRule.getId());
+                    onRefresh();
+                    pickRuleDialog.dismiss();
+                }
+            });
+
+            ImageButton vEditRule = (ImageButton) rowView.findViewById(R.id.edit_rule_button);
+            vEditRule.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedRule=(Rule) ((View)v.getParent()).getTag();
+                    pickRuleDialog.dismiss();
+                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+                    intent.putExtra("rule_id", selectedRule.getId());
+                    intent.putExtra("todo", "edit");
+                    startActivity(intent);
+                    forceRefresh = true;
+                    pickRuleDialog.dismiss();
+                }
+            });
+
+            return rowView;
+        }
+
+       /* @Override
+        public void onClick(View v) {
+            selectedRule=(Rule) v.getTag();
+            switch (todo) {
+                case EDIT:
+                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+                    intent.putExtra("rule_id", selectedRule.getId());
+                    intent.putExtra("todo", "edit");
+                    startActivity(intent);
+                    break;
+     /*           case DELETE:
+                    db.deleteRule(selectedRule.getId());
+                    onRefresh();
+                    pickRuleDialog.dismiss();
+                    break;
+                case SWITCH:
+                    selectedTransaction.switchToRule(selectedRule);
+                    onRefresh();
+                    pickRuleDialog.dismiss();
+                    break;/**/
+      /*          case ASK:
+                    // Creating dialog for rule picking
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setCancelable(true);
+                    builder.setTitle("");
+
+                    // delete rule  button clicked
+                    builder.setNeutralButton(getString(R.string.action_delete), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            db.deleteRule(selectedRule.getId());
+                            forceRefresh=true;
+                            pickRuleActionDialog.dismiss();
+                            pickRuleDialog.dismiss();
+                        }
+                    });
+                    //edit rule button clicked
+                    builder.setPositiveButton(getString(R.string.action_edit), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+                            intent.putExtra("rule_id", selectedRule.getId());
+                            intent.putExtra("todo", "edit");
+                            startActivity(intent);
+                            pickRuleActionDialog.dismiss();
+                            pickRuleDialog.dismiss();
+                        }
+                    });
+
+                    pickRuleActionDialog = builder.create();
+                    pickRuleActionDialog.show();
+
+                    break;
+            }
+        }*/
     }
 
     private void exportToExcel() {        //Saving in external storage
@@ -681,10 +916,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      * Bank
      */
     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
+        private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in miliseconds
         private int cacheSize;
+        private long refreshTime;
         @Override
         protected void onPreExecute() {
             Log.d(LOG,"RefreshTransactionsTask preExecuted. (hideMatchedMessages="+hideMatchedMessages);
+            refreshTime= System.currentTimeMillis();
             super.onPreExecute();
             swipeRefreshLayout.setRefreshing(true);
             if (pDialog != null) pDialog.dismiss();
@@ -721,6 +959,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Loading transactions from SMS.
             String smsBody = "";
+            String prevSmsBody = "";
             String phoneNumbers = activeBank.getPhone().replace(";", "','");
             Cursor c;
             if (MyApplication.hasReadSmsPermission) {
@@ -744,10 +983,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                         Date transactionDate = new Date(c.getLong(c.getColumnIndexOrThrow("date")));
                         if (!transactionDate.after(lastCachedTransactionDate)) skipMessage=true;
 
-                        if (ignoreClones && smsBody.equals(c.getString(c.getColumnIndexOrThrow("body")))) skipMessage=true;
-                        smsBody = c.getString(c.getColumnIndexOrThrow("body"));
-                        smsBody = smsBody.replace("\n"," ");
-                        smsBody = smsBody.trim();
+                        smsBody = Transaction.removeBadChars(c.getString(c.getColumnIndexOrThrow("body")));
+
+                        if (ignoreClones && smsBody.equals(prevSmsBody)) skipMessage=true;
+
                         if (!skipMessage) {
                             // if sms body is duplicating previous one and ignoreClones flag is set - just skip message
                             Transaction transaction = new Transaction(smsBody,activeBank.getDefaultCurrency(),transactionDate);
@@ -778,16 +1017,19 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                                     transactionList.add(transaction);
                                 }
                                 if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
-                                    if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
-                                        transaction.getSelectedRule().applyRule(transaction);
-                                    } else { // if user did not picked rule choose any first.
-                                        transaction.applicableRules.get(0).applyRule(transaction);
-                                    }
-                                    transaction.calculateMissedData();
+                                        // loading previous rule selection from Db
+                                        transaction.selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
+                                        if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
+                                            transaction.getSelectedRule().applyRule(transaction);
+                                        } else { // if user did not picked rule choose any first.
+                                            transaction.applicableRules.get(0).applyRule(transaction);
+                                        }
+                                        transaction.calculateMissedData();
                                     transactionList.add(transaction);
                                 }
                             }
                         }
+                        prevSmsBody=smsBody;
                         c.moveToNext();
                     }
                 }
@@ -812,6 +1054,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         @Override
         protected void onPostExecute(List<Transaction> t) {
             super.onPostExecute(t);
+            refreshTime = System.currentTimeMillis()-refreshTime;
+
             Log.d(LOG,"RefreshTransactionsTask postExecuted. (hideMatchedMessages="+hideMatchedMessages);
             // Dismiss the progress dialog
             if (pDialog.isShowing())
@@ -825,11 +1069,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 listView.setAdapter(transactionListAdapter);
                 // Restore previous state (including selected item index and scroll position)
                 listView.onRestoreInstanceState(state);
-                if (t.size()-cacheSize>200) {
-                    Toast.makeText(getApplicationContext(), R.string.cache_needed,Toast.LENGTH_SHORT).show();
+                if (refreshTime>CACHE_NOTIFY_THRESHOLD) {
+                    Toast.makeText(getApplicationContext(), R.string.cache_needed,Toast.LENGTH_LONG).show();
                 }
             }
-            if (transactionListAdapter!=null) transactionListAdapter.notifyDataSetChanged();
+            if (transactionListAdapter!=null) {
+                transactionListAdapter.notifyDataSetChanged();
+            }
             swipeRefreshLayout.setRefreshing(false);
             // restoring position if possible
             try {
@@ -840,5 +1086,82 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             listState = null;
         }
+    }
+
+    private class CacheTransactionsTask extends AsyncTask<List <Transaction>, Integer, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            swipeRefreshLayout.setRefreshing(true);
+            if (pDialog != null) pDialog.dismiss();
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Caching...");
+            pDialog.setCancelable(false);
+            pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            pDialog.setMax(transactions.size());
+            pDialog.setProgress(0);
+            pDialog.show();
+            // Restoring preferences
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            hideCurrency = settings.getBoolean("hide_currency", false);
+            inverseRate = settings.getBoolean("inverse_rate", false);
+            hideAds = settings.getBoolean("hide_ads", false);
+        }
+
+        @Override
+        protected Void doInBackground(List <Transaction>... params) {
+            db.deleteBankCache(activeBank.getId());
+            int progress=0;
+            for (Transaction t:transactions) {
+                ContentValues cv = t.getContentValues();
+                cv.put("bank_id",activeBank.getId());
+                db.cacheTransaction(cv);
+                publishProgress(progress++);
+            }
+           return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer ... values) {
+            super.onProgressUpdate(values);
+            pDialog.setProgress(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // Dismiss the progress dialog
+            if (pDialog.isShowing())
+                pDialog.dismiss();
+            swipeRefreshLayout.setRefreshing(false);
+            // restoring position if possible
+            try {
+                if (listState != null)
+                    listView.onRestoreInstanceState(listState);
+            } catch (Exception e) {
+
+            }
+            listState = null;
+            onRefresh();
+        }
+    }
+
+
+    private void createRulePickerDialog(List <Rule> ruleList,Transaction t){
+        // Creating dialog for rule picking
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
+        builder.setTitle(getString(R.string.action_rule_list));
+        builder.setPositiveButton(getString(R.string.action_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                pickRuleDialog.dismiss();
+            }
+        });
+        ruleListAdapter = new RuleListAdapter(ruleList,t);
+        builder.setAdapter(ruleListAdapter,null);
+        pickRuleDialog = builder.create();
+        pickRuleDialog.show();
     }
 }

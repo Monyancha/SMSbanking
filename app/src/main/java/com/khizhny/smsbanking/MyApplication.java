@@ -18,9 +18,10 @@ public class MyApplication extends Application {
     public static DatabaseAccess db;
 
 
-    static Boolean hideMatchedMessages ;
-    static Boolean hideNotMatchedMessages;
-    static Boolean ignoreClones;
+    static boolean hideMatchedMessages ;
+    static boolean hideNotMatchedMessages;
+    static boolean ignoreClones;
+    static boolean forceRefresh;
 
     @Override
     public void onCreate() {

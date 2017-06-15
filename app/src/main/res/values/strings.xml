@@ -18,7 +18,7 @@
     <string name="action_rate_app">Rate application</string>
 
     <string name="rule_message">Pick constant words:</string>
-    <string name="rule_name">Rule name:</string>
+    <string name="rule_name">Rule name (optional)</string>
     <string name="rule_add_tip">To add new rule click on the SMS message in the main window.</string>
 
     <string name="popup_create_rule">Create new rule</string>
@@ -124,7 +124,7 @@
     <string name="appwidget_currency">USD</string>
     <string name="bank_share">Share</string>
     <string name="popup_switch_rule">Use another rule</string>
-    <string name="warning_sign">(!)</string>
+    <string name="warning_sign" translatable="false">(!)</string>
     <string name="extra_parameter">extra1</string>
     <string name="text_color">Text color:</string>
     <string name="background_color">Background:</string>
@@ -176,5 +176,22 @@
     <string name="reading_messages">Reading messages ...</string>
     <string name="go_to_banks">Nothing to export jet.</string>
     <string name="nothing_to_cache">Nothing to cache jet.</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email" translatable="false">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
 </resources>
 

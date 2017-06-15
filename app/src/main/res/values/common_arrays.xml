@@ -198,6 +198,6 @@
 	</string-array>
 
 
-	<string name="begin"><![CDATA[<BEGIN>]]></string>
-	<string name="end"><![CDATA[<END>]]></string>
+	<string name="begin" translatable="false"><![CDATA[<BEGIN>]]></string>
+	<string name="end" translatable="false"><![CDATA[<END>]]></string>
 </resources>
