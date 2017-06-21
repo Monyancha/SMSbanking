@@ -176,9 +176,19 @@
     <string name="error_incorrect_password">Невірний пароль</string>
     <string name="error_invalid_email">Невірний Email</string>
     <string name="error_field_required">Обов\'язкове поле</string>
-    <string name="action_sign_in">Вхід або реєстрація</string>
+    <string name="action_sign_in">Увійти</string>
     <string name="error_invalid_password">Занадто короткий пароль</string>
     <string name="permission_rationale">Портібні права на доступ до контактів</string>
     <string name="action_delete">Видалити</string>
     <string name="action_edit">Редагувати</string>
+    <string name="commission_tip">Значення повинно бути позитивне.</string>
+    <string name="load_template">Завантаження шаблону</string>
+    <string name="progress_downloading">Завантаження...</string>
+    <string name="sign_out">Вийти</string>
+    <string name="my_posts">Мої банки</string>
+    <string name="country">Держава:</string>
+    <string name="use_template">Використати</string>
+    <string name="post_comment">Надіслати</string>
+    <string name="write_comment">Коментар...</string>
+    <string name="login_first">Спочатку треба увійти.</string>
 </resources>

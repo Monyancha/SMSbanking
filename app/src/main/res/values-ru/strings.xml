@@ -175,9 +175,19 @@
     <string name="error_invalid_email">Неправильный Email</string>
     <string name="error_invalid_password">Слишком короткий пароль</string>
     <string name="permission_rationale">Нужны права на доступ к контактам.</string>
-    <string name="action_sign_in">Вход или Регистрация</string>
+    <string name="action_sign_in">Войти</string>
     <string name="error_field_required">Обязательное поле</string>
     <string name="action_delete">Удалить</string>
     <string name="action_edit">Редактировать</string>
+    <string name="commission_tip">Значение должно быть положительным.</string>
+    <string name="load_template">Загрузка шаблона</string>
+    <string name="progress_downloading">Зарузка...</string>
+    <string name="sign_out">Выйти</string>
+    <string name="my_posts">Мои банки</string>
+    <string name="country">Страна:</string>
+    <string name="use_template">Использовать</string>
+    <string name="post_comment">Отправить</string>
+    <string name="write_comment">Комментарий...</string>
+    <string name="login_first">Сначала войдите.</string>
 </resources>
 

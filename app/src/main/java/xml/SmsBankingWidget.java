@@ -10,10 +10,10 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.khizhny.smsbanking.Bank;
+import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.MainActivity;
 import com.khizhny.smsbanking.R;
-import com.khizhny.smsbanking.Transaction;
+import com.khizhny.smsbanking.model.Transaction;
 
 import static com.khizhny.smsbanking.MyApplication.db;
 

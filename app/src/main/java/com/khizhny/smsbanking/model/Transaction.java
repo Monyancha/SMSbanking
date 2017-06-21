@@ -1,4 +1,4 @@
-package com.khizhny.smsbanking;
+package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.khizhny.smsbanking.MyApplication;
+import com.khizhny.smsbanking.R;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,7 +26,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.android.gms.internal.zzt.TAG;
+import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 
 public class Transaction implements Comparable<Transaction>, java.io.Serializable  {
@@ -45,8 +48,8 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
     private String extraParam3;
     private String extraParam4;
 
-    int selectedRuleId;        // id if transactions forced to be used by the user for this transaction.
-    List <Rule> applicableRules;  // list of rules that can be used for this transaction
+    public int selectedRuleId;        // id if transactions forced to be used by the user for this transaction.
+    public List <Rule> applicableRules;  // list of rules that can be used for this transaction
 
     public enum Parameters {
         ACCOUNT_STATE_BEFORE,
@@ -78,12 +81,18 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
             return 0;
         }
     }
+
+
     public  static String removeBadChars(String s){
-        return s.replace("'", "").replace("\n", " ").trim();
+        if (s!=null) {
+            return s.replace("'", "").replace("\n", " ").trim();
+        }else{
+            return "";
+        }
     }
 
-    Transaction(String smsBody, String accountCurrency, Date transactionDate){
-        this.icon=R.drawable.ic_transaction_unknown;
+    public Transaction(String smsBody, String accountCurrency, Date transactionDate){
+        this.icon= R.drawable.ic_transaction_unknown;
         selectedRuleId=-1;
         this.smsBody =removeBadChars(smsBody);
         this.transactionDate=transactionDate;
@@ -134,12 +143,17 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         return stateDifference.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal getStateDifferenceInNativeCurrency(){
-        return currencyRate.multiply(stateDifference,  MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
+    public BigDecimal getStateDifferenceInNativeCurrency(boolean withCommission){
+        if (withCommission){
+            return currencyRate.multiply(stateDifference.subtract(commission), MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
+        } else {
+            return currencyRate.multiply(stateDifference, MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
+        }
     }
-    public String getDifferenceInNativeCurrencyAsString(){
+
+    public String getDifferenceInNativeCurrencyAsString(boolean withCommission){
         if (hasStateDifference) {
-            return currencyRate.multiply(stateDifference, MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP).toString();
+            return  getStateDifferenceInNativeCurrency(withCommission).toString();
         }else{
             return "N/A";
         }
@@ -150,16 +164,13 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
     }
 
     public String getCommissionAsString(boolean hideCurrency, boolean hideZero){
+        String rez="";
         if (commission.signum()!=0 || !hideZero)
         {
-            if (!hideCurrency) {
-                return commission.toString()+" " +accountCurrency;
-            }else{
-                return commission.toString();
-            }
-        }else{
-            return "";
+            rez+=commission.negate().toString();
+            if (!hideCurrency) rez+=" " +accountCurrency;
         }
+        return rez;
 
     }
 
@@ -211,34 +222,40 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         this.extraParam4 = extraParam4;
     }
 
-    public String getAccountDifferenceAsString(boolean hideCurrency,boolean inverseRate){
-        // function forms a string that will represent transaction difference on screen
+    /**
+     * Forms a string that will represent transaction difference on screen.
+     * @param hideCurrency flag
+     * @param inverseRate flag
+     * @return string that will represent transaction difference on screen
+     */
+    public String getDifferenceAsString(boolean hideCurrency, boolean inverseRate, boolean withCommission){
+        BigDecimal diff;
+        BigDecimal rate=currencyRate;
         if (hasStateDifference) {
             String rez = "";
             if (accountCurrency.equals(transactionCurrency) || currencyRate.equals(new BigDecimal("1.000"))) {
                 // if transaction has native currency
-                if (stateDifference.subtract(commission).signum() == 1) {
-                    rez += "+";
+                if (withCommission) {
+                    diff=stateDifference.subtract(commission);
+                }else {
+                    diff=stateDifference;
                 }
-                rez += stateDifference.subtract(commission).toString();
-                if (!hideCurrency) {
-                    rez += " " + transactionCurrency;
-                }
-            } else {   // if transaction has foreign currency
-                if (stateDifference.signum() == 1) {
-                    rez += "+";
-                }
+                if (diff.signum() == 1) rez += "+";
+                rez += diff.toString();
+                if (!hideCurrency) rez += " " + transactionCurrency;
+            } else {
+                // if transaction has foreign currency
+
+                if (stateDifference.signum() == 1) rez += "+";
                 rez += stateDifference.toString() + " " + transactionCurrency;
-                rez += "\n(" + getStateDifferenceInNativeCurrency();
-                if (!hideCurrency) {
-                    rez += " " + accountCurrency;
-                }
+                rez += "\n(" + getStateDifferenceInNativeCurrency(withCommission);
+                if (!hideCurrency) rez += " " + accountCurrency;
                 rez += ")";
-                if (!inverseRate) {
-                    rez += "\n(" + "rate" + " " + currencyRate.toString() + ")";
-                } else {
-                    rez += "\n(" + "rate" + " " + (new BigDecimal(1).setScale(3, RoundingMode.HALF_UP)).divide(currencyRate, RoundingMode.HALF_UP).toString() + ")";
+
+                if (currencyRate.signum()!=0 && inverseRate) {
+                        rate = (new BigDecimal(1).setScale(3, RoundingMode.HALF_UP)).divide(currencyRate, RoundingMode.HALF_UP);
                 }
+                rez += "\n(" + "rate" + " " + rate.toString() + ")";
 
             }
             return rez;
@@ -248,7 +265,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
 
     }
 
-    public String getAccountStateBeforeAsString(boolean hideCurrency){
+    public String getStateBeforeAsString(boolean hideCurrency){
         if (hasStateBefore) {
             if (!hideCurrency) {
                 return stateBefore.toString() + " " + accountCurrency;
@@ -260,7 +277,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         }
     }
 
-    public String getAccountStateAfterAsString(boolean hideCurrency){
+    public String getStateAfterAsString(boolean hideCurrency){
         if (hasStateAfter) {
             if (!hideCurrency) {
                 return stateAfter.toString()+" "+accountCurrency;
@@ -280,7 +297,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         try{
             this.setCurrencyRate(new BigDecimal(currencyRate.replace(",", ".")).setScale(3, BigDecimal.ROUND_HALF_UP));
         }catch (Exception e) {
-            Log.e(TAG,"Setting rate error:" + currencyRate);
+            Log.e(LOG,"Setting rate error:" + currencyRate);
         }
     }
 
@@ -514,7 +531,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         }
 
         // Loading transactions from SMS.
-        String smsBody="";
+        String smsBody;
         String prevSmsBody="";
         String phoneNumbers = activeBank.getPhone().replace(";", "','");
         Cursor c;

@@ -1,15 +1,23 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,33 +31,114 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserInfo;
+import com.khizhny.smsbanking.gcm.MyDownloadService;
+import com.khizhny.smsbanking.gcm.MyUploadService;
+import com.khizhny.smsbanking.model.Bank;
+
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
 public class BankListActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
+
+    private final static String EXPORT_FILE_EXTENSION="dat";
+    private final static String EXPORT_FOLDER="/SMS banking";
+    private final static String EXPORT_PATH=EXPORT_FOLDER+"/myBank_"+ Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
+    private static final int REQUEST_CODE_ASK_PERMISSIONS=111;
+    private static final int RC_SIGN_IN = 9001;
+
     private AlertDialog alertDialog;
     private ListView listView;
 	private List<Bank> bankList;
     private List<Bank> bankTemplates;
-	private BankListAdapter adapter;
+	private BankListAdapter bankListAdapter;
+    private static Bank bank2Share;
 	private int selected_row;
-    private final static String EXPORT_FILE_EXTENSION="dat";
-    private final static String EXPORT_FOLDER="/SMS banking";
-    private final static String EXPORT_PATH=EXPORT_FOLDER+"/myBank_"+Bank.serialVersionUID+"."+EXPORT_FILE_EXTENSION;
-    private static int REQUEST_CODE_ASK_PERMISSIONS=111;
+    private String country;
 
-	protected void onCreate(Bundle savedInstanceState) {
+    private FirebaseAuth mAuth;
+    private GoogleApiClient googleApiClient;
+
+    private ProgressBar progressBar;
+    private BroadcastReceiver mBroadcastReceiver;
+
+    protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bank_list);
+
+        // Local broadcast receiver
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(LOG, "onReceive:" + intent);
+                showProgress(false);
+
+                String s = intent.getAction();
+                if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {// Get number of bytes downloaded
+                    long numBytes = intent.getLongExtra(MyDownloadService.EXTRA_BYTES_DOWNLOADED, 0);
+
+                    // Alert success
+                    showMessageDialog("DOWNLOAD_COMPLETED", String.format(Locale.getDefault(),
+                            "%d bytes downloaded from %s",
+                            numBytes,
+                            intent.getStringExtra(MyDownloadService.EXTRA_DOWNLOAD_PATH)));
+
+                } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {// Alert failure
+                    showMessageDialog("Error", String.format(Locale.getDefault(),
+                            "Failed to download from %s",
+                            intent.getStringExtra(MyDownloadService.EXTRA_DOWNLOAD_PATH)));
+
+                } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
+                    onUploadResultIntent(intent);
+
+                }
+            }
+        };
+
+        mAuth = FirebaseAuth.getInstance();
+
+        // Google signIn configuration
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_client_id))
+                .requestEmail()
+                .build();
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Toast.makeText(BankListActivity.this,"Error in Google API Client", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 
@@ -71,15 +160,19 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         requestPermissions();
     }
 
-
-	@Override
+    @Override
 	protected void onStart() {
 		super.onStart();
 
-        bankList=new ArrayList<Bank>();
+        // Register receiver for uploads and downloads
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.registerReceiver(mBroadcastReceiver, MyDownloadService.getIntentFilter());
+        manager.registerReceiver(mBroadcastReceiver, MyUploadService.getIntentFilter());
+        country=getCountry();
+
 		setTitle(getString(R.string.mybank_activity_title));
-        bankList=db.getMyBanks();
-        bankTemplates = db.getBankTemplates();
+        bankList=db.getMyBanks(country);
+        bankTemplates = db.getBankTemplates(country);
 
 		for (int i=0;i<bankList.size();i++) {
 			if (bankList.get(i).isActive()) {
@@ -87,9 +180,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 			}
 		}
 
-		adapter  = new BankListAdapter(this, bankList);
+		bankListAdapter = new BankListAdapter(this, bankList);
 
-		listView.setAdapter(adapter);
+		listView.setAdapter(bankListAdapter);
 	}
 
     @Override
@@ -103,65 +196,75 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_banks, menu);
-		return true;
+        return true;
 	}
 
-	@Override
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mAuth.getCurrentUser()==null){
+            menu.findItem(R.id.bank_sign_in_and_out).setTitle(R.string.action_sign_in);
+        }else{
+            menu.findItem(R.id.bank_sign_in_and_out).setTitle(R.string.sign_out);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handles Menu item Clicks
+		// Handles ActionBar Menu item Clicks
 		Intent intent = new Intent(this, BankActivity.class);
 		switch (item.getItemId()) {
+                // if back button clicked
             case android.R.id.home:
                 finish();
                 return true;
-			case R.id.bank_import:  // Importing Bank from sdcard to myBanks
-				PickFileForImport(EXPORT_FILE_EXTENSION, Environment.getExternalStorageDirectory().getPath());
-				return true;
-			// and these are common options for My Banks and Template Banks
+
 			case R.id.bank_add:
-				// Calligng Bank Activity to add new Bank
+				// Calling Bank Activity to add new Bank
 				intent.putExtra("todo", "add");
 				startActivity(intent);
-				adapter.notifyDataSetChanged();
+				bankListAdapter.notifyDataSetChanged();
 				return true;
-            // these options just for bank Templates
+
             case R.id.bank_template: // Copying bank settings from template to myBanks
-                String templates[] = new String[bankTemplates.size()];
-                for (int i=0; i<bankTemplates.size(); i++){
-                    templates[i]=bankTemplates.get(i).getName();
-                }
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.pick_a_template);
-                builder.setCancelable(true);
-                builder.setItems(templates, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        db.open();
-                        db.useTemplate(bankTemplates.get(which));
-                        // Going back to Main Activity
-                        forceRefresh=true;
-                        BankListActivity.this.finish();
-                    }
-                });
-                alertDialog = builder.create();
-                alertDialog.show();
+                showTemplatePickDialog();
                 return true;
-		}
+
+            // TODO Download from cloud and import
+            case R.id.bank_cloud_download:
+
+                if (mAuth.getCurrentUser()!=null) {
+                    importBankFromCloud();
+                }else{
+                    Toast.makeText(this, R.string.login_first,Toast.LENGTH_SHORT).show();
+                }
+				return true;
+
+            // Logging  in or out
+            case R.id.bank_sign_in_and_out:
+                if (mAuth.getCurrentUser()==null) {
+                    googleSignIn();
+                }else{
+                    googleSignOut();
+                }
+                return true;
+        }
 		return false;
 	}
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		// handles popup items clicks
-		Bank selectedBank=adapter.getItem(selected_row);
+		Bank selectedBank= bankListAdapter.getItem(selected_row);
 		Intent intent;
          switch (item.getItemId()) {
+
 			case R.id.bank_activate:// Marking selected bank as Active in DB
                 db.setActiveBank(selectedBank.getId());
 				bankList.clear();
-				bankList.addAll(db.getMyBanks());
+				bankList.addAll(db.getMyBanks(country));
                 forceRefresh=true;
-				adapter.notifyDataSetChanged();
+				bankListAdapter.notifyDataSetChanged();
 				Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
 				return true;
 
@@ -171,43 +274,18 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
                 return true;
 
-			case R.id.bank_share:
-			case R.id.bank_export:
-				String exportPath=Environment.getExternalStorageDirectory().getPath()+EXPORT_PATH;
-				if (Bank.exportBank(selectedBank, exportPath)) {
-					Toast.makeText(BankListActivity.this, getString(R.string.export_sucessfull)+" "+exportPath, Toast.LENGTH_LONG).show();
-					if (item.getItemId()==R.id.bank_share) {
-						Uri path = Uri.fromFile(new File(exportPath));
-						Intent emailIntent = new Intent(Intent.ACTION_SEND); // set the type to 'email'
-						emailIntent.setType("vnd.android.cursor.dir/email");
-						String to[] = {"khizhny@gmail.com"};
-						emailIntent.putExtra(Intent.EXTRA_EMAIL, to);// the attachment
-						emailIntent.putExtra(Intent.EXTRA_STREAM, path);
-						emailIntent.putExtra(Intent.EXTRA_SUBJECT, "I want to share my SMS Banking settings. ("+Bank.serialVersionUID+")"); // the mail subject
-						startActivity(Intent.createChooser(emailIntent , "Send email..."));
-					}
-				} else {
-					Toast.makeText(BankListActivity.this, getString(R.string.export_failed), Toast.LENGTH_LONG).show();
-				}
-				return true;
-
-			case R.id.bank_import:
-                requestPermissions();
-				PickFileForImport(EXPORT_FILE_EXTENSION,Environment.getExternalStorageDirectory().getPath());
-				return true;
-
 			case R.id.bank_edit: // Editing Active Bank from myBanks to sdcard
 				intent= new Intent(this, BankActivity.class);
 				intent.putExtra("todo", "edit");
 				startActivity(intent);
-				adapter.notifyDataSetChanged();
+				bankListAdapter.notifyDataSetChanged();
 				return true;
 
 			case R.id.bank_add: // Adding new Bank to myBanks manualy
 				intent= new Intent(this, BankActivity.class);
 				intent.putExtra("todo", "add");
 				startActivity(intent);
-				adapter.notifyDataSetChanged();
+				bankListAdapter.notifyDataSetChanged();
 				return true;
 
             case R.id.bank_delete: // Deleting selected Bank from myBanks
@@ -218,15 +296,44 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                     db.deleteBank(selectedBank.getId());
                 }
                 bankList.clear();
-                bankList.addAll(db.getMyBanks());
+                bankList.addAll(db.getMyBanks(country));
 
-                adapter.notifyDataSetChanged();
+                bankListAdapter.notifyDataSetChanged();
                 return true;
+
+             case R.id.bank_cloud_upload:
+                 // TODO Bank export  sharing
+                 bank2Share=selectedBank;
+                 if (mAuth.getCurrentUser()==null){
+                     Toast.makeText(this,R.string.login_first,Toast.LENGTH_SHORT).show();
+                 }else {
+                     exportBankToCloud();
+                 }
+                 return true;
 		}/**/
 		return false;
 	}
 
-	public void PickFileForImport(String filter, String startingPath) {
+    /*private void getCountryAndImportFromCloud(){
+        if (country == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Pick your country");
+            builder.setSingleChoiceItems(R.array.countries_array, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    country=getResources().getStringArray(R.array.countries_array)[which];
+                    alertDialog.dismiss();
+                    importBankFromCloud();
+                }
+            });
+            alertDialog = builder.create();
+            alertDialog.show();
+        } else {
+            importBankFromCloud();
+        }
+    }/**/
+
+	public void showBankImportDialog(String filter, String startingPath) {
 		File mPath=null;
 		try {
 			mPath = new File(startingPath);
@@ -260,6 +367,39 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 			fileDialog.showDialog();
 		}
 	}
+
+	private void showTemplatePickDialog(){
+        String templates[] = new String[bankTemplates.size()];
+        for (int i=0; i<bankTemplates.size(); i++){
+            templates[i]=bankTemplates.get(i).getName();
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.pick_a_template);
+        builder.setCancelable(true);
+        builder.setItems(templates, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                db.open();
+                db.useTemplate(bankTemplates.get(which));
+
+                //Refreshing list
+                bankList.clear();
+                bankList.addAll(db.getMyBanks(country));
+                bankListAdapter.notifyDataSetChanged();
+
+                // Forcing Main Activity to refresh if we return there
+                forceRefresh=true;
+                alertDialog.dismiss();
+
+                //BankListActivity.this.finish();
+
+            }
+        });
+        alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+
 
     private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
         new AlertDialog.Builder(this)
@@ -338,5 +478,192 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             return rowView;
         }
 
+    }
+
+    private void importBankFromCloud(){
+        //showBankImportDialog(EXPORT_FILE_EXTENSION, Environment.getExternalStorageDirectory().getPath());
+
+        requestPermissions();
+        Intent intent = new Intent(this, PostsActivity.class);
+
+        startActivity(intent);
+        //showBankImportDialog(EXPORT_FILE_EXTENSION,Environment.getExternalStorageDirectory().getPath());
+
+    }
+
+    private void exportBankToCloud(){
+        String exportPath=Environment.getExternalStorageDirectory().getPath()+EXPORT_PATH;
+        showProgress(true);
+
+        // Saving File locally
+        Uri localUri =Bank.exportBank(bank2Share, exportPath);
+
+        if (localUri!=null) {
+            // bank file saved to SD successful
+
+            // Start MyUploadService to upload the file, so that the file is uploaded
+            // even if this Activity is killed or put in the background
+            startService(new Intent(this, MyUploadService.class)
+                    .putExtra(MyUploadService.EXTRA_FILE_URI, localUri)
+                    .putExtra(MyUploadService.EXTRA_COUNTRY, country)
+                    .putExtra(MyUploadService.EXTRA_BANK, bank2Share)
+                    .setAction(MyUploadService.ACTION_UPLOAD));
+            //Download result is handled in onUploadResultIntent
+        } else {
+            // bank file saved to SD failed
+            Toast.makeText(BankListActivity.this, getString(R.string.export_failed), Toast.LENGTH_LONG).show();
+            showProgress(false);
+        }
+    }
+
+
+    private void googleSignIn(){
+        showProgress(true);
+        Intent intent=Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(intent,RC_SIGN_IN);
+    }
+
+    private void googleSignOut() {
+        //Firebase sign out
+        mAuth.signOut();
+
+        //Google signOut
+        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+
+                    }
+                }
+        );
+    }
+
+    private void revokeAccess(){
+        //Firebase sign out
+        mAuth.signOut();
+        Auth.GoogleSignInApi.revokeAccess(googleApiClient).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(@NonNull Status status) {
+
+            }
+        });
+    }
+
+    /*
+     * Google sign In callback
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode== RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()){
+                // Google SignIn successful.
+                Log.d(LOG,"onActivityResult:Successful");
+
+                // Now try auth in Firebase
+                GoogleSignInAccount googleSignInAccount = result.getSignInAccount();
+                String name=googleSignInAccount.getDisplayName();
+                fireBaseAuthWithGoogle(googleSignInAccount);
+            }else{
+                Log.d(LOG,"onActivityResult:Unsuccessful"+result.getStatus());
+                // SignIn failed
+                showProgress(false);
+            }
+        }
+    }
+
+
+
+    /**
+     * todo Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar2);
+
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        progressBar.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });/**/
+    }
+
+    private void fireBaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+        Log.d(LOG,"FirebaseAuthWithGoogle:" + googleSignInAccount.getId());
+        showProgress(true);
+
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(),null);
+        mAuth.signInWithCredential(authCredential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(LOG,"signInWithCredential:OnComplete:" + task.isSuccessful());
+                        showProgress(false);
+                        if (task.isSuccessful()) {
+                            // if sign in successful then auth state listener will handle it.
+                                        Toast.makeText(BankListActivity.this,"Welcome "+getUserName(),Toast.LENGTH_LONG).show();
+                            Log.d(LOG, "signInWithCredential:success");
+                        }else{
+                            // if sign in fails show message to user.
+                            Log.d(LOG, "signInWithCredential:failed");
+                            Toast.makeText(BankListActivity.this,"Authentication failed.",Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        /*/ Check if this Activity was launched by clicking on an upload notification
+        if (intent.hasExtra(MyUploadService.EXTRA_DOWNLOAD_URL)) {
+            onUploadResultIntent(intent);
+        }*/
+        onUploadResultIntent(intent);
+    }
+
+    private void onUploadResultIntent(Intent intent) {
+        // Got a new intent from MyUploadService with a success or failure
+        Uri mDownloadUrl = intent.getParcelableExtra(MyUploadService.EXTRA_DOWNLOAD_URL);
+        Uri mFileUri = intent.getParcelableExtra(MyUploadService.EXTRA_FILE_URI);
+        if (mDownloadUrl==null) {
+            // File Upload failed
+            Toast.makeText(BankListActivity.this,"File upload failed.",Toast.LENGTH_LONG).show();
+
+        }else{
+            // File Uploaded successfully
+            Toast.makeText(BankListActivity.this,"File uploaded.",Toast.LENGTH_LONG).show();
+        }
+        showProgress(false);
+    }
+
+    private void showMessageDialog(String title, String message) {
+        AlertDialog ad = new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .create();
+        ad.show();
+    }
+
+    public String getCountry(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("country_preference",null);
+    }
+
+    public String getUserName() {
+        FirebaseUser user=mAuth.getCurrentUser();
+        for (UserInfo i : user.getProviderData()){
+            if (i.getDisplayName()!=null) {
+                return i.getDisplayName();
+            }
+        }
+        return "Anonymous";
     }
 }

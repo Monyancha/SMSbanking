@@ -52,4 +52,5 @@ public class MyApplication extends Application {
         db.close();
         super.onTerminate();
     }
+
 }

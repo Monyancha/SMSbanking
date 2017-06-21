@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
@@ -130,16 +131,27 @@
                 <data android:scheme="mmsto"/>
             </intent-filter>
         </service>
+
         <service android:name=".gcm.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
+
         <service android:name=".gcm.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
+
+        <service
+            android:name=".gcm.MyDownloadService"
+            android:exported="false"/>
+
+        <service
+            android:name=".gcm.MyUploadService"
+            android:exported="false" />
+
 
         <receiver android:name="xml.SmsBankingWidget">
             <intent-filter>
@@ -156,9 +168,12 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login">
+
+        <activity android:name=".PostsActivity">
+        </activity>
+
+        <activity android:name=".PostDetailActivity">
+
         </activity>
     </application>
 

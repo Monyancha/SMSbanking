@@ -3,11 +3,10 @@
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="fill_parent"
-                                             android:layout_height="wrap_content"
+                                             android:layout_height="match_parent"
                                              android:layout_margin="5dp"
                                              android:orientation="vertical"
-                                             tools:layout_editor_absoluteY="86dp"
-                                             tools:layout_editor_absoluteX="5dp">
+    >
 
     <TextView
         android:id="@+id/smsBody"
@@ -26,15 +25,68 @@
         android:paddingRight="5dp"
         android:text="@string/SMS_TEXT"
         android:textSize="9sp"
-        app:layout_constraintBottom_toBottomOf="@+id/transanctionIcon"
+        app:layout_constraintBottom_toBottomOf="@+id/transactionIcon"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toRightOf="@+id/linearLayout"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"/>
 
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="0dp"
+        android:layout_toEndOf="@+id/transaction_date"
+        android:layout_toRightOf="@+id/transaction_date"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@+id/transaction_date"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/stateAfter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:gravity="top|end"
+            android:text="@string/tip_after"
+            android:textSize="9sp"/>
+
+        <TextView
+            android:id="@+id/stateDifference"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:gravity="end|center"
+            android:text="@string/tip_difference"
+            android:textSize="9sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/transactionComission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:gravity="end|center"
+            android:text="@string/tip_commission"
+            android:textSize="9sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/stateBefore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:gravity="bottom|end"
+            android:text="@string/tip_before"
+            android:textSize="9sp"/>
+    </LinearLayout>
+
     <TextView
-        android:id="@+id/transanction_date"
+        android:id="@+id/transaction_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -44,7 +96,7 @@
         android:layout_marginTop="0dp"
         android:gravity="end"
         android:text="@string/tip_date"
-        android:textSize="14sp"
+        android:textSize="12sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -52,73 +104,36 @@
         android:id="@+id/warning_sign"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/transanctionIcon"
+        android:layout_alignBottom="@+id/transactionIcon"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/transanction_date"
+        android:layout_below="@+id/transaction_date"
         android:layout_gravity="top"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="0dp"
-        android:layout_toStartOf="@+id/transanctionIcon"
         android:gravity="center"
         android:text="@string/warning_sign"
         android:textColor="#ff0000"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/transanction_date"/>
+        app:layout_constraintTop_toBottomOf="@+id/transaction_date"/>
 
     <ImageView
-        android:id="@+id/transanctionIcon"
-        android:layout_width="30dp"
+        android:id="@+id/transactionIcon"
+        android:layout_width="36dp"
         android:layout_height="30dp"
-        android:layout_below="@+id/transanction_date"
+        android:layout_below="@+id/transaction_date"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="-1dp"
         android:layout_toLeftOf="@+id/linearLayout"
         android:contentDescription="@string/tip_icon"
         android:src="@drawable/ic_transaction_unknown"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toRightOf="@+id/warning_sign"
-        app:layout_constraintRight_toRightOf="@+id/transanction_date"
-        app:layout_constraintTop_toBottomOf="@+id/transanction_date"/>
-
-    <TextView
-        android:id="@+id/extra3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="@string/extra_parameter"
-        android:textColor="#0000ff"
-        android:textSize="10sp"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="@+id/smsBody"
-        app:layout_constraintRight_toLeftOf="@+id/extra4"
-        app:layout_constraintTop_toBottomOf="@+id/smsBody"/>
-
-    <TextView
-        android:id="@+id/extra2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="7dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="@string/extra_parameter"
-        android:textColor="#04ac04"
-        android:textSize="10sp"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/smsBody"
-        app:layout_constraintTop_toBottomOf="@+id/smsBody"/>
+        app:layout_constraintRight_toRightOf="@+id/transaction_date"
+        app:layout_constraintTop_toBottomOf="@+id/transaction_date"/>
 
     <TextView
         android:id="@+id/extra1"
@@ -136,7 +151,43 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/smsBody"
-        app:layout_constraintTop_toBottomOf="@+id/smsBody"/>
+        app:layout_constraintTop_toBottomOf="@+id/transactionIcon"/>
+
+    <TextView
+        android:id="@+id/extra3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/extra_parameter"
+        android:textColor="#0000ff"
+        android:textSize="10sp"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/smsBody"
+        app:layout_constraintRight_toLeftOf="@+id/extra4"
+        app:layout_constraintTop_toBottomOf="@+id/transactionIcon"/>
+
+    <TextView
+        android:id="@+id/extra2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="7dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/extra_parameter"
+        android:textColor="#04ac04"
+        android:textSize="10sp"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/smsBody"
+        app:layout_constraintTop_toBottomOf="@+id/transactionIcon"/>
 
     <TextView
         android:id="@+id/extra4"
@@ -145,7 +196,7 @@
         android:layout_gravity="top"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:gravity="center|right"
         android:text="@string/extra_parameter"
@@ -154,59 +205,6 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="@+id/smsBody"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/smsBody"/>
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="false"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="0dp"
-        android:layout_toEndOf="@+id/transanction_date"
-        android:layout_toRightOf="@+id/transanction_date"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toRightOf="@+id/transanction_date"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/stateAfter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:gravity="top|end"
-            android:text="@string/tip_after"
-            android:textSize="9sp"/>
-
-        <TextView
-            android:id="@+id/stateDifference"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center"
-            android:gravity="end|center"
-            android:text="@string/tip_difference"
-            android:textSize="9sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/transactionComission"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center"
-            android:gravity="end|center"
-            android:text="@string/tip_commission"
-            android:textSize="9sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/stateBefore"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:gravity="bottom|end"
-            android:text="@string/tip_before"
-            android:textSize="9sp"/>
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/transactionIcon"/>
 
 </android.support.constraint.ConstraintLayout>

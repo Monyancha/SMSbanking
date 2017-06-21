@@ -181,7 +181,7 @@
     <!-- Strings related to login -->
     <string name="prompt_email" translatable="false">Email</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in">Sign in</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -193,5 +193,21 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
     <string name="action_edit">Edit</string>
+    <string name="commission_tip">Use positive values for bank commission.</string>
+    <string name="load_template">Load Template</string>
+    <string name="progress_downloading">Downloading...</string>
+    <string name="default_client_id" translatable="false">338602878108-p887iq5e2orf4up4jo3qgdiiqis34212.apps.googleusercontent.com</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="my_posts">My Banks</string>
+    <string name="country">Country:</string>
+    <string name="use_template">Use</string>
+    <string name="post_comment">Post</string>
+    <string name="write_comment">Write a comment...</string>
+    <string name="login_first">Login first.</string>
+
+    <string name="begin" translatable="false"><![CDATA[<BEGIN>]]></string>
+
+    <string name="end" translatable="false"><![CDATA[<END>]]></string>
+
 </resources>
 

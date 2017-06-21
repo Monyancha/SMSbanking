@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +22,9 @@ import android.widget.ImageView;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.TextView;
 
+import com.khizhny.smsbanking.model.Bank;
+import com.khizhny.smsbanking.model.Rule;
+
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
@@ -34,11 +36,18 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     private AlertDialog alertDialog;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
     }
+
+  /*  @Override
+    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onCreate(savedInstanceState, persistentState);
+
+
+    }/**/
 
     @Override
     protected void onResume() {

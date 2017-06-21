@@ -48,15 +48,14 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.khizhny.smsbanking.model.Bank;
+import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.Transaction;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -88,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
 
-    private DatabaseReference mDatabase;
-    private FirebaseAuth mAuth;
     private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -100,21 +97,31 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private Boolean hideCurrency;
     private Boolean inverseRate;
     private Boolean hideAds;
+    private String country;
     private List<Bank> myBanks;
     private Bank activeBank;
 
     private RefreshTransactionsTask refreshTransactionsTask;
     private Parcelable listState = null;
-    private Menu optionsMenu;
     private AlertDialog firstRunDialog;
     private AlertDialog pickRuleDialog;
+    private AlertDialog pickCountryDialog;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(LOG, "MainActivity creating...");
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mAuth = FirebaseAuth.getInstance();
+        Log.d(LOG, "MainActivity:onCreate()");
+
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideCurrency = settings.getBoolean("hide_currency", false);
+        inverseRate = settings.getBoolean("inverse_rate", false);
+        hideAds = settings.getBoolean("hide_ads", false);
+        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
+        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+        ignoreClones = settings.getBoolean("ignore_clones", false);
+        country = settings.getString("country_preference",null);
+
 
         if (getIntent().getBooleanExtra("update_available", false)) {
             goToMarket();
@@ -149,37 +156,40 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             db.setActiveBank(widget_bank_id);
         }
 
-        myBanks = db.getMyBanks();
-        for (Bank b: myBanks){
-            if (b.isActive()) activeBank=b;
-        }
-        if (myBanks.size() == 0) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(getResources().getString(R.string.tip_bank_1));
-            firstRunDialog =builder.create();
-            firstRunDialog.show();
-        }
+        if (country!=null) {
+            loadMyBanks();
+            if (transactions!=null) {
+                transactionListAdapter = new TransactionListAdapter(transactions);
+                listView.setAdapter(transactionListAdapter);
+                if (listState != null) {
+                    listView.onRestoreInstanceState(listState);
+                }
+            } else {
+                // reloading transactions to list
+                forceRefresh=false;
+                onRefresh();
 
+            }
+            if (forceRefresh) {
+                forceRefresh=false;
+                onRefresh();
 
+            }
+        } else {
+                showCountryPickDialog();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        Log.d(LOG, "MainActivity:onCreateOptionsMenu()");
         getMenuInflater().inflate(R.menu.menu_main_activity, menu);
-
-        // Check auth on Activity start
-        if (mAuth.getCurrentUser() != null) {
-            menu.removeItem(R.id.action_sign_in);
-        } else{
-            menu.removeItem(R.id.action_sign_out);
-        }
-        optionsMenu=menu;
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(LOG, "MainActivity:onOptionsItemSelected()");
         // Listener for Menu options
         Intent intent;
         switch (item.getItemId()) {
@@ -214,12 +224,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 break;
             case R.id.action_cache:
                 if (activeBank!=null) {
-
-                    //db.cacheTransactions(activeBank.getId(), transactions);
                     CacheTransactionsTask cacheTransactionsTask=new CacheTransactionsTask();
                     cacheTransactionsTask.execute(transactions);
-                    //Toast.makeText(getApplicationContext(), R.string.cache_created, Toast.LENGTH_SHORT).show();
-                    //onRefresh();
                 }else{
                     Toast.makeText(getApplicationContext(), R.string.nothing_to_cache, Toast.LENGTH_SHORT).show();
                 }
@@ -233,27 +239,16 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 this.finish();
                 System.exit(0);
                 break;
-            case R.id.action_sign_in:
-                intent = new Intent(this, LoginActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.action_sign_out:
-                mAuth.signOut();
-                optionsMenu.clear();
-                onCreateOptionsMenu(optionsMenu);
-                break;
+
             default:
                 return false;
         }
         return true;
     }
 
-    /**
-     * Listener for popup rule menu clicks
-     * @param item
-     * @return
-     */
+    // Listener for popup rule menu clicks
     public boolean onMenuItemClick(MenuItem item) {
+        Log.d(LOG, "MainActivity:OnMenuItemClick()");
         Intent intent;
         switch (item.getItemId()) {
 
@@ -336,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onStop() {
-        Log.d(MyApplication.LOG, "MainActivity stopping...");
+        Log.d(LOG, "MainActivity:OnStop()");
         if (firstRunDialog !=null){
             if (firstRunDialog.isShowing()) firstRunDialog.dismiss();
         }
@@ -346,17 +341,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onResume() {
-        Log.d(LOG, "MainActivity resuming...");
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-        hideAds = settings.getBoolean("hide_ads", false);
-        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
-        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
-        ignoreClones = settings.getBoolean("ignore_clones", false);
-
-
+        Log.d(LOG, "MainActivity:OnResume()");
         // enabling ads banner
         AdView mAdView = (AdView) findViewById(R.id.adView);
         if (!hideAds) {
@@ -367,36 +352,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         } else {
             mAdView.setVisibility(View.GONE);
         }
-
-        //Getting activeBank
-        myBanks = db.getMyBanks();
-        for (Bank b: myBanks){
-            if (b.isActive()) activeBank=b;
-        }
-
-        if (transactions!=null) {
-            transactionListAdapter = new TransactionListAdapter(transactions);
-            listView.setAdapter(transactionListAdapter);
-            if (listState != null) {
-                listView.onRestoreInstanceState(listState);
-            }
-        } else {
-            // reloading transactions to list
-            forceRefresh=false;
-            onRefresh();
-
-        }
-        if (forceRefresh) {
-            forceRefresh=false;
-            onRefresh();
-
-        }
         super.onResume();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
-        Log.d(LOG, "MainActivity instance saved...");
+        Log.d(LOG, "MainActivity:onSaveInstanceState()");
         super.onSaveInstanceState(state);
         listState = listView.onSaveInstanceState();
         state.putParcelable(LIST_STATE,listState);
@@ -405,6 +366,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onRestoreInstanceState(Bundle state) {
+        Log.d(LOG, "MainActivity:onRestoreInstanceState()");
         super.onRestoreInstanceState(state);
         if (!forceRefresh) {
             listState = state.getParcelable(LIST_STATE);
@@ -416,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onDestroy() {
-        Log.d(MyApplication.LOG, "MainActivity destroying...");
+        Log.d(LOG, "MainActivity:onDestroy()");
         // restoring default SMS managing application
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (!MyApplication.defaultSmsApp.equals(getPackageName())) {
@@ -434,6 +396,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[]  permissions, @NonNull int[] grantResults) {
+        Log.d(LOG, "MainActivity:onRequestPermissionsResult()");
         switch (requestCode) {
             case REQUEST_CODE_ASK_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -452,6 +415,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     private void goToMarket(){
+        Log.d(LOG, "MainActivity:goToMarket()");
         Uri uri = Uri.parse("market://details?id=" + getPackageName());
         Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
         // To count with Play market backstack, After pressing back button,
@@ -466,29 +430,29 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     private void refreshScreenWidgets() {
+        Log.d(LOG, "MainActivity:refreshScreenWidgets()");
         //Refreshing onscreen widgets
-        if (myBanks.size() > 0) {
-            ComponentName name = new ComponentName(MainActivity.this, SmsBankingWidget.class);
-            int[] ids = AppWidgetManager.getInstance(MainActivity.this).getAppWidgetIds(name);
-            Intent update = new Intent();
-            update.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-            update.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            Log.d(MyApplication.LOG, "Sending broadcast to MainActivity to refresh widgets...");
-            MainActivity.this.sendBroadcast(update);
+        if (myBanks!=null) {
+            if (myBanks.size() > 0) {
+                ComponentName name = new ComponentName(MainActivity.this, SmsBankingWidget.class);
+                int[] ids = AppWidgetManager.getInstance(MainActivity.this).getAppWidgetIds(name);
+                Intent update = new Intent();
+                update.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                update.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                Log.d(MyApplication.LOG, "Sending broadcast to MainActivity to refresh widgets...");
+                MainActivity.this.sendBroadcast(update);
+            }
         }
         Log.d(MyApplication.LOG, "UpdateMyAccountsState finished...");
     }
 
-    /**
+    /*
      *  Handler for item click in transaction list
-     * @param parent
-     * @param view
-     * @param position
-     * @param id
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Transaction list View popup menu listener
+        Log.d(LOG, "MainActivity:onItemClick()");
         PopupMenu popupMenu = new PopupMenu(this, view);
         popupMenu.setOnMenuItemClickListener(this);
         selectedTransaction = transactionListAdapter.getItem(position);
@@ -512,6 +476,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      */
     @Override
     public void onRefresh() {
+        Log.d(LOG, "MainActivity:onRefresh()");
         activeBank = db.getActiveBank();
         if (activeBank != null) {
             refreshTransactionsTask = new RefreshTransactionsTask();
@@ -559,35 +524,35 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             // Filling Before state
             TextView accountBeforeView = (TextView) rowView.findViewById(R.id.stateBefore);
             if (t.hasStateBefore){
-                accountBeforeView.setText(t.getAccountStateBeforeAsString(hideCurrency));
+                accountBeforeView.setText(t.getStateBeforeAsString(hideCurrency));
             } else {
                 accountBeforeView.setText("");
             }
             // Filling Transaction Date
-            TextView dateView = (TextView) rowView.findViewById(R.id.transanction_date);
+            TextView dateView = (TextView) rowView.findViewById(R.id.transaction_date);
             dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
 
             // Filling After state
             TextView accountAfterView = (TextView) rowView.findViewById(R.id.stateAfter);
             if (t.hasStateAfter){
-                accountAfterView.setText(t.getAccountStateAfterAsString(hideCurrency));
+                accountAfterView.setText(t.getStateAfterAsString(hideCurrency));
             }else {
                 accountAfterView.setText("");
             }
-            // Filling comission
-            TextView accountComissionView = (TextView) rowView.findViewById(R.id.transactionComission);
+            // Filling commission
+            TextView accountCommissionView = (TextView) rowView.findViewById(R.id.transactionComission);
             if (t.getCommission().equals(new BigDecimal("0.00"))) {
-                accountComissionView.setVisibility(View.GONE);
+                accountCommissionView.setVisibility(View.GONE);
             } else {
-                accountComissionView.setVisibility(View.VISIBLE);
-                accountComissionView.setText(t.getCommissionAsString(hideCurrency,true));
-                accountComissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
+                accountCommissionView.setVisibility(View.VISIBLE);
+                accountCommissionView.setText(t.getCommissionAsString(hideCurrency,true));
+                accountCommissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
             }
             // Filling difference
             TextView accountDifferenceView = (TextView) rowView.findViewById(R.id.stateDifference);
             if (t.hasStateDifference){
                 accountDifferenceView.setVisibility(View.VISIBLE);
-                accountDifferenceView.setText(t.getAccountDifferenceAsString(hideCurrency,inverseRate));
+                accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency,inverseRate,false));
                 switch (t.getStateDifference().signum()) {
                     case -1:
                         accountDifferenceView.setTextColor(Color.RED);
@@ -603,7 +568,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 accountDifferenceView.setText("");
             }
             // Changing icon
-            ImageView iconView = (ImageView) rowView.findViewById(R.id.transanctionIcon);
+            ImageView iconView = (ImageView) rowView.findViewById(R.id.transactionIcon);
             iconView.setImageResource(t.icon);
 
             // Filling Extra parameters
@@ -762,7 +727,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }*/
     }
 
-    private void exportToExcel() {        //Saving in external storage
+    private void exportToExcel() {
+        Log.d(LOG, "MainActivity:exportToExcel()");
+        //Saving in external storage
         File sdCard = Environment.getExternalStorageDirectory();
         File directory = new File(sdCard.getAbsolutePath() + "/" + EXPORT_FOLDER);
 
@@ -813,7 +780,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                         if (t.hasStateBefore) addBigDecimal(worksheet, 2, i, t.getStateBefore(), 2);
                         if (t.hasStateDifference) {
                             addBigDecimal(worksheet, 3, i, t.getStateDifference(), 2);
-                            addBigDecimal(worksheet, 4, i, t.getStateDifferenceInNativeCurrency(), 2);
+                            addBigDecimal(worksheet, 4, i, t.getStateDifferenceInNativeCurrency(false), 2);
                             if (!(t.getCurrencyRate().equals(new BigDecimal("1.000"))))
                                 addBigDecimal(worksheet, 5, i, t.getCurrencyRate(), 3);
                         }
@@ -890,6 +857,46 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
+    private void showFirstRunDialog() {
+        Log.d(LOG, "MainActivity:showFirstRunDialog()");
+        if (myBanks.size() == 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(getResources().getString(R.string.tip_bank_1));
+            firstRunDialog = builder.create();
+            firstRunDialog.show();
+        }
+    }
+
+    private void showCountryPickDialog(){
+        Log.d(LOG, "MainActivity:showCountryPickDialog()");
+        boolean flag=false;
+        if (pickCountryDialog==null) {  // onRefresh is called twice for some reasons !!
+            flag=true;
+        }else {
+            if (!pickCountryDialog.isShowing()) flag=true;
+        }
+        if (flag) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Pick your country");
+            builder.setSingleChoiceItems(R.array.countries_array, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // Updating country settings in preferences
+                    Log.d(LOG, "MainActivity:showCountryPickDialog().onClick");
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    country = getResources().getStringArray(R.array.countries_array)[which];
+                    settings.edit().putString("country_preference", country).apply();
+                    db.setDefaultCountry(country);  // update db with selected country
+                    loadMyBanks();
+                    dialog.dismiss();
+                    showFirstRunDialog();
+                }
+            });
+            pickCountryDialog = builder.create();
+            pickCountryDialog.show();
+        }
+    }
+
     private void addBigDecimal(WritableSheet sheet, int column, int row, BigDecimal value, int digits) throws WriteException {
         NumberFormat numberFormat;
         if (digits==3) {
@@ -916,9 +923,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      * Bank
      */
     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
-        private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in miliseconds
+
+        private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in milliseconds
         private int cacheSize;
         private long refreshTime;
+
         @Override
         protected void onPreExecute() {
             Log.d(LOG,"RefreshTransactionsTask preExecuted. (hideMatchedMessages="+hideMatchedMessages);
@@ -1149,9 +1158,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 
     private void createRulePickerDialog(List <Rule> ruleList,Transaction t){
+        Log.d(LOG, "MainActivity:createRulePickerDialog()");
         // Creating dialog for rule picking
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(false);
+        builder.setCancelable(true);
         builder.setTitle(getString(R.string.action_rule_list));
         builder.setPositiveButton(getString(R.string.action_cancel), new DialogInterface.OnClickListener() {
             @Override
@@ -1163,5 +1173,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         builder.setAdapter(ruleListAdapter,null);
         pickRuleDialog = builder.create();
         pickRuleDialog.show();
+    }
+
+    private void loadMyBanks(){
+        Log.d(LOG, "MainActivity:loadMyBanks()");
+        myBanks = db.getMyBanks(country);
+        for (Bank b : myBanks) {
+            if (b.isActive()) activeBank = b;
+        }
+
     }
 }

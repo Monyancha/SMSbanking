@@ -60,15 +60,4 @@
         android:orderInCategory="111"
         android:title="@string/action_privacy"
         app:showAsAction="never"/>
-    <item
-        android:id="@+id/action_sign_in"
-        android:orderInCategory="112"
-        android:title="@string/action_sign_in"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/action_sign_out"
-        android:orderInCategory="113"
-        android:title="Sign out"
-        app:showAsAction="never"/>
-
 </menu>

@@ -16,6 +16,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
+
 import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
@@ -259,6 +262,8 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
     private void refreshResult(){
         TextView resultView = (TextView) findViewById(R.id.sub_rule_result_value);
+        TextView tipView = (TextView) findViewById(R.id.subrule_tip);
+        tipView.setText("");
         // hiding unused views depending on used method
         switch (subRule.getExtractionMethod()){
             case WORD_AFTER_PHRASE:
@@ -327,15 +332,21 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
         Log.d(LOG,"refreshResult is called");
         switch (subRule.getExtractedParameter()){
+            // getting result as a currency
             case CURRENCY:
                 resultView.setText(subRule.applySubRule(rule.getSmsBody(), 1));
                 break;
+            // getting result as a decimal value
+            case COMMISSION:
+                tipView.setText(R.string.commission_tip);
             case ACCOUNT_STATE_BEFORE:
             case ACCOUNT_STATE_AFTER:
             case ACCOUNT_DIFFERENCE:
-            case COMMISSION:
+
                 resultView.setText(subRule.applySubRule(rule.getSmsBody(), 0));
+
                 break;
+            // getting result as a string
             case EXTRA_1:
             case EXTRA_2:
             case EXTRA_3:

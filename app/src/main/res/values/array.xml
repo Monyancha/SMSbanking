@@ -11,22 +11,22 @@
     </string-array>
 
     <string-array name="method_entries">
-	<item>n-th word after Phrase</item>
-    <item>n-th word before Phrase</item>
-    <item>all words between Phrases</item>
-    <item>use constant Value</item>
-</string-array>
+        <item>n-th word after Phrase</item>
+        <item>n-th word before Phrase</item>
+        <item>all words between Phrases</item>
+        <item>use constant Value</item>
+    </string-array>
 
-<string-array name="transaction_types">
-    <item>Unknown</item>
-    <item>Income</item>
-    <item>Withdraw</item>
-    <item>TransferIn</item>
-    <item>TransferOut</item>
-    <item>Paid</item>
-    <item>Failed</item>
-    <item>Calculated</item>
-    <item>Ignore</item>
-</string-array>
+    <string-array name="transaction_types">
+        <item>Unknown</item>
+        <item>Income</item>
+        <item>Withdraw</item>
+        <item>TransferIn</item>
+        <item>TransferOut</item>
+        <item>Paid</item>
+        <item>Failed</item>
+        <item>Calculated</item>
+        <item>Ignore</item>
+    </string-array>
 
 </resources>

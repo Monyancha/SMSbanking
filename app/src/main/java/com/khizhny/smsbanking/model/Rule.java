@@ -1,8 +1,10 @@
-package com.khizhny.smsbanking;
+package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.util.Log;
+
+import com.khizhny.smsbanking.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +58,7 @@ public class Rule implements java.io.Serializable {
 	 * @param bankId Bank ID.
 	 * @param name Name of the rule
 	 */
-	Rule(int bankId, String name){
+    public Rule(int bankId, String name){
 		this.id=-1;
 		this.bankId=bankId;
 		this.name=name;
@@ -75,7 +77,7 @@ public class Rule implements java.io.Serializable {
 	 * @param bankId Bank ID
 	 * @param rule Rule
 	 */
-	Rule(Rule rule, int bankId){
+    public Rule(Rule rule, int bankId){
 		this.id=-1;
 		this.bankId=bankId;
 		this.name=rule.name;

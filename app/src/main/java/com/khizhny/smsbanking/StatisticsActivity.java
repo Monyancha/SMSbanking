@@ -22,15 +22,19 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.khizhny.smsbanking.model.Bank;
+import com.khizhny.smsbanking.model.Transaction;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
+
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class StatisticsActivity extends AppCompatActivity{
     private List<Transaction> transactions;
@@ -165,7 +169,7 @@ public class StatisticsActivity extends AppCompatActivity{
                             }
                             diff = 0;
                             if (t.hasStateDifference) {
-                                diff = t.getStateDifferenceInNativeCurrency().floatValue();
+                                diff = t.getStateDifferenceInNativeCurrency(true).floatValue();
                             }
                             if (diff > 0) {
                                 totalIncome = totalIncome + diff;
@@ -273,6 +277,8 @@ public class StatisticsActivity extends AppCompatActivity{
         Calendar cal = Calendar.getInstance();
         cal.setMinimalDaysInFirstWeek(7);
         cal.setTime(startDate);
+
+
         /*shifting calendar from start date */
         switch (step){
             case 1: //Year
@@ -306,7 +312,8 @@ public class StatisticsActivity extends AppCompatActivity{
             case 4: //Week
                 return "Y"+year+"W"+week;
             case 5: //Day
-                return day+"/"+(month+1)+"/"+year;
+                //
+                return String.format(Locale.getDefault(), "%1$td/%1$tm/%1$tY", cal);
             default:
                 return "";
         }

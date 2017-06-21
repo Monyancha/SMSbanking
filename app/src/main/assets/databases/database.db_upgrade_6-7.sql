@@ -16,4 +16,6 @@ CREATE TABLE "transactions" (
 	`extra4`	TEXT,
 	`exchange_rate`	TEXT,
 	FOREIGN KEY(`bank_id`) REFERENCES banks ( _id )
-)
+);
+DELETE FROM version WHERE version=6;
+INSERT INTO version(version) VALUES(7);

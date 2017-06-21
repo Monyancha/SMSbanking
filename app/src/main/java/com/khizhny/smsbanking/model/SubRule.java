@@ -1,10 +1,10 @@
-package com.khizhny.smsbanking;
+package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.util.Log;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
-class SubRule implements java.io.Serializable {
+public class SubRule implements java.io.Serializable {
 
 	private final static long serialVersionUID = 1; // Is used to indicate class version during Import/Export
 	private int id;
@@ -22,7 +22,7 @@ class SubRule implements java.io.Serializable {
 	private int trimRight;
 	private boolean negate;
 
-	enum Method {
+    public enum Method {
 		WORD_AFTER_PHRASE,
 		WORD_BEFORE_PHRASE,
 		WORDS_BETWEEN_PHRASES,
@@ -33,7 +33,7 @@ class SubRule implements java.io.Serializable {
 	 * Default SubRule constructor.
 	 * @param ruleId ID of parent Rule.
 	 */
-	SubRule(int ruleId, Transaction.Parameters extractedParameter) {
+    public SubRule(int ruleId, Transaction.Parameters extractedParameter) {
 		this.id = -1;
 		this.ruleId = ruleId;
 		this.distanceToLeftPhrase = 1;
@@ -55,7 +55,7 @@ class SubRule implements java.io.Serializable {
 	 * @param origin Original object that is copied.
 	 * @param ruleId Id of the new_rule to which new subrule will be attached.
 	 */
-	SubRule(SubRule origin, int ruleId) {
+    public SubRule(SubRule origin, int ruleId) {
 		this.id = -1;
 		this.ruleId = ruleId;
 		this.distanceToLeftPhrase = origin.distanceToLeftPhrase;
@@ -80,55 +80,55 @@ class SubRule implements java.io.Serializable {
 		this.id = id;
 	}
 
-	int getDistanceToLeftPhrase() {
+    public int getDistanceToLeftPhrase() {
 		return distanceToLeftPhrase;
 	}
 
-	void setDistanceToLeftPhrase(int distanceToLeftPhrase) {
+    public void setDistanceToLeftPhrase(int distanceToLeftPhrase) {
 		this.distanceToLeftPhrase = distanceToLeftPhrase;
 	}
 
-	int getDistanceToRightPhrase() {
+    public int getDistanceToRightPhrase() {
 		return distanceToRightPhrase;
 	}
 
-	void setDistanceToRightPhrase(int distanceToRightPhrase) {
+    public void setDistanceToRightPhrase(int distanceToRightPhrase) {
 		this.distanceToRightPhrase = distanceToRightPhrase;
 	}
 
-	String getLeftPhrase() {
+    public String getLeftPhrase() {
 		return leftPhrase;
 	}
 
-	void setLeftPhrase(String leftPhrase) {
+	public void setLeftPhrase(String leftPhrase) {
 		this.leftPhrase = leftPhrase;
 	}
 
-	String getRightPhrase() {
+    public String getRightPhrase() {
 		return rightPhrase;
 	}
 
-	 void setRightPhrase(String rightPhrase) {
+    public  void setRightPhrase(String rightPhrase) {
 		this.rightPhrase = rightPhrase;
 	}
 
-	int getExtractionMethodInt() {
+    public int getExtractionMethodInt() {
 		return extractionMethod.ordinal();
 	}
 
-	Method getExtractionMethod() {
+    public Method getExtractionMethod() {
 		return extractionMethod;
 	}
 
-	void setExtractionMethod(int extractionMethod) {
+    public void setExtractionMethod(int extractionMethod) {
 		this.extractionMethod = Method.values()[extractionMethod];
 	}
 
-	String getConstantValue() {
+    public String getConstantValue() {
 		return constantValue;
 	}
 
-	void setConstantValue(String constantValue) {
+    public void setConstantValue(String constantValue) {
 		this.constantValue = constantValue;
 	}
 
@@ -136,11 +136,11 @@ class SubRule implements java.io.Serializable {
 		return extractedParameter.ordinal();
 	}
 
-	Transaction.Parameters getExtractedParameter() {
+    public Transaction.Parameters getExtractedParameter() {
 		return extractedParameter;
 	}
 
-	int getDecimalSeparator() {
+    public int getDecimalSeparator() {
         return decimalSeparator;
     }
 
@@ -148,7 +148,7 @@ class SubRule implements java.io.Serializable {
      * Sets decimal separator.
      * @param decimalSeparator  1 for ","  or 0 for "."
      */
-	 void setDecimalSeparator(int decimalSeparator) {
+    public void setDecimalSeparator(int decimalSeparator) {
 		if (decimalSeparator == 0) {
             this.separator = ".";
 		} else {
@@ -157,19 +157,19 @@ class SubRule implements java.io.Serializable {
 		this.decimalSeparator = decimalSeparator;
 	}
 
-	int getTrimLeft() {
+    public int getTrimLeft() {
 		return trimLeft;
 	}
 
-	void setTrimLeft(int trimLeft) {
+    public void setTrimLeft(int trimLeft) {
 		this.trimLeft = trimLeft;
 	}
 
-	int getTrimRight() {
+    public int getTrimRight() {
 		return trimRight;
 	}
 
-	void setTrimRight(int trimRight) {
+    public void setTrimRight(int trimRight) {
 		this.trimRight = trimRight;
 	}
 
@@ -183,7 +183,7 @@ class SubRule implements java.io.Serializable {
 	 * @param returnedType Zero for decimal, One for Alphabetical, Other for unchanged string.
 	 * @return Parameter value
 	 */
-	String applySubRule(String msg, int returnedType) {
+    public String applySubRule(String msg, int returnedType) {
 		msg = "<BEGIN> " + msg + " <END>";
 		String temp = "";
 		try {
@@ -201,7 +201,18 @@ class SubRule implements java.io.Serializable {
 					break;
 				case WORDS_BETWEEN_PHRASES:
 					// temp will store all words between phrases "leftPhrase" and "rightPhrase"
-                    temp = msg.split(String.format("\\Q%s\\E", leftPhrase))[1].split(String.format("\\Q%s\\E", rightPhrase))[0].trim();
+                    arr=msg.split(String.format("\\Q%s\\E", leftPhrase));
+                    if (arr.length>1) {
+                        temp = arr[1];
+                        arr = temp.split(String.format("\\Q%s\\E", rightPhrase));
+                        if (arr.length>=1) {
+                            temp = arr[0].trim();
+                        }else{
+                            temp="";
+                        }
+                    }else{
+                        temp="";
+                    }
                     // Now we will just keep phrase starting from N-th word from the left till M-th word wrom the right.
                     // where N - distanceToLeftPhrase
                     // M - distanceToRightPhrase
@@ -261,7 +272,7 @@ class SubRule implements java.io.Serializable {
 	 * @param transaction Transaction
 	 * @return False if subrule cannot be applied
 	 */
-	Boolean applySubRule(String msg, Transaction transaction) {
+    public Boolean applySubRule(String msg, Transaction transaction) {
 		switch (extractedParameter) {
 			case ACCOUNT_STATE_BEFORE: //Account state before transaction
 				transaction.setStateBefore(applySubRule(msg, 0));
@@ -297,7 +308,7 @@ class SubRule implements java.io.Serializable {
 
 	}
 
-	boolean isNegate() {
+    public boolean isNegate() {
 		return negate;
 	}
 
@@ -305,7 +316,7 @@ class SubRule implements java.io.Serializable {
 		return negate ? -1 : 0;
 	}
 
-	void setNegate(boolean negate) {
+    public void setNegate(boolean negate) {
 		this.negate = negate;
 	}
 
@@ -313,14 +324,14 @@ class SubRule implements java.io.Serializable {
 	 * Changes Rule Id to make possible Template copy to myBanks
 	 * @param ruleId Rule ID in Db.
 	 */
-	void changeRuleId(int ruleId) {
+    public void changeRuleId(int ruleId) {
 		this.ruleId = ruleId;
 	}
 
 	/**
 	 * @return Content values used for database insert or update function.
 	 */
-	ContentValues getContentValues() {
+    public ContentValues getContentValues() {
 		ContentValues v = new ContentValues();
 		if (id >= 1) v.put("_id", id);
 		v.put("rule_id", ruleId);

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -15,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import com.khizhny.smsbanking.Bank;
+import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.ColorPickerView;
 import com.khizhny.smsbanking.R;
 
@@ -37,6 +38,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
     public static final String PREF_LAST_USED_BACKGROUND = "last_used_text_backgound";
     public static final String PREF_LAST_USED_SIZE = "last_used_text_size";
     private static final int MIN_FONT_SIZE = 10;
+
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     Spinner myBank;
     TextView sampleText;
@@ -155,7 +157,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         }
 
         // Filling Spinner vith myBanks options
-        List <Bank> banks = db.getMyBanks();
+        List <Bank> banks = db.getMyBanks(getCountry());
         ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter <Bank>(this,
                 android.R.layout.simple_spinner_item, banks);
         myBank = (Spinner) findViewById(R.id.my_bank);
@@ -232,6 +234,11 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
             }
         });
 
+    }
+
+    private String getCountry(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("country_preference",null);
     }
 }
 

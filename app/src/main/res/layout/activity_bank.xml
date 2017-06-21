@@ -34,7 +34,9 @@
         app:layout_constraintTop_toBottomOf="@+id/name"
         android:layout_marginTop="8dp"
         app:layout_constraintRight_toLeftOf="@+id/clear_phones"
-        android:layout_marginRight="8dp"/>
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        />
 
     <EditText
         android:id="@+id/bank_phones"
@@ -66,6 +68,7 @@
         tools:layout_constraintLeft_creator="1"
         android:layout_marginTop="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         />
 
     <TextView
@@ -79,22 +82,58 @@
         tools:layout_constraintLeft_creator="1"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/currency"
+        android:layout_marginBottom="0dp"/>
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/country"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currency"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintTop_creator="1"/>
 
     <android.support.v7.widget.AppCompatSpinner
         android:id="@+id/currency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:entries="@array/currency_values"
-        tools:layout_constraintTop_creator="1"
-        tools:layout_constraintRight_creator="1"
+        android:layout_marginEnd="7dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginRight="7dp"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:entries="@array/currency_values"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toRightOf="@+id/bank_default_currency_label"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bank_phones"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"/>
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/country"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="7dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:entries="@array/countries_array"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currency"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"
         android:layout_marginLeft="8dp"
         app:layout_constraintHorizontal_bias="0.0"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/bank_phones"/>
+        app:layout_constraintLeft_toRightOf="@+id/textView6"/>
 
     <Button
         android:id="@+id/sub_rule_save"
@@ -103,8 +142,8 @@
         android:text="@string/action_save"
         tools:layout_constraintTop_creator="1"
         android:layout_marginStart="33dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/currency"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/country"
         tools:layout_constraintLeft_creator="1"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"

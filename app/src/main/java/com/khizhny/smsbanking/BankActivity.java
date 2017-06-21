@@ -2,9 +2,11 @@ package com.khizhny.smsbanking;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -16,13 +18,16 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.khizhny.smsbanking.model.Bank;
+
 import static com.khizhny.smsbanking.MyApplication.db;
 
 public class BankActivity extends AppCompatActivity {
 	private Bank bank;
 	private TextView nameView;
-	private AppCompatSpinner currencyView;
-	private EditText phonesView;
+    private AppCompatSpinner currencyView;
+    private AppCompatSpinner countryView;
+    private EditText phonesView;
     private String[] senders;  // list for storing all available message senders for dropdown list
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +43,17 @@ public class BankActivity extends AppCompatActivity {
 		// getting available Views
 		nameView = (TextView) findViewById(R.id.name);
 		phonesView = (EditText) findViewById(R.id.bank_phones);
-		currencyView = (AppCompatSpinner) findViewById(R.id.currency);
+        currencyView = (AppCompatSpinner) findViewById(R.id.currency);
+        countryView = (AppCompatSpinner) findViewById(R.id.country);
 		Button saveView = (Button) findViewById(R.id.sub_rule_save);
 		ImageButton addPhone = (ImageButton) findViewById(R.id.add_phone_button);
 		ImageButton clearPhones = (ImageButton) findViewById(R.id.clear_phones);
+
+        String arr[]=getResources().getStringArray(R.array.countries_array);
+        String country=getCountry();
+        for (int i=0; i<arr.length; i++){
+            if (arr[i].equals(country)) countryView.setSelection(i);
+        }
 
 		String todo = getIntent().getExtras().getString("todo");
 		if (todo != null) {
@@ -85,6 +97,12 @@ public class BankActivity extends AppCompatActivity {
                     } else if (nameView.getText().toString().equals("")) {
                         Toast.makeText(BankActivity.this, getString(R.string.bank_name_must_be_set), Toast.LENGTH_SHORT).show();
                     }else {
+
+                        // Updating country settings in preferences
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        String country=countryView.getSelectedItem().toString();
+                        settings.edit().putString("country_preference",country).apply();
+
                         Toast.makeText(BankActivity.this, getString(R.string.saving_changes), Toast.LENGTH_SHORT).show();
                         bank.setName(nameView.getText().toString());
                         bank.setPhone(phonesView.getText().toString());
@@ -163,5 +181,10 @@ public class BankActivity extends AppCompatActivity {
                 finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getCountry(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("country_preference",null);
     }
 }

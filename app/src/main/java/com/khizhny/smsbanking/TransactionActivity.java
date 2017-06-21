@@ -12,6 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
+import com.khizhny.smsbanking.model.Transaction;
+
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 
@@ -47,8 +51,6 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         super.onResume();
         Log.d(LOG, "TransactionActivity resuming");
 
-
-
         // getting Rule ID from Intent
         Intent intent = getIntent();
         int ruleId = intent.getExtras().getInt("rule_id");
@@ -66,16 +68,16 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         }
 
         TextView stateAfterView = (TextView) findViewById(R.id.state_after_value);
-        stateAfterView.setText(transaction.getAccountStateAfterAsString(false));
+        stateAfterView.setText(transaction.getStateAfterAsString(false));
 
         TextView stateBeforeView = (TextView) findViewById(R.id.state_before_value);
-        stateBeforeView.setText(transaction.getAccountStateBeforeAsString(false));
+        stateBeforeView.setText(transaction.getStateBeforeAsString(false));
 
         TextView stateChangeView = (TextView) findViewById(R.id.state_change_value);
-        stateChangeView.setText(transaction.getAccountDifferenceAsString(false, false));
+        stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
 
-        TextView commisionView = (TextView) findViewById(R.id.commision_value);
-        commisionView.setText(transaction.getCommissionAsString(false, false));
+        TextView commissionView = (TextView) findViewById(R.id.commision_value);
+        commissionView.setText(transaction.getCommissionAsString(false, false));
 
         TextView currencyView = (TextView) findViewById(R.id.currency_value);
         currencyView.setText(transaction.getTransactionCurrency());

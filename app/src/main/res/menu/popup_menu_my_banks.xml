@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
         android:id="@+id/bank_activate"
         android:title="@string/bank_activate"
@@ -17,11 +18,8 @@
         android:title="@string/bank_delete"
         android:visible="true"/>
     <item
-        android:id="@+id/bank_export"
-        android:title="@string/bank_export"
-        android:visible="true"/>
-    <item
-        android:id="@+id/bank_share"
+        android:id="@+id/bank_cloud_upload"
         android:title="@string/bank_share"
         android:visible="true"/>
+
 </menu>

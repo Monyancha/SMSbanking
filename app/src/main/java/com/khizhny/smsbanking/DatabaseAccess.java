@@ -5,9 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.text.ParseException;
+import com.khizhny.smsbanking.model.Bank;
+import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
+import com.khizhny.smsbanking.model.Transaction;
+
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,24 +73,17 @@ public class DatabaseAccess {
      *
      * @return a list of read only banks. Can be used just as a tamplate.
      */
-    public synchronized List<Bank> getBankTemplates () {
+    public synchronized List<Bank> getBankTemplates (String country) {
         List<Bank> bankList = new ArrayList<Bank>();
-        String selectQuery = "SELECT _id, name, phone, active, default_currency FROM banks WHERE editable=0";
+        String selectQuery = "SELECT _id FROM banks WHERE editable=0 and country=?";
         if (!db.isOpen()) open();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = db.rawQuery(selectQuery, new String[]{country});
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                Bank bank = new Bank();
-                bank.setId(cursor.getInt(0));
-                bank.setName(cursor.getString(1));
-                bank.setPhone(cursor.getString(2));
-                bank.setActive(cursor.getInt(3));
-                bank.setDefaultCurrency(cursor.getString(4));
-                bank.setEditable(0);
+                Bank bank = getBank(cursor.getInt(0));
                 // Adding Rules
                 bank.ruleList=getAllRules(bank.getId());
-
                 bankList.add(bank);
             } while (cursor.moveToNext());
         }
@@ -95,27 +94,29 @@ public class DatabaseAccess {
     /**
      * @return a List of Banks allowed to edit by the user.
      */
-    public synchronized List<Bank> getMyBanks () {
+    public synchronized List<Bank> getMyBanks (@NonNull String country) {
         List<Bank> bankList = new ArrayList<Bank>();
-        String selectQuery = "SELECT _id, name, phone, active, default_currency,current_account_state FROM banks WHERE editable<>0";
-        Cursor cursor= db.rawQuery(selectQuery, null);
+        String selectQuery = "SELECT _id FROM banks WHERE editable<>0 and country=?";
+        Cursor cursor= db.rawQuery(selectQuery, new String[]{country});
             // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                Bank bank = new Bank();
-                bank.setId(Integer.parseInt(cursor.getString(0)));
-                bank.setName(cursor.getString(1));
-                bank.setPhone(cursor.getString(2));
-                bank.setActive(Integer.parseInt(cursor.getString(3)));
-                bank.setDefaultCurrency(cursor.getString(4));
-                bank.setCurrentAccountState(cursor.getString(5));
-                // Adding Rules
+                Bank bank = getBank(cursor.getInt(0));
                 bank.ruleList=getAllRules(bank.getId());
                 bankList.add(bank);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return bankList;
+    }
+
+    public synchronized void setDefaultCountry (String country) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("country", country);
+        String nullSelection = "country" + " IS NULL";
+        db.update("banks", contentValues, nullSelection, null);
+
+        //db.rawQuery("UPDATE banks SET country=? WHERE country='null'", new String[]{country});
     }
 
     public synchronized void setActiveBank (int bankId) {
@@ -130,7 +131,7 @@ public class DatabaseAccess {
      */
     public synchronized Bank getBank (int bankId) {
         Bank b = new Bank();
-        Cursor cursor = db.rawQuery("SELECT _id, name, phone, active, default_currency,editable,current_account_state FROM banks WHERE _id="+bankId, null);
+        Cursor cursor = db.rawQuery("SELECT _id, name, phone, active, default_currency,editable,current_account_state,country FROM banks WHERE _id="+bankId, null);
         if (cursor.moveToFirst()) {
             b.setId(cursor.getInt(0));
             b.setName(cursor.getString(1));
@@ -139,6 +140,7 @@ public class DatabaseAccess {
             b.setDefaultCurrency(cursor.getString(4));
             b.setEditable(cursor.getInt(5));
             b.setCurrentAccountState(cursor.getString(6));
+            b.setCountry(cursor.getString(7));
             b.ruleList=getAllRules(cursor.getInt(0));
             cursor.close();
             return b;
@@ -250,14 +252,6 @@ public class DatabaseAccess {
         return ruleList;
     }
 
-   /* public void cacheTransactions(int bankId, List<Transaction> transactionList){
-        deleteBankCache(bankId);
-        for (Transaction t:transactionList) {
-            ContentValues cv = t.getContentValues();
-            cv.put("bank_id",bankId);
-            db.insert("transactions", null, cv);
-        }
-    }*/
     public void cacheTransaction  (ContentValues cv){
         db.insert("transactions", null, cv);
     }
