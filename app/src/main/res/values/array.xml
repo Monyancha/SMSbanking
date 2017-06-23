@@ -21,8 +21,8 @@
         <item>Unknown</item>
         <item>Income</item>
         <item>Withdraw</item>
-        <item>TransferIn</item>
-        <item>TransferOut</item>
+        <item>Transfer out</item>
+        <item>Transfer in</item>
         <item>Paid</item>
         <item>Failed</item>
         <item>Calculated</item>

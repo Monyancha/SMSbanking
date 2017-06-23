@@ -10,7 +10,7 @@
             android:entries="@array/countries_array"
             android:entryValues="@array/countries_array"
             android:key="country_preference"
-            android:title="Your Country">
+            android:title="@string/your_country">
         </ListPreference>
         <CheckBoxPreference
 			 	android:key="hide_matched_messages"

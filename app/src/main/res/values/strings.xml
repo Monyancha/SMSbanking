@@ -208,6 +208,12 @@
     <string name="begin" translatable="false"><![CDATA[<BEGIN>]]></string>
 
     <string name="end" translatable="false"><![CDATA[<END>]]></string>
+    <string name="download_success">download_success</string>
+    <string name="download_failure">download_failure</string>
+    <string name="comments">Comments</string>
+    <string name="your_country">Change Country</string>
+    <string name="anonymous" translatable="false">Anonymous</string>
+    <string name="about">About</string>
 
 </resources>
 

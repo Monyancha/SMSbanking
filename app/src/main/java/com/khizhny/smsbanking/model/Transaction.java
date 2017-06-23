@@ -627,14 +627,19 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
      */
     public void switchToNextRule(){
         if (applicableRules.size()<2) return;
-        int originSelectedRuleId=selectedRuleId;
+
+        if (selectedRuleId==-1) {
+            selectedRuleId = applicableRules.indexOf(getRuleWitLongestMask(applicableRules));
+        }
+
         for (int i = 0; i< applicableRules.size(); i++) {
-            if (applicableRules.get(i).getId()==originSelectedRuleId || selectedRuleId==-1) {
+            if (applicableRules.get(i).getId()==selectedRuleId) {
                 if (i+1== applicableRules.size()){
                     switchToRule(applicableRules.get(0));
+                    return;
                 }else{
                     switchToRule(applicableRules.get(i+1));
-                    break;
+                    return;
                 }
             }
         }
@@ -706,4 +711,33 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         }
         return new BigDecimal("0.00");
     }
+
+    public void applyBestRule(){
+        // adding transaction to the list only is it is not ignoreg by any rule
+        if (applicableRules.size() == 1) {
+            // adding to list only is user set "show matched"  option in parameters
+            applicableRules.get(0).applyRule(this);
+
+        }
+        if (applicableRules.size() >= 2) {
+            // loading previous rule selection from Db
+            selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
+            if (selectedRuleId >= 0) { // if user already picked rule using his choice
+                getSelectedRule().applyRule(this);
+            } else { // if user did not picked rule choose the one with longes mask :)
+                getRuleWitLongestMask(applicableRules).applyRule(this);
+            }
+        }
+    }
+
+    private Rule getRuleWitLongestMask(List <Rule> rules){
+        Rule result=null;
+        int maskLength=0;
+        for (Rule r: rules) {
+            if (r.getMask().length()>maskLength) result=r;
+        }
+        return result;
+    }
+
+
 }

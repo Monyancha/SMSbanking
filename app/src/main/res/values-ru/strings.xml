@@ -189,5 +189,10 @@
     <string name="post_comment">Отправить</string>
     <string name="write_comment">Комментарий...</string>
     <string name="login_first">Сначала войдите.</string>
+    <string name="download_success">Загрузка окончена</string>
+    <string name="download_failure">Сбой загрузки</string>
+    <string name="comments">Комментарии</string>
+    <string name="your_country">Сменить страну</string>
+    <string name="about">О программе</string>
 </resources>
 

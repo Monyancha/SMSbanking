@@ -191,4 +191,9 @@
     <string name="post_comment">Надіслати</string>
     <string name="write_comment">Коментар...</string>
     <string name="login_first">Спочатку треба увійти.</string>
+    <string name="download_success">Завантаженя завершено</string>
+    <string name="download_failure">Збій завантаження</string>
+    <string name="comments">Коментарі</string>
+    <string name="your_country">Змінити країну</string>
+    <string name="about">Про додаток</string>
 </resources>

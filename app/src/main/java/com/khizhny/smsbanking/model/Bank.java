@@ -163,14 +163,15 @@ public class Bank  implements java.io.Serializable{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(filePath)));
-			return ois.readObject();
+
+            return ois.readObject();
 		}
 		catch(Exception e)
 		{
 			Log.v(LOG,e.getMessage());
 			e.printStackTrace();
+            return null;
 		}
-		return null;
 	}
 
     public ContentValues getContentValues(){

@@ -59,7 +59,6 @@ import com.khizhny.smsbanking.model.Bank;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
@@ -100,23 +99,12 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 showProgress(false);
 
                 String s = intent.getAction();
-                if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {// Get number of bytes downloaded
-                    long numBytes = intent.getLongExtra(MyDownloadService.EXTRA_BYTES_DOWNLOADED, 0);
+                if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {
 
-                    // Alert success
-                    showMessageDialog("DOWNLOAD_COMPLETED", String.format(Locale.getDefault(),
-                            "%d bytes downloaded from %s",
-                            numBytes,
-                            intent.getStringExtra(MyDownloadService.EXTRA_DOWNLOAD_PATH)));
-
-                } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {// Alert failure
-                    showMessageDialog("Error", String.format(Locale.getDefault(),
-                            "Failed to download from %s",
-                            intent.getStringExtra(MyDownloadService.EXTRA_DOWNLOAD_PATH)));
+                } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {
 
                 } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
                     onUploadResultIntent(intent);
-
                 }
             }
         };
@@ -158,6 +146,20 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		PopupMenu popupMenu = new PopupMenu(BankListActivity.this, listView);
 		popupMenu.setOnMenuItemClickListener(BankListActivity.this);
         requestPermissions();
+    }
+
+    private void onUploadResultIntent(Intent intent) {
+        // Got a new intent from MyUploadService with a success or failure
+        Uri mDownloadUrl = intent.getParcelableExtra(MyUploadService.EXTRA_DOWNLOAD_URL);
+        if (mDownloadUrl==null) {
+            // File Upload failed
+            Toast.makeText(BankListActivity.this,"File upload failed.",Toast.LENGTH_LONG).show();
+
+        }else{
+            // File Uploaded successfully
+            Toast.makeText(BankListActivity.this,"File uploaded.",Toast.LENGTH_LONG).show();
+        }
+        showProgress(false);
     }
 
     @Override
@@ -230,9 +232,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 showTemplatePickDialog();
                 return true;
 
-            // TODO Download from cloud and import
             case R.id.bank_cloud_download:
-
                 if (mAuth.getCurrentUser()!=null) {
                     importBankFromCloud();
                 }else{
@@ -302,7 +302,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 return true;
 
              case R.id.bank_cloud_upload:
-                 // TODO Bank export  sharing
                  bank2Share=selectedBank;
                  if (mAuth.getCurrentUser()==null){
                      Toast.makeText(this,R.string.login_first,Toast.LENGTH_SHORT).show();
@@ -310,28 +309,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                      exportBankToCloud();
                  }
                  return true;
-		}/**/
+		}
 		return false;
 	}
-
-    /*private void getCountryAndImportFromCloud(){
-        if (country == null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Pick your country");
-            builder.setSingleChoiceItems(R.array.countries_array, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    country=getResources().getStringArray(R.array.countries_array)[which];
-                    alertDialog.dismiss();
-                    importBankFromCloud();
-                }
-            });
-            alertDialog = builder.create();
-            alertDialog.show();
-        } else {
-            importBankFromCloud();
-        }
-    }/**/
 
 	public void showBankImportDialog(String filter, String startingPath) {
 		File mPath=null;
@@ -621,28 +601,12 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
-        /*/ Check if this Activity was launched by clicking on an upload notification
+        //Check if this Activity was launched by clicking on an upload notification
         if (intent.hasExtra(MyUploadService.EXTRA_DOWNLOAD_URL)) {
             onUploadResultIntent(intent);
-        }*/
-        onUploadResultIntent(intent);
-    }
-
-    private void onUploadResultIntent(Intent intent) {
-        // Got a new intent from MyUploadService with a success or failure
-        Uri mDownloadUrl = intent.getParcelableExtra(MyUploadService.EXTRA_DOWNLOAD_URL);
-        Uri mFileUri = intent.getParcelableExtra(MyUploadService.EXTRA_FILE_URI);
-        if (mDownloadUrl==null) {
-            // File Upload failed
-            Toast.makeText(BankListActivity.this,"File upload failed.",Toast.LENGTH_LONG).show();
-
-        }else{
-            // File Uploaded successfully
-            Toast.makeText(BankListActivity.this,"File uploaded.",Toast.LENGTH_LONG).show();
         }
-        showProgress(false);
     }
+
 
     private void showMessageDialog(String title, String message) {
         AlertDialog ad = new AlertDialog.Builder(this)

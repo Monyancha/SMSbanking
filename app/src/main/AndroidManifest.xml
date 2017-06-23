@@ -172,7 +172,9 @@
         <activity android:name=".PostsActivity">
         </activity>
 
-        <activity android:name=".PostDetailActivity">
+        <activity android:name=".PostDetailActivity"
+                  android:label="@string/comments"
+                  android:windowSoftInputMode="stateHidden">
 
         </activity>
     </application>

@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -56,9 +58,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.*;
@@ -221,6 +226,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
                 startActivity(i);
+                break;
+            case R.id.action_about:
+                showAboutDialog();
                 break;
             case R.id.action_cache:
                 if (activeBank!=null) {
@@ -867,6 +875,22 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
+    private void showAboutDialog() {
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String version = pInfo.versionName;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(getResources().getString(R.string.app_name)+" ("+version+")");
+        builder.setMessage("Created by Andrey Khizhny");
+        builder.create().show();
+    }
+
     private void showCountryPickDialog(){
         Log.d(LOG, "MainActivity:showCountryPickDialog()");
         boolean flag=false;
@@ -1012,30 +1036,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                                 }
                             }
 
-                            if (!messageHasIgnoreTypeRule) {
+                            if (!messageHasIgnoreTypeRule && !hideNotMatchedMessages) {
                                 // adding transaction to the list only is it is not ignoreg by any rule
-                                if ((!hideNotMatchedMessages && transaction.applicableRules.size() == 0)) {
-                                    // adding to list only is user set "show non matched" option in parameters
-                                    transaction.calculateMissedData();
-                                    transactionList.add(transaction);
-                                }
-                                if (!hideMatchedMessages && transaction.applicableRules.size() == 1) {
-                                    // adding to list only is user set "show matched"  option in parameters
-                                    transaction.applicableRules.get(0).applyRule(transaction);
-                                    transaction.calculateMissedData();
-                                    transactionList.add(transaction);
-                                }
-                                if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
-                                        // loading previous rule selection from Db
-                                        transaction.selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
-                                        if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
-                                            transaction.getSelectedRule().applyRule(transaction);
-                                        } else { // if user did not picked rule choose any first.
-                                            transaction.applicableRules.get(0).applyRule(transaction);
-                                        }
-                                        transaction.calculateMissedData();
-                                    transactionList.add(transaction);
-                                }
+                                transaction.applyBestRule();
+                                transaction.calculateMissedData();
+                                transactionList.add(transaction);
                             }
                         }
                         prevSmsBody=smsBody;
