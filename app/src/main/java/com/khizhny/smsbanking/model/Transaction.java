@@ -714,27 +714,37 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
 
     public void applyBestRule(){
         // adding transaction to the list only is it is not ignoreg by any rule
+        Rule selectedRule=null;
         if (applicableRules.size() == 1) {
             // adding to list only is user set "show matched"  option in parameters
-            applicableRules.get(0).applyRule(this);
+            selectedRule=applicableRules.get(0);
 
-        }
-        if (applicableRules.size() >= 2) {
+        } else if (applicableRules.size() >= 2) {
             // loading previous rule selection from Db
             selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
             if (selectedRuleId >= 0) { // if user already picked rule using his choice
-                getSelectedRule().applyRule(this);
+                selectedRule=getSelectedRule();
+                if (selectedRule==null) {
+                    // if selected rule was deleted just take another rule
+                    selectedRule=getRuleWitLongestMask(applicableRules);
+                }
             } else { // if user did not picked rule choose the one with longes mask :)
-                getRuleWitLongestMask(applicableRules).applyRule(this);
+                selectedRule=getRuleWitLongestMask(applicableRules);
             }
         }
+        if (selectedRule!=null) selectedRule.applyRule(this);
     }
 
     private Rule getRuleWitLongestMask(List <Rule> rules){
         Rule result=null;
-        int maskLength=0;
+        int maxLength=0;
+        int ruleLength=0;
         for (Rule r: rules) {
-            if (r.getMask().length()>maskLength) result=r;
+            ruleLength=r.getMask().length();
+            if (ruleLength>maxLength) {
+                maxLength=ruleLength;
+                result=r;
+            }
         }
         return result;
     }

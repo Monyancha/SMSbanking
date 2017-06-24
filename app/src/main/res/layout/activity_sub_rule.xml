@@ -137,8 +137,8 @@
         android:layout_marginLeft="0dp"
         android:layout_marginTop="8dp"
         android:entries="@array/n_entries"
-        app:layout_constraintLeft_toLeftOf="@+id/sub_rule_left_n"
-        app:layout_constraintTop_toBottomOf="@+id/sub_rule_left_n"/>
+        app:layout_constraintTop_toBottomOf="@+id/sub_rule_left_n"
+        app:layout_constraintLeft_toRightOf="@+id/sub_rule_right_n_label"/>
 
     <TextView
         android:id="@+id/sub_rule_right_n_label2"
