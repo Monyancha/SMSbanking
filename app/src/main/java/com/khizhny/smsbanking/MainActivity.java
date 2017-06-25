@@ -29,6 +29,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,8 +44,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,9 +62,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import static com.khizhny.smsbanking.MyApplication.*;
-
-
 import jxl.Cell;
 import jxl.CellView;
 import jxl.Workbook;
@@ -78,6 +75,13 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 import xml.SmsBankingWidget;
+
+import static com.khizhny.smsbanking.MyApplication.LOG;
+import static com.khizhny.smsbanking.MyApplication.db;
+import static com.khizhny.smsbanking.MyApplication.forceRefresh;
+import static com.khizhny.smsbanking.MyApplication.hideMatchedMessages;
+import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
+import static com.khizhny.smsbanking.MyApplication.ignoreClones;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
         OnItemClickListener,
@@ -113,15 +117,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         Log.d(LOG, "MainActivity:onCreate()");
 
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-        hideAds = settings.getBoolean("hide_ads", false);
-        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
-        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
-        ignoreClones = settings.getBoolean("ignore_clones", false);
-        country = settings.getString("country_preference",null);
+
 
 
         if (getIntent().getBooleanExtra("update_available", false)) {
@@ -157,28 +153,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             db.setActiveBank(widget_bank_id);
         }
 
-        if (country!=null) {
-            loadMyBanks();
-            if (transactions!=null) {
-                transactionListAdapter = new TransactionListAdapter(transactions);
-                listView.setAdapter(transactionListAdapter);
-                if (listState != null) {
-                    listView.onRestoreInstanceState(listState);
-                }
-            } else {
-                // reloading transactions to list
-                forceRefresh=false;
-                onRefresh();
 
-            }
-            if (forceRefresh) {
-                forceRefresh=false;
-                onRefresh();
-
-            }
-        } else {
-                showCountryPickDialog();
-        }
     }
 
     @Override
@@ -347,6 +322,38 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onResume() {
         Log.d(LOG, "MainActivity:OnResume()");
+
+
+        // Restoring preferences
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        hideCurrency = settings.getBoolean("hide_currency", false);
+        inverseRate = settings.getBoolean("inverse_rate", false);
+        hideAds = settings.getBoolean("hide_ads", false);
+        country = settings.getString("country_preference",null);
+
+        if (country!=null) {
+            loadMyBanks();
+            if (transactions!=null) {
+                transactionListAdapter = new TransactionListAdapter(transactions);
+                listView.setAdapter(transactionListAdapter);
+                if (listState != null) {
+                    listView.onRestoreInstanceState(listState);
+                }
+            } else {
+                // reloading transactions to list
+                forceRefresh=false;
+                onRefresh();
+
+            }
+            if (forceRefresh) {
+                forceRefresh=false;
+                onRefresh();
+
+            }
+        } else {
+            showCountryPickDialog();
+        }
+
         // enabling ads banner
         AdView mAdView = (AdView) findViewById(R.id.adView);
         if (!hideAds) {
@@ -357,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         } else {
             mAdView.setVisibility(View.GONE);
         }
+
         super.onResume();
     }
 
@@ -608,13 +616,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             selectedTransaction=t;
         }
 
-        /**
-         * Handrer for rule picker dialog
-         * @param position
-         * @param rowView
-         * @param parent
-         * @return
-         */
+        //Handler for rule picker dialog
         @Override
         public View getView(int position, View rowView , ViewGroup parent) {
             if (rowView == null) {
@@ -624,7 +626,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             TextView ruleNameView = (TextView) rowView.findViewById(R.id.ruleName);
             Rule r = ruleListAdapter.getItem(position);
-            ruleNameView.setText(r.getName());
+            ruleNameView.setText(r != null ? r.getName() : "---");
 
             Drawable icon = ResourcesCompat.getDrawable(getResources(), r.getRuleTypeDrawable(), null);
             if (icon != null) {
@@ -921,9 +923,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             if (!pickCountryDialog.isShowing()) flag=true;
         }
         if (flag) {
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Pick your country");
-            builder.setSingleChoiceItems(R.array.countries_array, -1, new DialogInterface.OnClickListener() {
+            builder.setTitle(R.string.pick_your_country);
+            builder.setSingleChoiceItems(R.array.countries_array,-1, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     // Updating country settings in preferences
@@ -991,6 +994,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             hideCurrency = settings.getBoolean("hide_currency", false);
             inverseRate = settings.getBoolean("inverse_rate", false);
             hideAds = settings.getBoolean("hide_ads", false);
+            hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
+            hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
+            ignoreClones = settings.getBoolean("ignore_clones", false);
         }
 
         @Override
@@ -1056,13 +1062,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                                     }
                                 }
                             }
+                            boolean transactionMatched = transaction.applicableRules.size()>0;
 
-                            if (!messageHasIgnoreTypeRule && !hideNotMatchedMessages) {
-                                // adding transaction to the list only is it is not ignoreg by any rule
-                                transaction.applyBestRule();
-                                transaction.calculateMissedData();
-                                transactionList.add(transaction);
-                            }
+                             if (transactionMatched) {
+                                 if (hideMatchedMessages) skipMessage=true;
+                             }else{ // not matched
+                                 if (hideNotMatchedMessages) skipMessage=true;
+                             }
+
+                             if (!skipMessage && !messageHasIgnoreTypeRule) {
+                                 transaction.applyBestRule();
+                                 transaction.calculateMissedData();
+                                 transactionList.add(transaction);
+                             }
+
                         }
                         prevSmsBody=smsBody;
                         c.moveToNext();
@@ -1117,7 +1130,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 if (listState != null)
                     listView.onRestoreInstanceState(listState);
             } catch (Exception e) {
-
+                Log.d(LOG, "MainActivity:onPostExecute() failed to restore");
             }
             listState = null;
         }
@@ -1175,7 +1188,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 if (listState != null)
                     listView.onRestoreInstanceState(listState);
             } catch (Exception e) {
-
+                Log.d(LOG, "MainActivity:onPostExecute() failed to restore list position");
             }
             listState = null;
             onRefresh();

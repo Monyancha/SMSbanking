@@ -189,6 +189,7 @@
     <string name="create_new_rule">Create new rule</string>
     <string name="relpace_private">Replace you private data here if you wish to share template later.</string>
     <string name="next">Next</string>
+    <string name="pick_your_country">Pick your country</string>
 
 </resources>
 
