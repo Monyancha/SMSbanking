@@ -2,7 +2,6 @@
 <resources>
     <!-- This is real ID-->
     <string name="banner_ad_unit_id" translatable="false">ca-app-pub-1260562111804726/2944681295</string>
-    <!--  -->
     <!-- This is test ID-->
     <!--string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string!-->
     <string name="app_name">SMS banking</string>
@@ -19,7 +18,6 @@
 
     <string name="rule_message">Pick constant words:</string>
     <string name="rule_name">Rule name (optional)</string>
-    <string name="rule_add_tip">To add new rule click on the SMS message in the main window.</string>
 
     <string name="popup_create_rule">Create new rule</string>
     <string name="popup_edit_rule">Edit rule</string>
@@ -53,8 +51,6 @@
     <string name="pref_hide_matched_summary">Useful while rule configuration.</string>
     <string name="pref_hide_non_matched">Hide not matched messages.</string>
     <string name="pref_hide_non_matched_summary">Check to hide useless messages.</string>
-    <string name="pref_hide_ads">Hide ads</string>
-    <string name="pref_hide_ads_summary">Leave it to support developer</string>
 
 
     <string name="tip_bank_1">Hello, friend!\n
@@ -103,8 +99,6 @@
     <string name="activity_title_bank">Bank settings</string>
     <string name="negate">negate</string>
 
-    <string name="bank_import">Import bank</string>
-    <string name="bank_export">Export bank</string>
     <string name="bank_activate">Activate</string>
     <string name="mybank_activity_title">My banks</string>
     <string name="bank_templates_title">Bank templates</string>
@@ -114,7 +108,6 @@
     <string name="bank_activate_tip">is set active.</string>
     <string name="add_phone_button_description">plus</string>
     <string name="phone_number_not_set">Phone number must be set.</string>
-    <string name="export_sucessfull">Export successful</string>
     <string name="export_failed">Export failed</string>
     <string name="import_failed">import_failed</string>
     <string name="n_equal">n=</string>
@@ -135,7 +128,6 @@
     <string name="title_activity_statistics">Statistics</string>
     <string name="statistics">Statistics</string>
     <string name="quot_interval_quot">Interval:</string>
-    <string name="rule_add">Add rule</string>
     <string name="stat_show_balance">Balance curve</string>
     <string name="stat_show_outcome">Outcome</string>
     <string name="stat_show_income">Income</string>
@@ -171,28 +163,12 @@
     <string name="clear_cache">Clear cache</string>
     <string name="cache_transactions">Cache transactions</string>
     <string name="cache_needed">Cache transactions for better performance</string>
-    <string name="cache_created">Transactions cached successfully</string>
     <string name="cache_deleted">Cache deleted successfully</string>
     <string name="reading_messages">Reading messages …</string>
     <string name="go_to_banks">Nothing to export jet.</string>
     <string name="nothing_to_cache">Nothing to cache jet.</string>
-    <string name="title_activity_login">Sign in</string>
-
-    <!-- Strings related to login -->
-    <string name="prompt_email" translatable="false">Email</string>
-    <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_delete">Delete</string>
-    <string name="action_edit">Edit</string>
     <string name="commission_tip">Use positive values for bank commission.</string>
     <string name="load_template">Load Template</string>
     <string name="progress_downloading">Downloading…</string>
@@ -200,13 +176,9 @@
     <string name="sign_out">Sign Out</string>
     <string name="my_posts">My Banks</string>
     <string name="country">Country:</string>
-    <string name="use_template">Use</string>
-    <string name="post_comment">Post</string>
     <string name="write_comment">Write a comment…</string>
     <string name="login_first">Login first.</string>
-
     <string name="begin" translatable="false"><![CDATA[<BEGIN>]]></string>
-
     <string name="end" translatable="false"><![CDATA[<END>]]></string>
     <string name="download_success">download_success</string>
     <string name="download_failure">download_failure</string>

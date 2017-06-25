@@ -15,7 +15,6 @@
 
 	<string name="rule_message">Вкажіть незмінні слова:</string>
 	<string name="rule_name">Назва правила (не обов\'язкова)</string>
-	<string name="rule_add_tip">Щоб додати нове правило натисніть на SMS в основному вікні.</string>
 
     <string name="popup_create_rule">Створити нове правило</string>
 	<string name="popup_edit_rule">Редагувати правило</string>
@@ -95,9 +94,7 @@
 	<string name="activity_title_bank">Налаштування банку</string>
     <string name="negate">\"мінус\"</string>
 
-    <string name="bank_import">Імпортувати</string>
-	<string name="bank_export">Експортувати</string>
-	<string name="bank_activate">Активувати</string>
+    <string name="bank_activate">Активувати</string>
     <string name="mybank_activity_title">Мої банки</string>
 	<string name="bank_templates_title">Шаблони банків</string>
 	<string name="bank_add">Додати</string>
@@ -106,8 +103,7 @@
 	<string name="bank_activate_tip">встановлено активним.</string>
     <string name="add_phone_button_description">плюс</string>
 	<string name="phone_number_not_set">Телефон не вказан</string>
-	<string name="export_sucessfull">Экспортування успішне</string>
-	<string name="export_failed">Экспортував невдало</string>
+    <string name="export_failed">Экспортував невдало</string>
     <string name="import_failed">Імпортував невдало</string>
     <string name="n_equal">n=</string>
 	<string name="add_widget">Додати віджет</string>
@@ -126,7 +122,6 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Інтервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="rule_add">Нове правило</string>
     <string name="stat_show_balance">Крива балансу</string>
     <string name="stat_show_outcome">Витрати</string>
     <string name="stat_show_income">Дохід</string>
@@ -136,8 +131,6 @@
     <string name="stats_balance">Баланс</string>
     <string name="pref_ignore_clones">Ігнорувати дублікати.</string>
     <string name="pref_ignore_clones_summary">Ігнорувати послідовні дублюючі повідомлення.</string>
-    <string name="pref_hide_ads">Приховати рекламу</string>
-    <string name="pref_hide_ads_summary">Залиште щоб підтримати розробника.</string>
     <string name="action_privacy">Політика конфіденційності</string>
     <string name="export_to_xls">Експортувати в XLS</string>
     <string name="add">Додати</string>
@@ -164,31 +157,18 @@
     <string name="clear_cache">Очистити кеш</string>
     <string name="cache_transactions">Кешувати транзакції</string>
     <string name="cache_needed">Кешуйте транзакції для пришвидшення</string>
-    <string name="cache_created">Успішно кешував транзакції</string>
     <string name="cache_deleted">Кеш транзакції відалено успішно</string>
     <string name="reading_messages">Іде обробка СМС</string>
     <string name="go_to_banks">Нема чого єкспортувати в Excel</string>
     <string name="nothing_to_cache">Нема чого кешувати</string>
-    <string name="prompt_password">Пароль</string>
     <string name="action_cancel">Відміна</string>
-    <string name="action_sign_in_short">Увійти</string>
-    <string name="title_activity_login">Увійти</string>
-    <string name="error_incorrect_password">Невірний пароль</string>
-    <string name="error_invalid_email">Невірний Email</string>
-    <string name="error_field_required">Обов\'язкове поле</string>
     <string name="action_sign_in">Увійти</string>
-    <string name="error_invalid_password">Занадто короткий пароль</string>
-    <string name="permission_rationale">Портібні права на доступ до контактів</string>
-    <string name="action_delete">Видалити</string>
-    <string name="action_edit">Редагувати</string>
     <string name="commission_tip">Значення повинно бути позитивне.</string>
     <string name="load_template">Завантаження шаблону</string>
     <string name="progress_downloading">Завантаження...</string>
     <string name="sign_out">Вийти</string>
     <string name="my_posts">Мої банки</string>
     <string name="country">Держава:</string>
-    <string name="use_template">Використати</string>
-    <string name="post_comment">Надіслати</string>
     <string name="write_comment">Коментар...</string>
     <string name="login_first">Спочатку треба увійти.</string>
     <string name="download_success">Завантаженя завершено</string>

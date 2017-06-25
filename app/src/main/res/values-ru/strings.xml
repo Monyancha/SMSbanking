@@ -15,7 +15,6 @@
 
 	<string name="rule_message">Укажите неизменяемые слова:</string>
     <string name="rule_name">Имя правила(необязательно)</string>
-	<string name="rule_add_tip">Для добавления нового правила нажмете на СМС в главном окне.</string>
 
     <string name="popup_create_rule">Создать новое правило</string>
 	<string name="popup_edit_rule">Редактировать правило</string>
@@ -93,9 +92,7 @@
 	<string name="activity_title_bank">Настройки Банка</string>
     <string name="negate">\"минус\"</string>
 
-    <string name="bank_import">Импортировать</string>
-	<string name="bank_export">Экспортировать</string>
-	<string name="bank_activate">Активировать</string>
+    <string name="bank_activate">Активировать</string>
 	<string name="mybank_activity_title">Мои банки</string>
 	<string name="bank_templates_title">Шаблоны банков</string>
 	<string name="bank_add">Добавить</string>
@@ -104,8 +101,7 @@
 	<string name="bank_activate_tip">сделан активным.</string>
     <string name="add_phone_button_description">плюс</string>
 	<string name="phone_number_not_set">Номер телефона не указан</string>
-	<string name="export_sucessfull">Экспорт удался</string>
-	<string name="export_failed">Не получилось экспортировать</string>
+    <string name="export_failed">Не получилось экспортировать</string>
     <string name="import_failed">Импорт не получился</string>
     <string name="n_equal">n=</string>
 	<string name="add_widget">Добавить виджет</string>
@@ -124,7 +120,6 @@
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Интервал:</string>
     <string name="title_activity_statistics">Статистика</string>
-    <string name="rule_add">Новое правило</string>
     <string name="stat_show_balance">Кривая баланса</string>
     <string name="stat_show_outcome">Расход</string>
     <string name="stat_show_income">Доход</string>
@@ -134,8 +129,6 @@
     <string name="stats_balance">Баланс</string>
     <string name="pref_ignore_clones">Игнорировать дубликаты.</string>
     <string name="pref_ignore_clones_summary">Игнорировать дублирующие последовательные сообщения.</string>
-    <string name="pref_hide_ads">Спрятать рекламу</string>
-    <string name="pref_hide_ads_summary">Оставьте для поддержки разработчика.</string>
     <string name="action_privacy">Политика конфиденциальности</string>
     <string name="export_to_xls">Экспортировать в XLS</string>
     <string name="add">Добавить</string>
@@ -162,31 +155,18 @@
     <string name="clear_cache">Очистить кеш</string>
     <string name="cache_transactions">Кешировать транзакции</string>
     <string name="cache_needed">Кешируйте сообшения для большей скорости обновления</string>
-    <string name="cache_created">Транзакции кешированы успешно.</string>
     <string name="cache_deleted">Кеш транзакций очищен</string>
     <string name="reading_messages">Идет обработка СМС</string>
     <string name="go_to_banks">Пока нечего єкспортировать в Excel</string>
     <string name="nothing_to_cache">Нечего кешировать</string>
-    <string name="prompt_password">Пароль</string>
     <string name="action_cancel">Отмена</string>
-    <string name="action_sign_in_short">Войти</string>
-    <string name="title_activity_login">Войти</string>
-    <string name="error_incorrect_password">Неправильный пароль</string>
-    <string name="error_invalid_email">Неправильный Email</string>
-    <string name="error_invalid_password">Слишком короткий пароль</string>
-    <string name="permission_rationale">Нужны права на доступ к контактам.</string>
     <string name="action_sign_in">Войти</string>
-    <string name="error_field_required">Обязательное поле</string>
-    <string name="action_delete">Удалить</string>
-    <string name="action_edit">Редактировать</string>
     <string name="commission_tip">Значение должно быть положительным.</string>
     <string name="load_template">Загрузка шаблона</string>
     <string name="progress_downloading">Зарузка…</string>
     <string name="sign_out">Выйти</string>
     <string name="my_posts">Мои банки</string>
     <string name="country">Страна:</string>
-    <string name="use_template">Использовать</string>
-    <string name="post_comment">Отправить</string>
     <string name="write_comment">Комментарий…</string>
     <string name="login_first">Сначала войдите.</string>
     <string name="download_success">Загрузка окончена</string>
