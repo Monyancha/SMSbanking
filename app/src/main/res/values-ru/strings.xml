@@ -151,7 +151,7 @@
     <string name="state_after_transaction">Балланс после:</string>
     <string name="transaction_value">Сумма транзакции:</string>
     <string name="transaction_currency">Валюта транзакции:</string>
-    <string name="bank_commision">Комиссия:</string>
+    <string name="bank_commission">Комиссия:</string>
     <string name="state_before_transaction">Балланс до:</string>
     <string name="extra1">Доп. параметр 1:</string>
     <string name="extra2">Доп. параметр 2:</string>
@@ -181,18 +181,21 @@
     <string name="action_edit">Редактировать</string>
     <string name="commission_tip">Значение должно быть положительным.</string>
     <string name="load_template">Загрузка шаблона</string>
-    <string name="progress_downloading">Зарузка...</string>
+    <string name="progress_downloading">Зарузка…</string>
     <string name="sign_out">Выйти</string>
     <string name="my_posts">Мои банки</string>
     <string name="country">Страна:</string>
     <string name="use_template">Использовать</string>
     <string name="post_comment">Отправить</string>
-    <string name="write_comment">Комментарий...</string>
+    <string name="write_comment">Комментарий…</string>
     <string name="login_first">Сначала войдите.</string>
     <string name="download_success">Загрузка окончена</string>
     <string name="download_failure">Сбой загрузки</string>
     <string name="comments">Комментарии</string>
     <string name="your_country">Сменить страну</string>
     <string name="about">О программе</string>
+    <string name="create_new_rule">Новое правило</string>
+    <string name="next">Далее</string>
+    <string name="relpace_private">Замените приватные данные в тексте если планируете делиться шаблоном.</string>
 </resources>
 

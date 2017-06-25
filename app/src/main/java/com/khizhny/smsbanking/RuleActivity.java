@@ -67,9 +67,9 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 			}
 		}
 
-		imageView = (ImageView) this.findViewById(R.id.image);
+        imageView = (ImageView) this.findViewById(R.id.image);
 
-		ruleNameView =  (TextView) this.findViewById(R.id.rule_name);
+		ruleNameView = (TextView) this.findViewById(R.id.rule_name);
 		ruleNameView.setText(rule.getName());
 
 		AppCompatSpinner ruleTypeView = (AppCompatSpinner) this.findViewById(R.id.rule_type);

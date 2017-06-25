@@ -139,7 +139,9 @@ public class Bank  implements java.io.Serializable{
 	 */
 	public static Uri exportBank(Bank b, String filePath){
 		try{
-			//filePath="/storage/sdcard0/test.dat";  // used for testing while usb storage is mountd
+
+            b.setCurrentAccountState("0");
+            //filePath="/storage/sdcard0/test.dat";  // used for testing while usb storage is mountd
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filePath)));
 			oos.writeObject(b);
 			oos.flush();
@@ -158,13 +160,14 @@ public class Bank  implements java.io.Serializable{
 	 * @param filePath File path
 	 * @return Object read from file or null.
 	 */
-	public static Object importBank(String filePath)
+	public static Bank importBank(String filePath)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(filePath)));
-
-            return ois.readObject();
+            Bank b=(Bank) ois.readObject();
+            b.setCurrentAccountState("0");
+            return b;
 		}
 		catch(Exception e)
 		{

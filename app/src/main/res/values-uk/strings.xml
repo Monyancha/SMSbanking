@@ -153,7 +153,7 @@
     <string name="state_after_transaction">Стан після транзакції:</string>
     <string name="transaction_value">Сума транзакції:</string>
     <string name="transaction_currency">Валюта транзакції:</string>
-    <string name="bank_commision">Комісія банку:</string>
+    <string name="bank_commission">Комісія банку:</string>
     <string name="state_before_transaction">Стан до транзакції:</string>
     <string name="extra1">Додатковий 1:</string>
     <string name="extra2">Додатковий 2:</string>
@@ -196,4 +196,7 @@
     <string name="comments">Коментарі</string>
     <string name="your_country">Змінити країну</string>
     <string name="about">Про додаток</string>
+    <string name="relpace_private">Змінить ваші приватні дані якщо бажаете ділитися шаблоном.</string>
+    <string name="next">Далі</string>
+    <string name="create_new_rule">Нове правило</string>
 </resources>

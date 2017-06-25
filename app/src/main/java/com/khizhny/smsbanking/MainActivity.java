@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -39,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -58,14 +58,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.*;
 
 
@@ -209,7 +205,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             case R.id.action_rule_list:
                 //intent = new Intent(this, RuleListActivity.class);
                 //startActivity(intent);
-                createRulePickerDialog(activeBank.ruleList, null);
+                if (activeBank!=null){
+                    if (activeBank.ruleList!=null) {
+                        showRulePickerDialog(activeBank.ruleList, null);
+                    }
+                }
                 break;
             case R.id.action_statistics:
                 intent = new Intent(this, StatisticsActivity.class);
@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     onRefresh();
                 } else {
                     // Creating dialog for rule picking
-                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                    showRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
                 }
                 return true;
 
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     startActivity(intent);
                 } else {
                     // Creating dialog for rule edition
-                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                    showRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
                 }
                 return true;
 
@@ -290,16 +290,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     selectedTransaction.switchToNextRule();
                     onRefresh();
                 } else { // if 3 or more rules showing dialog to pick up the rule
-                    createRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+                    showRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
                 }
                 return true;
 
             // create new rule option
             case R.id.item_new_rule:
-                intent = new Intent(this, RuleActivity.class);
-                intent.putExtra("sms_body", selectedTransaction.getSmsBody());
-                intent.putExtra("todo", "add");
-                startActivity(intent);
+                showCreateNewRuleDialog(selectedTransaction.getSmsBody());
                 return true;
 
             //deleting SMS option
@@ -891,6 +888,30 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         builder.create().show();
     }
 
+    private void showCreateNewRuleDialog(String smsBody) {
+        if (smsBody != null) {
+            final EditText edittext = new EditText(this);
+            edittext.setPadding(8,8,8,8);
+            //edittext.setWidth(340);
+            edittext.setText(smsBody);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.create_new_rule);
+            builder.setMessage(R.string.relpace_private);
+            builder.setView(edittext);
+            builder.setPositiveButton(R.string.next, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //What ever you want to do with the value
+                    String messageBody = edittext.getText().toString();
+                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+                    intent.putExtra("sms_body", messageBody);
+                    intent.putExtra("todo", "add");
+                    startActivity(intent);
+                }
+            });
+            builder.create().show();
+        }
+    }
+
     private void showCountryPickDialog(){
         Log.d(LOG, "MainActivity:showCountryPickDialog()");
         boolean flag=false;
@@ -1162,22 +1183,26 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
 
-    private void createRulePickerDialog(List <Rule> ruleList,Transaction t){
-        Log.d(LOG, "MainActivity:createRulePickerDialog()");
-        // Creating dialog for rule picking
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setTitle(getString(R.string.action_rule_list));
-        builder.setPositiveButton(getString(R.string.action_cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                pickRuleDialog.dismiss();
+    private void showRulePickerDialog(List <Rule> ruleList, Transaction t) {
+        if (t != null) {
+            if (ruleList != null) {
+                Log.d(LOG, "MainActivity:showRulePickerDialog()");
+                // Creating dialog for rule picking
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setCancelable(true);
+                builder.setTitle(getString(R.string.action_rule_list));
+                builder.setPositiveButton(getString(R.string.action_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        pickRuleDialog.dismiss();
+                    }
+                });
+                ruleListAdapter = new RuleListAdapter(ruleList, t);
+                builder.setAdapter(ruleListAdapter, null);
+                pickRuleDialog = builder.create();
+                pickRuleDialog.show();
             }
-        });
-        ruleListAdapter = new RuleListAdapter(ruleList,t);
-        builder.setAdapter(ruleListAdapter,null);
-        pickRuleDialog = builder.create();
-        pickRuleDialog.show();
+        }
     }
 
     private void loadMyBanks(){

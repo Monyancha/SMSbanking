@@ -160,7 +160,7 @@
     <string name="state_after_transaction">State after transaction:</string>
     <string name="transaction_value">Transaction value:</string>
     <string name="transaction_currency">Transaction currency:</string>
-    <string name="bank_commision">Bank commision:</string>
+    <string name="bank_commission">Bank commission:</string>
     <string name="state_before_transaction">State before transaction:</string>
     <string name="extra1">Extra1:</string>
     <string name="extra2">Extra2:</string>
@@ -173,7 +173,7 @@
     <string name="cache_needed">Cache transactions for better performance</string>
     <string name="cache_created">Transactions cached successfully</string>
     <string name="cache_deleted">Cache deleted successfully</string>
-    <string name="reading_messages">Reading messages ...</string>
+    <string name="reading_messages">Reading messages …</string>
     <string name="go_to_banks">Nothing to export jet.</string>
     <string name="nothing_to_cache">Nothing to cache jet.</string>
     <string name="title_activity_login">Sign in</string>
@@ -195,14 +195,14 @@
     <string name="action_edit">Edit</string>
     <string name="commission_tip">Use positive values for bank commission.</string>
     <string name="load_template">Load Template</string>
-    <string name="progress_downloading">Downloading...</string>
+    <string name="progress_downloading">Downloading…</string>
     <string name="default_client_id" translatable="false">338602878108-p887iq5e2orf4up4jo3qgdiiqis34212.apps.googleusercontent.com</string>
     <string name="sign_out">Sign Out</string>
     <string name="my_posts">My Banks</string>
     <string name="country">Country:</string>
     <string name="use_template">Use</string>
     <string name="post_comment">Post</string>
-    <string name="write_comment">Write a comment...</string>
+    <string name="write_comment">Write a comment…</string>
     <string name="login_first">Login first.</string>
 
     <string name="begin" translatable="false"><![CDATA[<BEGIN>]]></string>
@@ -214,6 +214,9 @@
     <string name="your_country">Change Country</string>
     <string name="anonymous" translatable="false">Anonymous</string>
     <string name="about">About</string>
+    <string name="create_new_rule">Create new rule</string>
+    <string name="relpace_private">Replace you private data here if you wish to share template later.</string>
+    <string name="next">Next</string>
 
 </resources>
 

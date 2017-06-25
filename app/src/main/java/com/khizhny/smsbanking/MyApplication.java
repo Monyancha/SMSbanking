@@ -21,7 +21,7 @@ public class MyApplication extends Application {
     static boolean hideMatchedMessages ;
     static boolean hideNotMatchedMessages;
     static boolean ignoreClones;
-    static boolean forceRefresh;
+    public static boolean forceRefresh;
 
     @Override
     public void onCreate() {
