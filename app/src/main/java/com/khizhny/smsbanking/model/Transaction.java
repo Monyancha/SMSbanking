@@ -31,7 +31,7 @@ import static com.khizhny.smsbanking.MyApplication.db;
 
 public class Transaction implements Comparable<Transaction>, java.io.Serializable  {
     private final static long serialVersionUID = 1; // Is used to indicate class version during Import/Export
-    public int icon;
+    public int icon;  // R.id of the icon
     private String smsBody;
     public long smsId;
     private Date transactionDate;

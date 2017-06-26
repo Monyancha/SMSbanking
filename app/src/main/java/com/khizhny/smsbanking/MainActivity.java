@@ -17,6 +17,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,7 +57,6 @@ import com.khizhny.smsbanking.model.Transaction;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -88,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         SwipeRefreshLayout.OnRefreshListener{
 
     private static final String LIST_STATE = "listState";
-    private static final String LIST_TRANSACTIONS = "transactions";
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
 
@@ -337,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 transactionListAdapter = new TransactionListAdapter(transactions);
                 listView.setAdapter(transactionListAdapter);
                 if (listState != null) {
+                    Log.d(LOG, "MainActivity:OnResume() ListState restored");
                     listView.onRestoreInstanceState(listState);
                 }
             } else {
@@ -374,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onSaveInstanceState(state);
         listState = listView.onSaveInstanceState();
         state.putParcelable(LIST_STATE,listState);
-        state.putSerializable(LIST_TRANSACTIONS,(Serializable) transactions);
+        //state.putSerializable(LIST_TRANSACTIONS,(Serializable) transactions);
     }
 
     @Override
@@ -383,7 +383,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onRestoreInstanceState(state);
         if (!forceRefresh) {
             listState = state.getParcelable(LIST_STATE);
-            transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
+            //onRefresh();
+            //transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
             Log.d(LOG, "MainActivity instance restored...");
         }
     }
@@ -469,18 +470,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         PopupMenu popupMenu = new PopupMenu(this, view);
         popupMenu.setOnMenuItemClickListener(this);
         selectedTransaction = transactionListAdapter.getItem(position);
-        if (!selectedTransaction.hasCalculatedTransactionDate) { // show popup menu only for non calculated transactions
-            popupMenu.inflate(R.menu.popup_menu_main);
-            if (selectedTransaction.ruleOptionsCount() < 2) { // hiding switch rule option if not needed
-                popupMenu.getMenu().removeItem(R.id.item_switch_rule);
+        if (selectedTransaction!=null) {
+            if (!selectedTransaction.hasCalculatedTransactionDate) { // show popup menu only for non calculated transactions
+                popupMenu.inflate(R.menu.popup_menu_main);
+                if (selectedTransaction.ruleOptionsCount() < 2) { // hiding switch rule option if not needed
+                    popupMenu.getMenu().removeItem(R.id.item_switch_rule);
+                }
+                if (selectedTransaction.ruleOptionsCount() < 1) { // hiding delete rule option if not needed
+                    popupMenu.getMenu().removeItem(R.id.item_delete_rule);
+                }
+                if (selectedTransaction.ruleOptionsCount() < 1) { // hiding edit rule option if not needed
+                    popupMenu.getMenu().removeItem(R.id.item_edit_rule);
+                }
+                popupMenu.show();
             }
-            if (selectedTransaction.ruleOptionsCount() < 1) { // hiding delete rule option if not needed
-                popupMenu.getMenu().removeItem(R.id.item_delete_rule);
-            }
-            if (selectedTransaction.ruleOptionsCount() < 1) { // hiding edit rule option if not needed
-                popupMenu.getMenu().removeItem(R.id.item_edit_rule);
-            }
-            popupMenu.show();
         }
     }
 
@@ -677,61 +680,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             return rowView;
         }
 
-       /* @Override
-        public void onClick(View v) {
-            selectedRule=(Rule) v.getTag();
-            switch (todo) {
-                case EDIT:
-                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                    intent.putExtra("rule_id", selectedRule.getId());
-                    intent.putExtra("todo", "edit");
-                    startActivity(intent);
-                    break;
-     /*           case DELETE:
-                    db.deleteRule(selectedRule.getId());
-                    onRefresh();
-                    pickRuleDialog.dismiss();
-                    break;
-                case SWITCH:
-                    selectedTransaction.switchToRule(selectedRule);
-                    onRefresh();
-                    pickRuleDialog.dismiss();
-                    break;/**/
-      /*          case ASK:
-                    // Creating dialog for rule picking
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setCancelable(true);
-                    builder.setTitle("");
-
-                    // delete rule  button clicked
-                    builder.setNeutralButton(getString(R.string.action_delete), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            db.deleteRule(selectedRule.getId());
-                            forceRefresh=true;
-                            pickRuleActionDialog.dismiss();
-                            pickRuleDialog.dismiss();
-                        }
-                    });
-                    //edit rule button clicked
-                    builder.setPositiveButton(getString(R.string.action_edit), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                            intent.putExtra("rule_id", selectedRule.getId());
-                            intent.putExtra("todo", "edit");
-                            startActivity(intent);
-                            pickRuleActionDialog.dismiss();
-                            pickRuleDialog.dismiss();
-                        }
-                    });
-
-                    pickRuleActionDialog = builder.create();
-                    pickRuleActionDialog.show();
-
-                    break;
-            }
-        }*/
     }
 
     private void exportToExcel() {
@@ -1127,12 +1075,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             swipeRefreshLayout.setRefreshing(false);
             // restoring position if possible
             try {
-                if (listState != null)
+                if (listState != null) {
+                    Log.d(LOG, "MainActivity:onPostExecute() list restored after refreshing");
                     listView.onRestoreInstanceState(listState);
+                }
             } catch (Exception e) {
                 Log.d(LOG, "MainActivity:onPostExecute() failed to restore");
             }
-            listState = null;
         }
     }
 
@@ -1185,12 +1134,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             swipeRefreshLayout.setRefreshing(false);
             // restoring position if possible
             try {
-                if (listState != null)
+                if (listState != null){
                     listView.onRestoreInstanceState(listState);
+                    Log.d(LOG, "MainActivity:onPostExecute() list restored after caching");
+                }
             } catch (Exception e) {
                 Log.d(LOG, "MainActivity:onPostExecute() failed to restore list position");
             }
-            listState = null;
             onRefresh();
         }
     }
