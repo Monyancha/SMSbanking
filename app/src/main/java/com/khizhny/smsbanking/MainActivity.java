@@ -638,7 +638,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             ruleNameView.setCompoundDrawables(icon,null,null,null);
             rowView.setTag(r);
 
-            // witching rule
+            // switching rule
             ruleNameView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -1147,7 +1147,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 
     private void showRulePickerDialog(List <Rule> ruleList, Transaction t) {
-        if (t != null) {
+
             if (ruleList != null) {
                 Log.d(LOG, "MainActivity:showRulePickerDialog()");
                 // Creating dialog for rule picking
@@ -1165,7 +1165,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 pickRuleDialog = builder.create();
                 pickRuleDialog.show();
             }
-        }
     }
 
     private void loadMyBanks(){

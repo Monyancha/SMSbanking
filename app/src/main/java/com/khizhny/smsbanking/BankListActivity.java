@@ -547,8 +547,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 String name=googleSignInAccount.getDisplayName();
                 fireBaseAuthWithGoogle(googleSignInAccount);
             }else{
-                Log.d(LOG,"onActivityResult:Unsuccessful"+result.getStatus());
+                Log.d(LOG,"onActivityResult:Unsuccessful "+result.getStatus());
                 // SignIn failed
+                Toast.makeText(BankListActivity.this, "Firebase login problem. Or SHA-1 fingerprint mismatch!", Toast.LENGTH_LONG).show();
                 showProgress(false);
             }
         }
