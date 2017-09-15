@@ -9,15 +9,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Telephony;
 import android.util.Log;
 
 import java.util.Locale;
-
-import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 
 public class MyApplication extends Application {
 
@@ -39,7 +36,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(LOG,"=========================");
+        Log.d(LOG,"MyApplication.onCreate() started");
         db = DatabaseAccess.getInstance(this);
         db.open();
         Log.d(LOG,"New Application created...");
@@ -75,22 +72,14 @@ public class MyApplication extends Application {
             setSystemLocale(config, locale);
             updateConfiguration(config);
         }
+        Log.d(LOG,"MyApplication.onCreate() finished");
     }
 
     @Override
     public void onTerminate() {
+        Log.d(LOG,"MyApplication.onTerminate() started");
         db.close();
         super.onTerminate();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (locale != null) {
-            setSystemLocale(newConfig, locale);
-            Locale.setDefault(locale);
-            updateConfiguration(newConfig);
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -120,17 +109,17 @@ public class MyApplication extends Application {
         }
     }
 
-    public static void restart(Context context, int delay) {
-        if (delay == 0) {
-            delay = 1;
-        }
-        Log.e("", "restarting app");
+   public static void restart(Context context, int delay) {
+        Log.d(LOG, "MyApplication.restart() started");
+        if (delay == 0) delay = 1;
+
         Intent restartIntent = context.getPackageManager()
                 .getLaunchIntentForPackage(context.getPackageName() );
-        PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.set(AlarmManager.RTC, System.currentTimeMillis() + delay, intent);
         System.exit(2);
+        Log.d(LOG, "MyApplication.restart() finished");
     }
 
 }

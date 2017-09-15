@@ -15,8 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.khizhny.smsbanking.fragment.MyPostsFragment;
 import com.khizhny.smsbanking.fragment.MyCountryPostsFragment;
+import com.khizhny.smsbanking.fragment.MyPostsFragment;
 
 public class PostsActivity extends AppCompatActivity {
 
@@ -98,6 +98,6 @@ public class PostsActivity extends AppCompatActivity {
             public void onAnimationEnd(Animator animation) {
                 progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
             }
-        });/**/
+        });
     }
 }

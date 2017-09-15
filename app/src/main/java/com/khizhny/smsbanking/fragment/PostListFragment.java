@@ -23,12 +23,11 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.khizhny.smsbanking.MyApplication;
+import com.khizhny.smsbanking.PostDetailActivity;
 import com.khizhny.smsbanking.PostsActivity;
+import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.gcm.MyDownloadService;
 import com.khizhny.smsbanking.model.Bank;
-import com.khizhny.smsbanking.PostDetailActivity;
-import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.model.Post;
 import com.khizhny.smsbanking.viewholder.PostViewHolder;
 

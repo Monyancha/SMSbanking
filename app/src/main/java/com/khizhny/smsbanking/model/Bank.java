@@ -8,8 +8,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.khizhny.smsbanking.MyApplication;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,6 +17,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class Bank  implements java.io.Serializable{

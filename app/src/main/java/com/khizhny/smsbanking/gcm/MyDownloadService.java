@@ -18,14 +18,10 @@ import com.khizhny.smsbanking.MyApplication;
 import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.model.Bank;
 
-import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
 
 import static com.khizhny.smsbanking.MyApplication.db;
 

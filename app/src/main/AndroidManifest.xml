@@ -76,8 +76,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:theme="@style/Theme.Mytheme"
-            android:configChanges="locale">
+            android:theme="@style/Theme.Mytheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -87,35 +86,28 @@
         <activity
             android:name=".BankListActivity"
             android:label="@string/activity_title_bank_list"
-            android:configChanges="locale"
             android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".TransactionActivity"
             android:label="@string/transaction_editor"
-            android:configChanges="locale"
             android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".RuleActivity"
             android:label="@string/action_rule_text"
-            android:configChanges="locale"
             android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".BankActivity"
             android:label="@string/activity_title_bank"
-            android:configChanges="locale"
             android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".PrefActivity"
-            android:configChanges="locale"
             android:label="@string/action_preferences"/>
         <activity
             android:name=".StatisticsActivity"
-            android:configChanges="locale"
             android:label="@string/title_activity_statistics">
         </activity>
         <activity
             android:name=".SubRuleActivity"
-            android:configChanges="locale"
             android:label="@string/action_sub_rule_list">
         </activity>
 
@@ -173,13 +165,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".PostsActivity"
-            android:configChanges="locale">
+        <activity android:name=".PostsActivity">
         </activity>
 
         <activity android:name=".PostDetailActivity"
             android:label="@string/comments"
-            android:configChanges="locale"
             android:windowSoftInputMode="stateHidden">
         </activity>
 

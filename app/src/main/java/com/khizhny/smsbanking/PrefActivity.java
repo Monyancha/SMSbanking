@@ -1,12 +1,14 @@
 package com.khizhny.smsbanking;
+
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.util.Log;
+
+import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class PrefActivity extends PreferenceActivity {
     private static int prefs = R.xml.preferences;
@@ -47,16 +49,14 @@ public class PrefActivity extends PreferenceActivity {
 
     @Override
     protected void onStop() {
+        Log.d(LOG, "PrefActivity.onStop() started");
         // restarting app if laguage changed
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String new_lang = settings.getString("language","(System language)");
         if (!MyApplication.language.equals(new_lang)) {
-            /*System.exit(0);
-            Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);/**/
             MyApplication.restart(getBaseContext(),1);
         }
+        Log.d(LOG, "PrefActivity.onStop() finnished");
         super.onStop();
     }
 

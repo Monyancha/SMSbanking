@@ -183,7 +183,7 @@
     <string name="download_success">download_success</string>
     <string name="download_failure">download_failure</string>
     <string name="comments">Comments</string>
-    <string name="your_country">Change Country</string>
+    <string name="your_country">Country</string>
     <string name="anonymous" translatable="false">Anonymous</string>
     <string name="about">About</string>
     <string name="create_new_rule">Create new rule</string>

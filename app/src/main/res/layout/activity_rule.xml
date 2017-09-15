@@ -38,7 +38,6 @@
             android:ems="10"
             android:hint="@string/rule_name"
             android:inputType="text|textNoSuggestions"
-            android:singleLine="false"
             app:layout_constraintLeft_toRightOf="@+id/image"
             app:layout_constraintRight_toRightOf="parent"
             tools:layout_constraintLeft_creator="1"

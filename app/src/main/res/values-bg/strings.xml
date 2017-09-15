@@ -172,7 +172,7 @@
     <string name="download_success">Край на зареждането</string>
     <string name="download_failure">Прекъсване на зареждането</string>
     <string name="comments">Коментари</string>
-    <string name="your_country">Промяна на страната</string>
+    <string name="your_country">Страната</string>
     <string name="about">За програмата</string>
     <string name="create_new_rule">Ново правило</string>
     <string name="next">По-нататък</string>

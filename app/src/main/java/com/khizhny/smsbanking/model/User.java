@@ -3,8 +3,6 @@ package com.khizhny.smsbanking.model;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
-import android.net.Uri;
-
 @IgnoreExtraProperties
 public class User {
 

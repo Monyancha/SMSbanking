@@ -17,7 +17,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -116,13 +115,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         Log.d(LOG, "MainActivity:onCreate()");
 
-
-
-
         if (getIntent().getBooleanExtra("update_available", false)) {
             goToMarket();
         }
-
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             MyApplication.hasReadSmsPermission = (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
@@ -312,11 +307,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onStop() {
-        Log.d(LOG, "MainActivity:OnStop()");
+        Log.d(LOG, "MainActivity:OnStop() started");
         if (firstRunDialog !=null){
             if (firstRunDialog.isShowing()) firstRunDialog.dismiss();
         }
         refreshScreenWidgets();
+        Log.d(LOG, "MainActivity:OnStop() finished");
         super.onStop();
     }
 
@@ -373,16 +369,16 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
-        Log.d(LOG, "MainActivity:onSaveInstanceState()");
+        Log.d(LOG, "MainActivity:onSaveInstanceState() started");
         super.onSaveInstanceState(state);
         listState = listView.onSaveInstanceState();
         state.putParcelable(LIST_STATE,listState);
-        //state.putSerializable(LIST_TRANSACTIONS,(Serializable) transactions);
+        Log.d(LOG, "MainActivity:onSaveInstanceState() finished");
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle state) {
-        Log.d(LOG, "MainActivity:onRestoreInstanceState()");
+        Log.d(LOG, "MainActivity:onRestoreInstanceState() started");
         super.onRestoreInstanceState(state);
         if (!forceRefresh) {
             listState = state.getParcelable(LIST_STATE);
@@ -390,6 +386,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             //transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
             Log.d(LOG, "MainActivity instance restored...");
         }
+        Log.d(LOG, "MainActivity:onRestoreInstanceState() finished");
     }
 
 
@@ -494,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      */
     @Override
     public void onRefresh() {
-        Log.d(LOG, "MainActivity:onRefresh()");
+        Log.d(LOG, "MainActivity:onRefresh() started");
         activeBank = db.getActiveBank();
         if (activeBank != null) {
             refreshTransactionsTask = new RefreshTransactionsTask();
@@ -502,6 +499,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         } else {
             swipeRefreshLayout.setRefreshing(false);
         }
+        Log.d(LOG, "MainActivity:onRefresh() ended");
     }
 
     private class TransactionListAdapter extends ArrayAdapter<Transaction> {
@@ -685,7 +683,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     private void exportToExcel() {
-        Log.d(LOG, "MainActivity:exportToExcel()");
+        Log.d(LOG, "MainActivity:exportToExcel() started");
         //Saving in external storage
         File sdCard = Environment.getExternalStorageDirectory();
         File directory = new File(sdCard.getAbsolutePath() + "/" + EXPORT_FOLDER);
@@ -780,6 +778,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             Toast.makeText(this, R.string.go_to_banks, Toast.LENGTH_SHORT).show();
 
         }
+        Log.d(LOG, "MainActivity:exportToExcel() finished");
     }
 
     private void sheetAutoFitColumns(WritableSheet sheet) {
@@ -825,6 +824,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     private void showAboutDialog() {
+        Log.d(LOG, "MainActivity:showAboutDialog() started");
         PackageInfo pInfo = null;
         try {
             pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -838,9 +838,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         builder.setTitle(getResources().getString(R.string.app_name)+" ("+version+")");
         builder.setMessage(R.string.about_text);
         builder.create().show();
+        Log.d(LOG, "MainActivity:showAboutDialog() finished");
     }
 
     private void showCreateNewRuleDialog(String smsBody) {
+        Log.d(LOG, "showCreateNewRuleDialog() started");
         if (smsBody != null) {
             final EditText edittext = new EditText(this);
             edittext.setPadding(8,8,8,8);
@@ -853,6 +855,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             builder.setPositiveButton(R.string.next, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     //What ever you want to do with the value
+                    Log.d(LOG, "showCreateNewRuleDialog() next button clicked");
                     String messageBody = edittext.getText().toString();
                     Intent intent = new Intent(MainActivity.this, RuleActivity.class);
                     intent.putExtra("sms_body", messageBody);
@@ -951,7 +954,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         @Override
         protected List<Transaction> doInBackground(Bank... params) {
-            Log.d(LOG,"RefreshTransactionsTask Executed. (hideMatchedMessages="+hideMatchedMessages);
+            Log.d(LOG,"RefreshTransactionsTask.doInBackground() started");
             Bank activeBank = params[0];
             if (activeBank==null) return null;
 
@@ -1040,6 +1043,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
                 db.addOrEditBank(activeBank);
             }
+            Log.d(LOG,"RefreshTransactionsTask.doInBackground() finished");
             return transactionList;
         }
 
@@ -1053,8 +1057,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         protected void onPostExecute(List<Transaction> t) {
             super.onPostExecute(t);
             refreshTime = System.currentTimeMillis()-refreshTime;
-
-            Log.d(LOG,"RefreshTransactionsTask postExecuted. (hideMatchedMessages="+hideMatchedMessages);
+            Log.d(LOG,"RefreshTransactionsTask.onPostExecute() started");
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
@@ -1084,6 +1087,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             } catch (Exception e) {
                 Log.d(LOG, "MainActivity:onPostExecute() failed to restore");
             }
+            Log.d(LOG,"RefreshTransactionsTask.onPostExecute() finished");
         }
     }
 
@@ -1092,6 +1096,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            Log.d(LOG,"CacheTransactionsTask.onPreExecute() started");
             swipeRefreshLayout.setRefreshing(true);
             if (pDialog != null) pDialog.dismiss();
             pDialog = new ProgressDialog(MainActivity.this);
@@ -1110,6 +1115,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         @Override
         protected Void doInBackground(List <Transaction>... params) {
+            Log.d(LOG,"CacheTransactionsTask.doInBackground() started");
             db.deleteBankCache(activeBank.getId());
             int progress=0;
             for (Transaction t:transactions) {
@@ -1118,6 +1124,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 db.cacheTransaction(cv);
                 publishProgress(progress++);
             }
+            Log.d(LOG,"CacheTransactionsTask.doInBackground() finished");
            return null;
         }
 
@@ -1130,6 +1137,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            Log.d(LOG,"CacheTransactionsTask.onPostExecute() started");
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
@@ -1143,13 +1151,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             } catch (Exception e) {
                 Log.d(LOG, "MainActivity:onPostExecute() failed to restore list position");
             }
+            Log.d(LOG,"CacheTransactionsTask.onPostExecute()  calls onRefresh()");
             onRefresh();
+            Log.d(LOG,"CacheTransactionsTask.onPostExecute() finished");
         }
     }
 
-
     private void showRulePickerDialog(List <Rule> ruleList, Transaction t) {
-
             if (ruleList != null) {
                 Log.d(LOG, "MainActivity:showRulePickerDialog()");
                 // Creating dialog for rule picking
@@ -1170,11 +1178,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     private void loadMyBanks(){
-        Log.d(LOG, "MainActivity:loadMyBanks()");
+        Log.d(LOG, "MainActivity:loadMyBanks() started");
         myBanks = db.getMyBanks(country);
         for (Bank b : myBanks) {
             if (b.isActive()) activeBank = b;
         }
-
+        Log.d(LOG, "MainActivity:loadMyBanks() finished");
     }
 }

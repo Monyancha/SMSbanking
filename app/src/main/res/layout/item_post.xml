@@ -56,7 +56,7 @@
 
             <ImageView
                 android:id="@+id/dislike"
-                android:layout_width="32dp"
+                android:layout_width="0dp"
                 android:layout_height="32dp"
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackground"

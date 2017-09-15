@@ -2,7 +2,6 @@ package com.khizhny.smsbanking.gcm;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -12,7 +11,6 @@ import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.khizhny.smsbanking.MainActivity;
 import com.khizhny.smsbanking.R;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {

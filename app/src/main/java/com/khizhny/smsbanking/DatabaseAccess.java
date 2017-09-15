@@ -13,12 +13,12 @@ import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Transaction;
 
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class DatabaseAccess {

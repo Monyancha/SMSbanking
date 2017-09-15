@@ -174,7 +174,7 @@
     <string name="download_success">Завантаженя завершено</string>
     <string name="download_failure">Збій завантаження</string>
     <string name="comments">Коментарі</string>
-    <string name="your_country">Змінити країну</string>
+    <string name="your_country">Країна</string>
     <string name="about">Про додаток</string>
     <string name="relpace_private">Змінить ваші приватні дані якщо бажаете ділитися шаблоном.</string>
     <string name="next">Далі</string>

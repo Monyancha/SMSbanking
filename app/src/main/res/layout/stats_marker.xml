@@ -16,7 +16,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/white"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:maxLines="1" />
 
 </RelativeLayout>
