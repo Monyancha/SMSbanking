@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string-array name="n_entries" translatable="false">
-		<item>1</item>
-		<item>2</item>
-		<item>3</item>
-		<item>4</item>
-		<item>5</item>
-		<item>6</item>
-		<item>7</item>
-		<item>8</item>
-		<item>9</item>
-		<item>10</item>
-	</string-array>
+    <string-array name="language_array" translatable="false">
+        <item>(System language)</item>
+        <item>English</item>
+        <item>Russian</item>
+        <item>Bulgarian</item>
+        <item>Ukrainian</item>
+    </string-array>
+
+    <string-array name="n_entries" translatable="false">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 
 	<string-array name="z_entries" translatable="false">
 		<item>0</item>
@@ -441,7 +449,5 @@
         <item>Zambia</item>
         <item>Zimbabwe</item>
     </string-array>
-
-
 
 </resources>

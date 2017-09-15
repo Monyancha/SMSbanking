@@ -74,9 +74,9 @@
 	<string name="tip_subrules_1">
 		Для каждого правила нужно настоить методы обработки для извлечения следующих 5 параметров:\n
 		\n
-		1. \"Балланс до операции\"\n
-		2. \"Балланс после операции\"\n
-		3. \"Изменение балланса\"\n
+		1. \"Баланс до операции\"\n
+		2. \"Баланс после операции\"\n
+		3. \"Изменение баланса\"\n
 		4. \"Комиссия\" (не обязательно)\n
 		5. \"Валюта операции\" (не обязательно)\n
 		\n
@@ -141,17 +141,17 @@
     <string name="bank_name_must_be_set">Укажите название</string>
     <string name="action_help">Помощь</string>
     <string name="now_customize_transaction_details">Теперь настройте сведения о транзакции.</string>
-    <string name="state_after_transaction">Балланс после:</string>
+    <string name="state_after_transaction">Баланс после:</string>
     <string name="transaction_value">Сумма транзакции:</string>
     <string name="transaction_currency">Валюта транзакции:</string>
     <string name="bank_commission">Комиссия:</string>
-    <string name="state_before_transaction">Балланс до:</string>
+    <string name="state_before_transaction">Баланс до:</string>
     <string name="extra1">Доп. параметр 1:</string>
     <string name="extra2">Доп. параметр 2:</string>
     <string name="extra3">Доп. параметр 3:</string>
     <string name="n_a">Н/Д</string>
     <string name="extra4">Доп. параметр 4:</string>
-    <string name="transaction_editor">Редактор транзакци</string>
+    <string name="transaction_editor">Редактор транзакций</string>
     <string name="clear_cache">Очистить кеш</string>
     <string name="cache_transactions">Кешировать транзакции</string>
     <string name="cache_needed">Кешируйте сообшения для большей скорости обновления</string>
@@ -178,5 +178,7 @@
     <string name="next">Далее</string>
     <string name="relpace_private">Замените приватные данные в тексте если планируете делиться шаблоном.</string>
     <string name="pick_your_country">Выберите вашу страну</string>
+    <string name="pref_lang">Language</string>
+    <string name="about_text">автор: Хижный Андрей</string>
 </resources>
 

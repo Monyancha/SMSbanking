@@ -332,6 +332,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         hideAds = settings.getBoolean("hide_ads", false);
         country = settings.getString("country_preference",null);
 
+
         if (country!=null) {
             loadMyBanks();
             if (transactions!=null) {
@@ -408,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onDestroy();
 
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[]  permissions, @NonNull int[] grantResults) {
@@ -836,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);
         builder.setTitle(getResources().getString(R.string.app_name)+" ("+version+")");
-        builder.setMessage("Created by Andrey Khizhny");
+        builder.setMessage(R.string.about_text);
         builder.create().show();
     }
 

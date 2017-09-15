@@ -180,4 +180,6 @@
     <string name="next">Далі</string>
     <string name="create_new_rule">Нове правило</string>
     <string name="pick_your_country">Оберіть вашу державу</string>
+    <string name="pref_lang">Language</string>
+    <string name="about_text">автор: Хижний Андрій\nпереклад: Машковський Дмитро</string>
 </resources>

@@ -6,12 +6,20 @@
 
     <PreferenceCategory 
         android:title="@string/pref_title">
-        <ListPreference
-            android:entries="@array/countries_array"
-            android:entryValues="@array/countries_array"
-            android:key="country_preference"
-            android:title="@string/your_country">
-        </ListPreference>
+		<ListPreference
+			android:entries="@array/countries_array"
+			android:entryValues="@array/countries_array"
+			android:key="country_preference"
+			android:summary="%s"
+			android:title="@string/your_country">
+		</ListPreference>
+		<ListPreference
+			android:entries="@array/language_array"
+			android:entryValues="@array/language_array"
+			android:key="language"
+			android:summary="%s"
+			android:title="@string/pref_lang">
+		</ListPreference>
         <CheckBoxPreference
 			 	android:key="hide_matched_messages"
 			 	android:title="@string/pref_hide_matched"

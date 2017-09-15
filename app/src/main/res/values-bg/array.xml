@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?> 
+<resources> 
+
+
+     <string-array name="interval_entries"> 
+        <item>Неизвестен</item> 
+        <item>Година</item> 
+        <item>Тримесечие</item> 
+        <item>Месец</item> 
+        <item>Седмица</item> 
+         <item>Ден</item> 
+     </string-array> 
+ 
+
+     <string-array name="method_entries"> 
+         <item>N-та дума след маркера</item> 
+         <item>N-та дума преди маркера</item> 
+         <item>Всички думи между маркерите</item> 
+         <item>Този текст</item> 
+     </string-array> 
+ 
+
+     <string-array name="transaction_types"> 
+         <item>Недефиниран</item> 
+         <item>Вноска</item> 
+         <item>Теглене</item> 
+         <item>Исходящ превод</item> 
+         <item>Входящ превод</item> 
+         <item>Покупки</item> 
+         <item>Неуспешно</item> 
+         <item>Разплащане</item> 
+         <item>Игнорирай</item> 
+     </string-array>
+
+</resources> 

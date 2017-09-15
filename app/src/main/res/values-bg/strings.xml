@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SMS банкиране</string>
+    <string name="SMS_TEXT">Текст на SMS съобщението</string>
+
+    <string name="action_rule_list">Правила</string>
+    <string name="action_sub_rule_list">Метод на распознаване</string>
+    <string name="action_preferences">Общи настройки</string>
+
+	<string name="action_quit">Изход</string>
+    <string name="action_save">Запис</string>
+    <string name="action_rule_text">Редактиране на правила</string>
+    <string name="action_rate_app">Оценка на програмата</string>
+
+	<string name="rule_message">Маркирайте постоянните думи:</string>
+    <string name="rule_name">Име на правилото (незадължително)</string>
+
+    <string name="popup_create_rule">Създаване на ново правило</string>
+	<string name="popup_edit_rule">Редактиране на правилото</string>
+	<string name="popup_delete_rule">Изтриване на правилото</string>
+
+    <string name="account_default_currency">Валута на сметката:</string>
+	<string name="bank_account_name">Име на банковата сметка:</string>
+	<string name="sms_bank_sender">Податели на SMS-и:</string>
+	<string name="rule_type">Тип на операцията:</string>
+    <string name="sub_rule_constant_value">Константа:</string>
+    <string name="sub_rule_method">Метод:</string>
+	<string name="sub_rule_phrase">Маркер:</string>
+	<string name="sub_rule_result_value">Резултат:</string>
+	<string name="sub_rule_decimal_separator">разделител</string>
+
+    <string name="tip_icon">символ</string>
+    <string name="tip_type">тип на операцията</string>
+	<string name="tip_rule_name">Име на правилото</string>
+	<string name="tip_before">преди</string>
+	<string name="tip_after">след</string>
+	<string name="tip_difference">разлика</string>
+	<string name="tip_commission">такси</string>
+	<string name="tip_date">29.02.1981</string>
+	<string name="tip_bank_name">Име на банката</string>
+	<string name="tip_bank_phone">Номер</string>
+	<string name="pref_hide_title">Да не се показва валута.</string>
+	<string name="pref_hide_currency_summary">Да не се показва валута, ако е основната.</string>
+	<string name="pref_inverse_rate">Обратен обменен курс</string>
+	<string name="pref_inverse_rate_summary">Вместо USD/EUR да се задава EUR/USD</string>
+	<string name="pref_hide_matched">Скриване на обработените SMS-и</string>
+	<string name="pref_hide_matched_summary">Използвайте за настройка на правилата.</string>
+	<string name="pref_hide_non_matched">Скриване на необработените SMS-и</string>
+	<string name="pref_hide_non_matched_summary">Включете, за да премахнете неинформативните SMS-и</string>
+	<string name="tip_bank_1">Привет!\n
+        Первым делом нужно настроить ваш банковский счет. Для этого:\n
+		1. Зайдите в меню банков и попробуйте найти готовый шаблон.\n
+		2. Если не нашли, то добавьте свой банк.\n
+		3. Вернитесь в главное меню.\n
+		\n
+		Если все сделано верно вы увидите список сообщений от вашего банка. Далее нужно будет настроить правила обработки этих сообщений нажимая на них в списке.</string>
+
+	<string name="tip_rules_1">
+		Очень важно правильно настроить правила. Для этого:\n
+		\n
+		1. Перейдите к списку SMS сообщений в главном окне.\n
+		2. В меню \"Общие настройки\" поставте флажок \"Спрятать обработанные SMS\" и уберите флажок \"Спрятать не обработанные SMS\".\n
+		3. Нажмите на SMS сообщении и выберите \"Создать новое правило\".\n
+		4. Укажите любое название правила и выберите тип транзакции.\n
+		5. Выделите слова которые не изменяются.\n
+		6. Нижмите кнопку \"Дальше\" и настройте правила обработки SMS.\n
+		7. Повторите операцию для всех информативных SMS.\n
+		8. В меню \"Общие настройки\" уберите флажок \"Спрятать обработанные SMS\" и поставте флажок \"Спрятать не обработанные SMS\".\n
+		\n
+		Совет: Если у вас два счёта в одном банке то в качестве неизменного слова можно выбрать номер счёта или карты. Тогда можно будет настроить программу для каждой карты в отдельности.
+	</string>
+
+	<string name="tip_subrules_1">
+		Для каждого правила нужно настоить методы обработки для извлечения следующих 5 параметров:\n
+		\n
+		1. \"Балланс до операции\"\n
+		2. \"Балланс после операции\"\n
+		3. \"Изменение балланса\"\n
+		4. \"Комиссия\" (не обязательно)\n
+		5. \"Валюта операции\" (не обязательно)\n
+		\n
+		Совет 1: Необходимо лишь два из первых трех параметров. Третий будет высчитан автоматически.\n
+		Совет 2: Если в сообщении есть только 1 из первых трех параметров программа восстановит недостающие данные из ближайших по времени сообщений. Иногда это приводит к неверным вычислениям если нарушена последовательность сообщений или такие сообщения отсутствуют.\n
+		Совет 3: Если  \"Валюта операции\" не совпадает с валютой вашего счёта будет посчитан обменный курс. Иногда курс может быть посчитан неправильно если в сообщении нет всех данных или данные были восстановлены неверно.\n
+
+	</string>
+	<string name="saving_changes">Запис…</string>
+	<string name="pref_title">Общи настройки</string>
+	<string name="popup_delete_sms">Изтриване на съобщението</string>
+	<string name="activity_title_bank_list">Списък на банките</string>
+	<string name="activity_title_bank">Настройки на банка</string>
+    <string name="negate">\"минус\"</string>
+
+    <string name="bank_activate">Активиране</string>
+	<string name="mybank_activity_title">Моите банки</string>
+	<string name="bank_templates_title">Шаблони на банките</string>
+	<string name="bank_add">Добавяне</string>
+	<string name="bank_edit">Промяна</string>
+	<string name="bank_delete">Изтриване</string>
+	<string name="bank_activate_tip">е активирана.</string>
+    <string name="add_phone_button_description">плюс</string>
+	<string name="phone_number_not_set">Не е зададен номер на телефона</string>
+    <string name="export_failed">Експортът е неуспешен</string>
+    <string name="import_failed">Импортът е неуспешен</string>
+    <string name="n_equal">N=</string>
+	<string name="add_widget">Добавяне на widged</string>
+	<string name="appwidget_text">0.00</string>
+    <string name="widget_default_name">Банка</string>
+	<string name="appwidget_currency">RUB</string>
+	<string name="bank_share">Споделяне</string>
+	<string name="popup_switch_rule">Прилагане на друго правило</string>
+    <string name="extra_parameter">Потребителски1</string>
+    <string name="text_color">Цвят на текста:</string>
+    <string name="background_color">Фон:</string>
+    <string name="bank_name">Име на банката</string>
+    <string name="font_size">Размер на шрифта</string>
+    <string name="widget_sample_label">Моята банка\n123.56 RUB</string>
+    <string name="background">Фон</string>
+    <string name="statistics">Статистика</string>
+    <string name="quot_interval_quot">Интервал:</string>
+    <string name="title_activity_statistics">Статистика</string>
+    <string name="stat_show_balance">Крива на баланса</string>
+    <string name="stat_show_outcome">Разход</string>
+    <string name="stat_show_income">Приход</string>
+    <string name="stat_show_values">Стойност на баланса</string>
+    <string name="stats_income">Приход</string>
+    <string name="stats_outcome">Разход</string>
+    <string name="stats_balance">Баланс</string>
+    <string name="pref_ignore_clones">Игнориране на дубликати.</string>
+    <string name="pref_ignore_clones_summary">Игнориране на дублиращи се последователни съобщения.</string>
+    <string name="action_privacy">Политика на конфиденциалност</string>
+    <string name="export_to_xls">Експорт в XLS</string>
+    <string name="add">Добавяне</string>
+    <string name="done">Готово</string>
+    <string name="pick_phone_number">Изберете подателя на SMS</string>
+    <string name="pick_a_template">Изберeте шаблон</string>
+    <string name="Ignore">Игнориране</string>
+    <string name="left_characters_and">символа отляво и</string>
+    <string name="right">отдясно</string>
+    <string name="bank_name_must_be_set">Задайте име</string>
+    <string name="action_help">Помощ</string>
+    <string name="now_customize_transaction_details">Сега настройте сведенията за операцията.</string>
+    <string name="state_after_transaction">Баланс след:</string>
+    <string name="transaction_value">Сума на операцията:</string>
+    <string name="transaction_currency">Валута на операцията:</string>
+    <string name="bank_commission">Такси:</string>
+    <string name="state_before_transaction">Баланс преди:</string>
+    <string name="extra1">Доп. параметър 1:</string>
+    <string name="extra2">Доп. параметър 2:</string>
+    <string name="extra3">Доп. параметър 3:</string>
+    <string name="n_a">Н/Д</string>
+    <string name="extra4">Доп. параметър 4:</string>
+    <string name="transaction_editor">Редактор на операции</string>
+    <string name="clear_cache">Изчистване на кеша</string>
+    <string name="cache_transactions">Кеширане на операциите</string>
+    <string name="cache_needed">Кеширайте сообщенията за по-бърза обработка</string>
+    <string name="cache_deleted">Кешът на операциите е изчистен</string>
+    <string name="reading_messages">SMS-ите се обработват</string>
+    <string name="go_to_banks">Няма какво да се експортира в Excel</string>
+    <string name="nothing_to_cache">Няма какво да се кешира</string>
+    <string name="action_cancel">Отмяна</string>
+    <string name="action_sign_in">Вход</string>
+    <string name="commission_tip">Стойността трябвада е положителна.</string>
+    <string name="load_template">Зареждане на шаблона</string>
+    <string name="progress_downloading">Зареждане…</string>
+    <string name="sign_out">Изход</string>
+    <string name="my_posts">Моите банки</string>
+    <string name="country">Държава:</string>
+    <string name="write_comment">Коментар…</string>
+    <string name="login_first">Първо влезте.</string>
+    <string name="download_success">Край на зареждането</string>
+    <string name="download_failure">Прекъсване на зареждането</string>
+    <string name="comments">Коментари</string>
+    <string name="your_country">Промяна на страната</string>
+    <string name="about">За програмата</string>
+    <string name="create_new_rule">Ново правило</string>
+    <string name="next">По-нататък</string>
+    <string name="relpace_private">Заменете личните данни в текста, ако планирате да споделите шаблона.</string>
+    <string name="pick_your_country">Изберете Вашата държава</string>
+    <string name="pref_lang">Language</string>
+    <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
+</resources>
