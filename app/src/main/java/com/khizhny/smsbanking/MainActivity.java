@@ -213,9 +213,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
                 break;
             case R.id.bank_clear_cache:
-                db.deleteBankCache(activeBank.getId());
-                Toast.makeText(MainActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
-                onRefresh();
+                if (activeBank!=null) {
+                    db.deleteBankCache(activeBank.getId());
+                    Toast.makeText(MainActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
+                    onRefresh();
+                }
                 return true;
             case R.id.action_quit:
                 this.finish();

@@ -558,13 +558,12 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
 
     /**
-     * todo Shows the progress UI and hides the login form.
+     *Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
         progressBar = (ProgressBar) findViewById(R.id.progressBar2);
-
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         progressBar.animate().setDuration(shortAnimTime).alpha(
                 show ? 1 : 0).setListener(new AnimatorListenerAdapter() {

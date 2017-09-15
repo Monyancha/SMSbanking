@@ -24,6 +24,7 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.khizhny.smsbanking.MyApplication;
+import com.khizhny.smsbanking.PostsActivity;
 import com.khizhny.smsbanking.gcm.MyDownloadService;
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.PostDetailActivity;
@@ -175,11 +176,14 @@ public abstract class PostListFragment extends Fragment {
 
         public MyFirebaseRecyclerAdapter(Class<Post> modelClass, int modelLayout, Class<PostViewHolder> viewHolderClass, Query ref) {
             super(modelClass, modelLayout, viewHolderClass, ref);
+            ((PostsActivity)getActivity()).showProgress(true);
         }
+
 
         @Override
         protected void populateViewHolder(final PostViewHolder viewHolder, final Post post, final int position) {
             final DatabaseReference postRef = getRef(position);
+            ((PostsActivity)getActivity()).showProgress(false);
 
             // Set click listener for the whole post view
             final String postKey = postRef.getKey();
@@ -195,7 +199,7 @@ public abstract class PostListFragment extends Fragment {
 
 
             if (post.starCount<POST_DELETE_THRESHOLD || getUid().equals(post.uid)) {
-                // only author can delete posts or anyone is post has bad reputation
+                // only author can delete posts or anyone if post has bad reputation
                 viewHolder.deleteView.setVisibility(View.VISIBLE);
             } else {
                 // hiding delete button if post is not that bad
@@ -267,6 +271,7 @@ public abstract class PostListFragment extends Fragment {
 
 
             });
+
         }
     }
 

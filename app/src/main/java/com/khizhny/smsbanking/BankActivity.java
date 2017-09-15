@@ -49,7 +49,7 @@ public class BankActivity extends AppCompatActivity {
 		ImageButton addPhone = (ImageButton) findViewById(R.id.add_phone_button);
 		ImageButton clearPhones = (ImageButton) findViewById(R.id.clear_phones);
 
-        String arr[]=getResources().getStringArray(R.array.countries_array);
+        final String arr[]=getResources().getStringArray(R.array.countries_array);
         String country=getCountry();
         for (int i=0; i<arr.length; i++){
             if (arr[i].equals(country)) countryView.setSelection(i);
@@ -107,6 +107,7 @@ public class BankActivity extends AppCompatActivity {
                         bank.setName(nameView.getText().toString());
                         bank.setPhone(phonesView.getText().toString());
                         bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
+                        bank.setCountry(arr[countryView.getSelectedItemPosition()]);
                         db.addOrEditBank(bank);
                         BankActivity.this.finish();
                     }
