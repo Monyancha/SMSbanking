@@ -18,15 +18,16 @@ public class SubRule implements java.io.Serializable {
 	private Method extractionMethod;
 	private int decimalSeparator;
 	private String separator;
-	private int trimLeft;
-	private int trimRight;
-	private boolean negate;
+	public int trimLeft;
+	public int trimRight;
+	public boolean negate;
 
     public enum Method {
 		WORD_AFTER_PHRASE,
 		WORD_BEFORE_PHRASE,
 		WORDS_BETWEEN_PHRASES,
-		USE_CONSTANT
+		USE_CONSTANT,
+		USE_REGEX
 	}
 
 	/**
@@ -155,22 +156,6 @@ public class SubRule implements java.io.Serializable {
             this.separator = ",";
 		}
 		this.decimalSeparator = decimalSeparator;
-	}
-
-    public int getTrimLeft() {
-		return trimLeft;
-	}
-
-    public void setTrimLeft(int trimLeft) {
-		this.trimLeft = trimLeft;
-	}
-
-    public int getTrimRight() {
-		return trimRight;
-	}
-
-    public void setTrimRight(int trimRight) {
-		this.trimRight = trimRight;
 	}
 
 	/**
@@ -308,18 +293,6 @@ public class SubRule implements java.io.Serializable {
 
 	}
 
-    public boolean isNegate() {
-		return negate;
-	}
-
-	private int getNegateInt() {
-		return negate ? -1 : 0;
-	}
-
-    public void setNegate(boolean negate) {
-		this.negate = negate;
-	}
-
 	/**
 	 * Changes Rule Id to make possible Template copy to myBanks
 	 * @param ruleId Rule ID in Db.
@@ -345,7 +318,7 @@ public class SubRule implements java.io.Serializable {
 		v.put("decimal_separator", decimalSeparator);
 		v.put("trim_left", trimLeft);
 		v.put("trim_right", trimRight);
-		v.put("negate", getNegateInt());
+		v.put("negate", negate ? -1 : 0);
 		return v;
 	}
 }

@@ -141,6 +141,7 @@ public class Rule implements java.io.Serializable {
 	}
 
 	public String getSelectedWords() {
+		if (mask.startsWith("^")) return ""; // selected words is not used any more in new versions.
 		String r="";
 		String delimiter="";
 		for (int i=0; i<=wordsCount+1;i++) {
@@ -184,16 +185,6 @@ public class Rule implements java.io.Serializable {
         transaction.calculateMissedData();
         return  transaction;
     }
-
-	public void selectWord(int WordIndex){
-		wordIsSelected[WordIndex]=true;
-		updateMask();
-	}
-
-	public void deSelectWord(int WordIndex){
-		wordIsSelected[WordIndex]=false;
-		updateMask();
-	}
 
 	/**
 	 * Function updates sms mask (used to match SMS and Rules) after user change constant words.
@@ -334,7 +325,38 @@ public class Rule implements java.io.Serializable {
     }
 
 	public void makeInitialWordSplitting(){
+		words.clear();
+		char ch;
+		char splitChar=' ';
+		boolean WeNeedToSaveWord=false;
+		int word_start=0;
+		int word_end=0;
 
+		for (int i=0; i<smsBody.length()-1;i++) {
+			ch=smsBody.charAt(i);
+			if (ch==splitChar) {
+				if (WeNeedToSaveWord) {
+					// we are at the end of word
+					word_end=i-1;
+					words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
+				}else{
+					// we are between words.
+				}
+				WeNeedToSaveWord=false;
+			} else {
+				if (WeNeedToSaveWord) {
+					// we are in the middle of word
+				} else {
+					// we are at then begining of word
+					word_start=i;
+				}
+				WeNeedToSaveWord=true;
+			}
+		}
+		if (WeNeedToSaveWord) {
+			word_end=smsBody.length()-1;
+			words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
+		}
 	}
 }
 

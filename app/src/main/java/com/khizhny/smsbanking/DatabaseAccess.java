@@ -372,12 +372,12 @@ public class DatabaseAccess {
                 subRule.setConstantValue(cursor.getString(5));
                 subRule.setExtractionMethod(cursor.getInt(7));
                 subRule.setDecimalSeparator(cursor.getInt(8));
-                subRule.setTrimLeft(cursor.getInt(9));
-                subRule.setTrimRight(cursor.getInt(10));
+                subRule.trimLeft=cursor.getInt(9);
+                subRule.trimRight=cursor.getInt(10);
                 if (cursor.getInt(11)==0) {
-                    subRule.setNegate(false);
+                    subRule.negate=false;
                 } else {
-                    subRule.setNegate(true);
+                    subRule.negate=true;
                 }
                 // Adding contact to list
                 subRuleList.add(subRule);

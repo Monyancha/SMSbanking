@@ -6,7 +6,7 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -24,16 +24,19 @@ import android.widget.TextView;
 
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.Word;
 
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
 public class RuleActivity extends AppCompatActivity implements View.OnClickListener {
-	private List<Button> wordButtons;
+
+    private List<Button> wordButtons;
 	private Rule rule;
 	private TextView ruleNameView;
 	private ImageView imageView;
     private AlertDialog alertDialog;
+    private boolean editingOldRule=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,18 +57,20 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 				// adding new rule
 				rule = new Rule(bank.getId(),"");
 				rule.setSmsBody(intent.getExtras().getString("sms_body"));
+                rule.makeInitialWordSplitting();
 			} else	{
 				// loading existing rule for editing.
 				rule=db.getRule(intent.getExtras().getInt("rule_id"));
+				if (!rule.getMask().startsWith("^")) editingOldRule=true;
 			}
 		}
 
-        imageView = (ImageView) this.findViewById(R.id.image);
+        imageView = this.findViewById(R.id.image);
 
-		ruleNameView = (TextView) this.findViewById(R.id.rule_name);
+		ruleNameView =  this.findViewById(R.id.rule_name);
 		ruleNameView.setText(rule.getName());
 
-		AppCompatSpinner ruleTypeView = (AppCompatSpinner) this.findViewById(R.id.rule_type);
+		AppCompatSpinner ruleTypeView = this.findViewById(R.id.rule_type);
         if (ruleTypeView != null) {
             ruleTypeView.setSelection(rule.getRuleTypeInt());
         }
@@ -88,88 +93,59 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
         imageView.setImageResource(rule.getRuleTypeDrawable());
 
-		// Creating "word buttons" on Flow Layout
-		String[] words = rule.getSmsBody().split(" ");
-		wordButtons = new ArrayList <Button>();
+		//Creating "word buttons" on Flow Layout
+		//String[] words = rule.getSmsBody().split(" ");
+		wordButtons = new ArrayList <Button>();/**/
 		Button wordButton;
 
 		wordButton = new Button(this);
 		wordButton.setText(R.string.begin);
-		wordButton.setBackgroundColor(Color.GRAY);
+        wordButton.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
         wordButton.setMinHeight(0);
         wordButton.setMinWidth(0);
         wordButton.setMinimumHeight(0);
         wordButton.setMinimumWidth(0);
-        wordButton.setPadding(16,8,16,8);
-		// RuleActivity.setBackgroundColor(wordButton,Color.GRAY);
+        //wordButton.setPadding(16,8,16,8);
 		wordButtons.add(wordButton);
-
-        FlowLayout flowLayout = (FlowLayout) this.findViewById(R.id.rule1_flow_layout);
+        Word word;
+        FlowLayout flowLayout = this.findViewById(R.id.rule1_flow_layout);
         if (flowLayout != null) {
             flowLayout.addView(wordButton);
-        }
+            for (int i=1;i<=rule.words.size();i++){
+                wordButton=new Button(this);
+                word=rule.words.get(i-1);
+                wordButton.setText("\""+word.getBody()+"\"");
+                wordButton.getBackground().setColorFilter(word.getWordColor(), PorterDuff.Mode.MULTIPLY);
+                wordButton.setMinHeight(0);
+                wordButton.setMinWidth(0);
+                wordButton.setMinimumHeight(0);
+                wordButton.setMinimumWidth(0);
+                //wordButton.setPadding(8,8,8,8);
+                wordButton.setTag(rule.words.get(i-1));
+                wordButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        Word word = (Word) v.getTag();
+                        word.changeWordType();
+                        v.getBackground().setColorFilter(word.getWordColor(), PorterDuff.Mode.MULTIPLY);
+                        //v.refreshDrawableState();
+                    }
+                });
+                wordButtons.add(wordButton);
+                flowLayout.addView(wordButton);
+            }
 
-        for (int i=1;i<=words.length;i++){
-			wordButton=new Button(this);
-			wordButton.setText(words[i-1]);
-			wordButton.setBackgroundColor(Color.LTGRAY);
+            wordButton=new Button(this);
+            wordButton.setText(R.string.end);
+            wordButton.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
             wordButton.setMinHeight(0);
             wordButton.setMinWidth(0);
             wordButton.setMinimumHeight(0);
             wordButton.setMinimumWidth(0);
-            wordButton.setPadding(16,8,16,8);
-            //RuleActivity.setBackgroundColor(wordButton,Color.LTGRAY);
-			wordButton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					ColorDrawable buttonColor = (ColorDrawable) v.getBackground();
-					int wordIndex = wordButtons.indexOf(v);
-
-					// cheching the color of the word colorInt
-					if (buttonColor.getColor() == Color.GRAY) {
-						v.setBackgroundColor(Color.LTGRAY);
-						rule.deSelectWord(wordIndex);
-					}
-					else
-					{
-						v.setBackgroundColor(Color.GRAY);
-						rule.selectWord(wordIndex);
-					}
-                    // refreshing rule name
-                    //ruleNameView.setText(rule.getRuleNameSuggestion());
-				}
-			});
-			wordButtons.add(wordButton);
-            if (flowLayout != null) {
-                flowLayout.addView(wordButton);
-            }
-        }
-
-		wordButton=new Button(this);
-		wordButton.setText(R.string.end);
-		wordButton.setBackgroundColor(Color.GRAY);
-        wordButton.setMinHeight(0);
-        wordButton.setMinWidth(0);
-        wordButton.setMinimumHeight(0);
-        wordButton.setMinimumWidth(0);
-        wordButton.setPadding(16,8,16,8);
-		wordButtons.add(wordButton);
-        if (flowLayout != null) {
+            //wordButton.setPadding(16,8,16,8);
+            wordButtons.add(wordButton);
             flowLayout.addView(wordButton);
         }
 
-        // Making "word buttons" colored acording to selected words parameter of the rule
-		for (int i=1; i<=rule.wordsCount;i++){
-			if (rule.wordIsSelected[i]){
-				wordButtons.get(i).setBackgroundColor(Color.GRAY);
-				//RuleActivity.setBackgroundColor(wordButtons.get(i),Color.GRAY);
-			}
-		}
-
-		// Adding Next button click handler
-		Button nextBtn = (Button) this.findViewById(R.id.rule_next);
-        if (nextBtn != null) {
-            nextBtn.setOnClickListener(this);
-        }
     }
 
     @Override
@@ -216,6 +192,12 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                     rule.setName(ruleNameView.getText().toString());
                 }else{
                     rule.setName(ruleNameView.getText().toString());
+                }
+
+                //  If we were editing old rule then  delete all defined old subrules
+                if (editingOldRule) {
+                    rule.subRuleList.clear();
+                    db.deleteRule(rule.getId());
                 }
 
                 // Saving or Updating Rule in DB.

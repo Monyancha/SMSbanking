@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
+import android.graphics.Color;
 
 public class Word implements java.io.Serializable {
 
@@ -23,7 +24,7 @@ public class Word implements java.io.Serializable {
         this.word_type=word_type;
         this.firstLetterIndex=firstLetterIndex;
         this.lastLetterIndex=lastLetterIndex;
-        this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex);
+        this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
     }
 
     public ContentValues getContentValues(){
@@ -47,11 +48,22 @@ public class Word implements java.io.Serializable {
     }
 
     public void changeWordType(){
-        word_type=WORD_TYPES.values()[(word_type.ordinal()+1) % 2 ];
+        word_type=WORD_TYPES.values()[(word_type.ordinal()+1) % WORD_TYPES.values().length ];
     }
 
     public WORD_TYPES getWordType(){
         return word_type;
+    }
+    public int getWordColor(){
+
+        switch (word_type){
+            case WORD_CONST:
+                return Color.LTGRAY;
+            case WORD_VARIABLE:
+                return Color.GRAY;
+            default:
+                return Color.BLACK;
+        }
     }
 
 }

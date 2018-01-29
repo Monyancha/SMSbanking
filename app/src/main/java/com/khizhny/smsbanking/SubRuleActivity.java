@@ -194,13 +194,13 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
         //========================================================================================
         CheckBox negateView = (CheckBox) findViewById(R.id.sub_rule_negate);
-        negateView.setChecked(subRule.isNegate());
+        negateView.setChecked(subRule.negate);
         negateView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton v, boolean isChecked) {
                 // Adding Negate checkbox listener
-                if (isChecked != subRule.isNegate()) {
-                    subRule.setNegate(isChecked);
+                if (isChecked != subRule.negate) {
+                    subRule.negate=isChecked;
                     refreshResult();
                 }
             }
@@ -224,13 +224,13 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         //========================================================================================
-        AppCompatSpinner ignoreNLeftView = (AppCompatSpinner) findViewById(R.id.sub_rule_ignore_n_first);
-        ignoreNLeftView.setSelection(subRule.getTrimLeft());
+        AppCompatSpinner ignoreNLeftView =  findViewById(R.id.sub_rule_ignore_n_first);
+        ignoreNLeftView.setSelection(subRule.trimLeft);
         ignoreNLeftView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if (subRule.getTrimLeft() != selectedPosition) {
-                    subRule.setTrimLeft(selectedPosition);
+                if (subRule.trimLeft != selectedPosition) {
+                    subRule.trimLeft=selectedPosition;
                     refreshResult();
                 }
             }
@@ -242,12 +242,12 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
         //========================================================================================
         AppCompatSpinner ignoreNRightView = (AppCompatSpinner) findViewById(R.id.sub_rule_ignore_n_last);
-        ignoreNRightView.setSelection(subRule.getTrimRight());
+        ignoreNRightView.setSelection(subRule.trimRight);
         ignoreNRightView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if (subRule.getTrimRight() != selectedPosition) {
-                    subRule.setTrimRight(selectedPosition);
+                if (subRule.trimRight != selectedPosition) {
+                    subRule.trimRight=selectedPosition;
                     refreshResult();
                 }
             }
