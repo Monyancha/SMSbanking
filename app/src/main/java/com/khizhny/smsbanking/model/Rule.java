@@ -26,6 +26,7 @@ public class Rule implements java.io.Serializable {
 	public int wordsCount;
 	public boolean[] wordIsSelected;
 	public List<SubRule> subRuleList;
+	public List<Word> words=new ArrayList<Word>();
 
 	/**
 	 * Transaction type icons array.
@@ -331,5 +332,9 @@ public class Rule implements java.io.Serializable {
         subRuleList.add(sr);
         return sr;
     }
+
+	public void makeInitialWordSplitting(){
+
+	}
 }
 

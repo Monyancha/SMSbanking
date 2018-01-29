@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SMSbanking.iml" filepath="$PROJECT_DIR$/SMSbanking.iml" />
+      <module fileurl="file://C:\Android\StudioProjects\SMSbanking\SMSbanking.iml" filepath="C:\Android\StudioProjects\SMSbanking\SMSbanking.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Android\StudioProjects\SMSbanking\app\app.iml" filepath="C:\Android\StudioProjects\SMSbanking\app\app.iml" />
     </modules>
   </component>
 </project>

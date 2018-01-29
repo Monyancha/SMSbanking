@@ -15,6 +15,7 @@
         <item>N-ное слово до фразы</item>
         <item>все слова между фразами</item>
         <item>использовать константу</item>
+        <item>Regex</item>
     </string-array>
 
     <string-array name="transaction_types">

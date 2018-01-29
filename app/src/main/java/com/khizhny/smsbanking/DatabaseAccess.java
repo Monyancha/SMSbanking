@@ -12,6 +12,7 @@ import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Transaction;
+import com.khizhny.smsbanking.model.Word;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -285,34 +286,34 @@ public class DatabaseAccess {
     }
 
     /**
-     * Saves or Updater Rule in database without subrules.
-     * If Rule.id=-1 new record will be created.
-     * Otherwise Rile with this id will be updated.
+     * Saves or Updates Rule in database with subrules and words.
+     * If Rule.id=-1 new record will be created. Otherwise Rule with such id is updated.
      * @param r Rule
      * @return Saved Rule ID.
      */
     public synchronized int addOrEditRule(Rule r){
-        if (r.getId()>=1) {
+        int id = r.getId();
+        if (id>=1) {
             //Updating existing rule with same ID
-            int id = r.getId();
+
             db.update("rules", r.getContentValues(), "_id=?", new String[]{id + ""});
+
             for (SubRule subrule:r.subRuleList) {
                 //Updating all existing subRrules linked with the rule
                 int subruleId =addOrEditSubRule(subrule);
             }
-            return id;
         }else{
             // adding new rule
             db.insert("rules", null, r.getContentValues());
             // querying Rule id to return
             Cursor c=db.rawQuery("SELECT MAX(_id) FROM rules",null);
             // returning new rule id
-            int id=0;
             if (c.moveToFirst()) id=c.getInt(0);
             c.close();
             r.setId(id);
-            return id;
         }
+        if (r.words.size()>0) addOrEditWords(r);
+        return id;
     }
 
     /**
@@ -326,12 +327,13 @@ public class DatabaseAccess {
         Rule r=null;
         if (cursor.moveToFirst()) {
             r = new Rule(cursor.getInt(5),cursor.getString(1));
-            r.setId(cursor.getInt(0));
+            r.setId(ruleId);
             r.setSmsBody(cursor.getString(2));
             r.setMask(cursor.getString(3));
             r.setSelectedWords(cursor.getString(4));
             r.setRuleType(cursor.getInt(6));
             r.subRuleList=getSubRules(cursor.getInt(0));
+            getWords(r);
         }  else {
             Log.e("DatabaseHelper.getRule", "rule id duplicated or not found.");
         }
@@ -383,6 +385,39 @@ public class DatabaseAccess {
         }
         cursor.close();
         return subRuleList;
+    }
+
+    public synchronized void getWords(Rule rule){
+        rule.words.clear();
+        String selectQuery = "SELECT " +
+                "first_letter_index, " +
+                "last_letter_index, " +
+                "word_type " +
+                "FROM words WHERE rule_id="+rule.getId()+" order by first_letter_index";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                int first_letter_index=cursor.getInt(0);
+                int last_letter_index=cursor.getInt(1);
+                Word.WORD_TYPES wordType= Word.WORD_TYPES.values()[cursor.getInt(2)];
+                Word t = new Word(rule,first_letter_index,last_letter_index,wordType);
+                rule.words.add(t);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        if (rule.words.size()==0) rule.makeInitialWordSplitting();
+    }
+
+    public synchronized void addOrEditWords(Rule rule){
+        if (rule.getId()>0) {
+            // deleting all existing word from db if they exist for this rule
+            db.delete("words","rule_id=?", new String[]{rule.getId() + ""});
+            // saving all words in the list
+            for (Word w:rule.words){
+                db.insert("words",null, w.getContentValues());
+            }
+        }
     }
 
     /**

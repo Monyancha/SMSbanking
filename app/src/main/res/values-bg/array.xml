@@ -16,7 +16,8 @@
          <item>N-та дума след маркера</item> 
          <item>N-та дума преди маркера</item> 
          <item>Всички думи между маркерите</item> 
-         <item>Този текст</item> 
+         <item>Този текст</item>
+         <item>Regex</item>
      </string-array> 
  
 

@@ -42,13 +42,6 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-  /*  @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
-
-
-    }/**/
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -185,6 +178,9 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         inflater.inflate(R.menu.menu_rule_activity, menu);
         return true;
     }
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

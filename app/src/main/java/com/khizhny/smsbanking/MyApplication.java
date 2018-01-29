@@ -61,7 +61,14 @@ public class MyApplication extends Application {
         String lang;
         Configuration config = getBaseContext().getResources().getConfiguration();
         String systemLocale = getSystemLocale(config).getLanguage();
-        language = settings.getString("language","(System language)");
+
+        if (settings.contains("language")){
+            language = settings.getString("language","(System language)");
+        }else{
+            language = "(System language)";
+            settings.edit().putString("language",language).apply();
+        }
+
         if (!language.equals("(System language)")) {
             lang="default";
             if (language.equals("Bulgarian")) lang="bg";

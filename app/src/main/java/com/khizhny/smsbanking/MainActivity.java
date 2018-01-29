@@ -887,6 +887,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     country = getResources().getStringArray(R.array.countries_array)[which];
                     settings.edit().putString("country_preference", country).apply();
+                    db.open();
                     db.setDefaultCountry(country);  // update db with selected country
                     loadMyBanks();
                     dialog.dismiss();

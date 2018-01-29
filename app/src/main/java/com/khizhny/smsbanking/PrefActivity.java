@@ -52,7 +52,12 @@ public class PrefActivity extends PreferenceActivity {
         Log.d(LOG, "PrefActivity.onStop() started");
         // restarting app if laguage changed
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String new_lang = settings.getString("language","(System language)");
+        String new_lang;
+        if (settings.contains("language")){
+            new_lang = settings.getString("language","(System language)");
+        }else{
+            new_lang = "(System language)";
+        }
         if (!MyApplication.language.equals(new_lang)) {
             MyApplication.restart(getBaseContext(),1);
         }

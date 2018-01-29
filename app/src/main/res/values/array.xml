@@ -15,6 +15,7 @@
         <item>n-th word before Phrase</item>
         <item>all words between Phrases</item>
         <item>use constant Value</item>
+        <item>Regex</item>
     </string-array>
 
     <string-array name="transaction_types">
