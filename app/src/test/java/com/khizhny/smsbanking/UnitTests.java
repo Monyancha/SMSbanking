@@ -113,7 +113,7 @@ public class UnitTests {
         r.setRuleType(trans_type.ordinal());
         r.makeInitialWordSplitting();
 
-        r.Split(r.words.get(4),4);
+        r.split(r.words.get(4),4);
         //             0    1   2    3        4    5    6    7     8   9     10     11
         //String msg="This is test message. With draw 50.34 UAH. You have 50.65UAH left ";
         assertEquals(12, r.words.size());

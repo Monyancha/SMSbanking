@@ -180,5 +180,8 @@
     <string name="pick_your_country">Выберите вашу страну</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижный Андрей</string>
+    <string name="split">Разделить</string>
+    <string name="merge_left" translatable="false">&lt;&lt;Объединить</string>
+    <string name="merge_right" translatable="false">Объединить&gt;&gt;</string>
 </resources>
 

@@ -192,6 +192,9 @@
     <string name="pick_your_country">Pick your country</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">Created by Andrey Khizhny</string>
+    <string name="merge_left">&lt;&lt;Merge left</string>
+    <string name="merge_right">Merge&gt;&gt;</string>
+    <string name="split">Split</string>
 
 </resources>
 

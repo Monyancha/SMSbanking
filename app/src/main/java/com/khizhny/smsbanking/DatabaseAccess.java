@@ -245,7 +245,7 @@ public class DatabaseAccess {
                 r.setMask(cursor.getString(3));
                 r.setSelectedWords(cursor.getString(4));
                 r.setRuleType(cursor.getInt(6));
-                r.subRuleList=getSubRules(r.getId());
+                r.subRuleList=getSubRules(r);
                 ruleList.add(r);
             } while (cursor.moveToNext());
         }
@@ -332,7 +332,7 @@ public class DatabaseAccess {
             r.setMask(cursor.getString(3));
             r.setSelectedWords(cursor.getString(4));
             r.setRuleType(cursor.getInt(6));
-            r.subRuleList=getSubRules(cursor.getInt(0));
+            r.subRuleList=getSubRules(r);
             getWords(r);
         }  else {
             Log.e("DatabaseHelper.getRule", "rule id duplicated or not found.");
@@ -350,20 +350,17 @@ public class DatabaseAccess {
         db.execSQL("DELETE FROM subrules WHERE rule_id="+ruleId);
         db.execSQL("DELETE FROM rules WHERE _id=" + ruleId);
     }
-    /**
-     * Returns a list of subrules for particular Rule
-     * @param ruleId ID of the rule.
-     * @return a list of subrules for particular Rule
-     */
-    public synchronized List<SubRule> getSubRules(int ruleId){
+
+
+    public synchronized List<SubRule> getSubRules(Rule rule){
         List<SubRule> subRuleList = new ArrayList<SubRule>();
-        String selectQuery = "SELECT _id, left_phrase,right_phrase, distance_to_left_phrase, distance_to_right_phrase, constant_value, extracted_parameter,extraction_method,decimal_separator,trim_left,trim_right,negate  FROM subrules WHERE rule_id="+ruleId;
+        String selectQuery = "SELECT _id, left_phrase,right_phrase, distance_to_left_phrase, distance_to_right_phrase, constant_value, extracted_parameter,extraction_method,decimal_separator,trim_left,trim_right,negate  FROM subrules WHERE rule_id="+rule.getId();
         Cursor cursor = db.rawQuery(selectQuery, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
 
-                SubRule subRule = new SubRule(ruleId,Transaction.Parameters.values()[cursor.getInt(6)]);
+                SubRule subRule = new SubRule(rule,Transaction.Parameters.values()[cursor.getInt(6)]);
                 subRule.setId(Integer.parseInt(cursor.getString(0)));
                 subRule.setLeftPhrase(cursor.getString(1));
                 subRule.setRightPhrase(cursor.getString(2));
@@ -492,7 +489,7 @@ public class DatabaseAccess {
                 int newRuleId =addOrEditRule(r);
                 for (SubRule sr:r.subRuleList){ //Saving SubRules
                     sr.setId(-1);  // set to -1 will make new record instead updating
-                    sr.changeRuleId(newRuleId);
+                    //sr.changeRuleId(newRuleId); // TODO Validate
                     addOrEditSubRule(sr);
                 }
             }

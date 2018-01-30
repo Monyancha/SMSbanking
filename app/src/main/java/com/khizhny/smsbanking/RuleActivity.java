@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,9 +30,9 @@ import com.khizhny.smsbanking.model.Word;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
-public class RuleActivity extends AppCompatActivity implements View.OnClickListener {
+public class RuleActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private List<Button> wordButtons;
+    private List<Button> wordButtons= new ArrayList <Button>();
 	private Rule rule;
 	private TextView ruleNameView;
 	private ImageView imageView;
@@ -52,7 +52,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_rule);
 		Intent intent = getIntent();
         Bank bank = db.getActiveBank();
-		String todo = intent.getExtras().getString("todo");
+		String todo=null;
+        if (intent.hasExtra("todo")) todo = intent.getExtras().getString("todo");
 		if (todo!=null){
 			if (todo.equals("add")){
 				// adding new rule
@@ -93,59 +94,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
 
         imageView.setImageResource(rule.getRuleTypeDrawable());
-
-		//Creating "word buttons" on Flow Layout
-		//String[] words = rule.getSmsBody().split(" ");
-		wordButtons = new ArrayList <Button>();/**/
-		Button wordButton;
-
-		wordButton = new Button(this);
-		wordButton.setText(R.string.begin);
-        changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
-        wordButton.setMinHeight(0);
-        wordButton.setMinWidth(0);
-        wordButton.setMinimumHeight(0);
-        wordButton.setMinimumWidth(0);
-        //wordButton.setPadding(16,8,16,8);
-		wordButtons.add(wordButton);
-        Word word;
-        FlowLayout flowLayout = this.findViewById(R.id.rule1_flow_layout);
-        if (flowLayout != null) {
-            flowLayout.addView(wordButton);
-            for (int i=1;i<=rule.words.size();i++){
-                wordButton=new Button(this);
-                word=rule.words.get(i-1);
-                wordButton.setText("\""+word.getBody()+"\"");
-                changeColor(wordButton,word.getWordType());
-                wordButton.setMinHeight(0);
-                wordButton.setMinWidth(0);
-                wordButton.setMinimumHeight(0);
-                wordButton.setMinimumWidth(0);
-                //wordButton.setPadding(8,8,8,8);
-                wordButton.setTag(rule.words.get(i-1));
-                wordButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        Word word = (Word) v.getTag();
-                        word.changeWordType();
-                        changeColor(v,word.getWordType());
-                    }
-                });
-                wordButtons.add(wordButton);
-                flowLayout.addView(wordButton);
-            }
-
-            wordButton=new Button(this);
-            wordButton.setText(R.string.end);
-            changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
-            wordButton.setMinHeight(0);
-            wordButton.setMinWidth(0);
-            wordButton.setMinimumHeight(0);
-            wordButton.setMinimumWidth(0);
-            //wordButton.setPadding(16,8,16,8);
-            wordButtons.add(wordButton);
-            flowLayout.addView(wordButton);
-        }
-
+        updateWordsLayout();
     }
     private void changeColor(View v, Word.WORD_TYPES word_type){
         int color_id;
@@ -188,10 +137,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
                 return true;
             case R.id.item_help:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(getResources().getString(R.string.tip_rules_1));
-                alertDialog =builder.create();
-                alertDialog.show();
+                showDialogHelp();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -210,6 +156,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()){
             // next button click handler
             case R.id.rule_next:
+                rule.updateMask();
                 if (ruleNameView.getText().toString().equals("")) {
                     ruleNameView.setText(rule.getRuleNameSuggestion());
                     rule.setName(ruleNameView.getText().toString());
@@ -239,6 +186,117 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
 
+        }
+    }
+
+    private void showDialogHelp(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getResources().getString(R.string.tip_rules_1));
+        alertDialog =builder.create();
+        alertDialog.show();
+    }
+
+    private void showDialogToChangeWord(final Word w){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.split);
+        builder.setNeutralButton(R.string.merge_left, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                w.rule.mergeLeft(w);
+                dialog.dismiss();
+                updateWordsLayout();
+            }
+        });
+
+        builder.setPositiveButton(R.string.merge_right, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                w.rule.mergeRight(w);
+                dialog.dismiss();
+                updateWordsLayout();
+            }
+        });
+
+        if (w.getBody().length()>=2) {
+            String splitOptions[]=new String[w.getBody().length()-1];
+            for (int i=1;i<=w.getBody().length()-1;i++){
+                splitOptions[i-1]=w.getBody().substring(0,i)+" >< "+w.getBody().substring(i);
+            }
+
+            builder.setSingleChoiceItems(splitOptions, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    w.rule.split(w,which+1);
+                    dialog.dismiss();
+                    updateWordsLayout();
+                }
+            });
+        }
+        alertDialog=builder.create();
+        alertDialog.show();
+    }
+
+    private void updateWordsLayout(){
+        FlowLayout flowLayout = this.findViewById(R.id.rule1_flow_layout);
+        // Deleting all buttons if any existed
+        for (int i=wordButtons.size()-1; i>=0; i--){
+            flowLayout.removeView(wordButtons.get(i));
+        }
+        //Creating "word buttons" on Flow Layout
+        wordButtons = new ArrayList <Button>();/**/
+        Button wordButton;
+        wordButton = new Button(this);
+        wordButton.setText(R.string.begin);
+        changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
+        wordButton.setMinHeight(0);
+        wordButton.setMinWidth(0);
+        wordButton.setMinimumHeight(0);
+        wordButton.setMinimumWidth(0);
+        //wordButton.setPadding(16,8,16,8);
+        wordButtons.add(wordButton);
+        Word word;
+
+        if (flowLayout != null) {
+            flowLayout.addView(wordButton);
+            for (int i=1;i<=rule.words.size();i++){
+                wordButton=new Button(this);
+                word=rule.words.get(i-1);
+                wordButton.setText(String.format("\"%s\"", word.getBody()));
+                changeColor(wordButton,word.getWordType());
+                wordButton.setMinHeight(0);
+                wordButton.setMinWidth(0);
+                wordButton.setMinimumHeight(0);
+                wordButton.setMinimumWidth(0);
+                //wordButton.setPadding(8,8,8,8);
+                wordButton.setTag(rule.words.get(i-1));
+                wordButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        Word word = (Word) v.getTag();
+                        word.changeWordType();
+                        changeColor(v,word.getWordType());
+                    }
+                });
+                wordButton.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        showDialogToChangeWord((Word) v.getTag());
+                        return false;
+                    }
+                });
+                wordButtons.add(wordButton);
+                flowLayout.addView(wordButton);
+            }
+
+            wordButton=new Button(this);
+            wordButton.setText(R.string.end);
+            changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
+            wordButton.setMinHeight(0);
+            wordButton.setMinWidth(0);
+            wordButton.setMinimumHeight(0);
+            wordButton.setMinimumWidth(0);
+            //wordButton.setPadding(16,8,16,8);
+            wordButtons.add(wordButton);
+            flowLayout.addView(wordButton);
         }
     }
 }

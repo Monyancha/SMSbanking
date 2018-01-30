@@ -92,7 +92,7 @@ public class Rule implements java.io.Serializable {
 		this.wordsCount=rule.wordsCount;
 		this.wordIsSelected=null;
 		for (SubRule sr : rule.subRuleList) {
-			this.subRuleList.add(new SubRule(sr, -1));
+			this.subRuleList.add(new SubRule(sr, this));
 		}
 		Log.d(LOG, "Rule " +rule + " was cloned");
 	}
@@ -166,38 +166,40 @@ public class Rule implements java.io.Serializable {
 	 * @param selectedWords
 	 */
     public void setSelectedWords(String selectedWords) {
-		// function sets selected words flags from string.
-		String[] a = selectedWords.split(",");
-		// setting all to false
-		for (int i=0; i<=wordsCount+1;i++) {
-			wordIsSelected[i]=false;
-		}
-		// setting selected to true
-		int k;
-		for (String w : a) {
-			k = Integer.parseInt(w);
-			wordIsSelected[k] = true;
-		}
-
-		//old updateMask();
-		mask="";
-		String delimiter="";
-		String[] words=smsBody.split(" ");
-		if (!smsBody.trim().equals(smsBody)) mask= ".*";
-        boolean skip_wildcard=false;
-		for (int i=1; i<=wordsCount; i++){
-			if (wordIsSelected[i]){
-				mask+=delimiter+"\\Q"+words[i-1]+"\\E";
-				skip_wildcard=false;
-			}else{
-				if (!skip_wildcard) {
-					mask+=delimiter+".*";
-					skip_wildcard=true;
-				}
+		if (!selectedWords.isEmpty()) {
+			// function sets selected words flags from string.
+			String[] a = selectedWords.split(",");
+			// setting all to false
+			for (int i = 0; i <= wordsCount + 1; i++) {
+				wordIsSelected[i] = false;
 			}
-			delimiter=" ";
+			// setting selected to true
+			int k;
+			for (String w : a) {
+				k = Integer.parseInt(w);
+				wordIsSelected[k] = true;
+			}
+
+			//old updateMask();
+			mask = "";
+			String delimiter = "";
+			String[] words = smsBody.split(" ");
+			if (!smsBody.trim().equals(smsBody)) mask = ".*";
+			boolean skip_wildcard = false;
+			for (int i = 1; i <= wordsCount; i++) {
+				if (wordIsSelected[i]) {
+					mask += delimiter + "\\Q" + words[i - 1] + "\\E";
+					skip_wildcard = false;
+				} else {
+					if (!skip_wildcard) {
+						mask += delimiter + ".*";
+						skip_wildcard = true;
+					}
+				}
+				delimiter = " ";
+			}
+			if (!smsBody.trim().equals(smsBody)) mask += ".*";
 		}
-        if (!smsBody.trim().equals(smsBody)) mask+= ".*";
 	}
 
     /**
@@ -359,7 +361,7 @@ public class Rule implements java.io.Serializable {
             }
         }
         // if no luck - creating it.
-        SubRule sr = new SubRule(id,transactionParameter);
+        SubRule sr = new SubRule(this,transactionParameter);
         subRuleList.add(sr);
         return sr;
     }
@@ -430,7 +432,7 @@ public class Rule implements java.io.Serializable {
 		}
 	}
 
-	public void Split(Word w, int shift){
+	public void split(Word w, int shift){
 		Word newWord = new Word(this,w.getFirstLetterIndex()+shift ,w.getLastLetterIndex(),w.getWordType());
 		w.reAssign(w.getFirstLetterIndex(),shift+w.getFirstLetterIndex()-1);
 		words.add(words.indexOf(w)+1,newWord);

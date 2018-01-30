@@ -179,4 +179,7 @@
     <string name="pick_your_country">Изберете Вашата страна</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
+    <string name="split">Split</string>
+    <string name="merge_left" translatable="false">&lt;&lt;Merge left</string>
+    <string name="merge_right" translatable="false">Merge&gt;&gt;</string>
 </resources>

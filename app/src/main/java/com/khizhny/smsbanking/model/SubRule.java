@@ -6,9 +6,9 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class SubRule implements java.io.Serializable {
 
-	private final static long serialVersionUID = 1; // Is used to indicate class version during Import/Export
+	private final static long serialVersionUID = 2; // Is used to indicate class version during Import/Export
 	private int id;
-	private int ruleId;
+	private Rule rule; // back reference to rule
 	private int distanceToLeftPhrase;
 	private int distanceToRightPhrase;
 	private String leftPhrase;
@@ -30,13 +30,9 @@ public class SubRule implements java.io.Serializable {
 		USE_REGEX
 	}
 
-	/**
-	 * Default SubRule constructor.
-	 * @param ruleId ID of parent Rule.
-	 */
-    public SubRule(int ruleId, Transaction.Parameters extractedParameter) {
+    public SubRule(Rule rule, Transaction.Parameters extractedParameter) {
 		this.id = -1;
-		this.ruleId = ruleId;
+		this.rule = rule;
 		this.distanceToLeftPhrase = 1;
 		this.distanceToRightPhrase = 1;
 		this.leftPhrase="";
@@ -51,14 +47,9 @@ public class SubRule implements java.io.Serializable {
 		this.negate = false;
 	}
 
-	/**
-	 * Constructor for cloning Object
-	 * @param origin Original object that is copied.
-	 * @param ruleId Id of the new_rule to which new subrule will be attached.
-	 */
-    public SubRule(SubRule origin, int ruleId) {
+    public SubRule(SubRule origin, Rule rule) {
 		this.id = -1;
-		this.ruleId = ruleId;
+		this.rule = rule;
 		this.distanceToLeftPhrase = origin.distanceToLeftPhrase;
 		this.distanceToRightPhrase = origin.distanceToRightPhrase;
 		this.leftPhrase=origin.leftPhrase;
@@ -214,6 +205,10 @@ public class SubRule implements java.io.Serializable {
 				case USE_CONSTANT:
 					temp = constantValue;
 					break;
+				case USE_REGEX:
+					// TODO extraction
+					//temp =
+					break;
 			}
 		} catch (Exception e) {
 			return "";
@@ -290,18 +285,14 @@ public class SubRule implements java.io.Serializable {
 				transaction.setExtraParam4(applySubRule(msg, 2));
 				return true;
 			default:
-				Log.d(LOG, "Unexpected parameter number " + extractedParameter + " in Rule ID=" + ruleId);
+				Log.d(LOG, "Unexpected parameter number " + extractedParameter + " in Rule ID=" + rule.getId());
 				return false;
 		}
 
 	}
 
-	/**
-	 * Changes Rule Id to make possible Template copy to myBanks
-	 * @param ruleId Rule ID in Db.
-	 */
-    public void changeRuleId(int ruleId) {
-		this.ruleId = ruleId;
+    public void changeRule(Rule rule) {
+		this.rule = rule;
 	}
 
 	/**
@@ -310,7 +301,7 @@ public class SubRule implements java.io.Serializable {
     public ContentValues getContentValues() {
 		ContentValues v = new ContentValues();
 		if (id >= 1) v.put("_id", id);
-		v.put("rule_id", ruleId);
+		v.put("rule_id", rule.getId());
 		v.put("left_phrase", leftPhrase);
 		v.put("right_phrase", rightPhrase);
 		v.put("distance_to_left_phrase", distanceToLeftPhrase);
