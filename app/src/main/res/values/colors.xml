@@ -5,4 +5,7 @@
         <color name="green">#009900</color>
     <color name="blue">#5e8eff</color>
     <color name="red">#ff0000</color>
+    <color name="word_variable">#00b0ff</color>
+    <color name="word_variable_fixed_size">#4db6ac</color>
+    <color name="word_constant">#d7ccc8</color>
 </resources>

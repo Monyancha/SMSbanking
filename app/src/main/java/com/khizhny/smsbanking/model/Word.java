@@ -1,13 +1,14 @@
 package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
-import android.graphics.Color;
 
 public class Word implements java.io.Serializable {
 
     public enum WORD_TYPES {
         WORD_CONST,
-        WORD_VARIABLE
+        WORD_VARIABLE,
+        WORD_VARIABLE_FIXED_SIZE
+
     }
     private static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
 
@@ -17,7 +18,7 @@ public class Word implements java.io.Serializable {
 
     private String body;             // Word between [ firstLetterIndex,lastLetterIndex]
 
-    public Rule rule;           // backref to Rule
+    public Rule rule;           // backRef to Rule
 
     public Word(Rule rule, int firstLetterIndex, int lastLetterIndex, WORD_TYPES word_type){
         this.rule=rule;
@@ -40,7 +41,7 @@ public class Word implements java.io.Serializable {
     }
 
     public int getLastLetterIndex(){
-        return firstLetterIndex;
+        return lastLetterIndex;
     }
 
     public String getBody(){
@@ -54,16 +55,10 @@ public class Word implements java.io.Serializable {
     public WORD_TYPES getWordType(){
         return word_type;
     }
-    public int getWordColor(){
 
-        switch (word_type){
-            case WORD_CONST:
-                return Color.LTGRAY;
-            case WORD_VARIABLE:
-                return Color.GRAY;
-            default:
-                return Color.BLACK;
-        }
+    public void reAssign(int firstLetterIndex, int lastLetterIndex){
+        this.firstLetterIndex=firstLetterIndex;
+        this.lastLetterIndex=lastLetterIndex;
+        this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
     }
-
 }

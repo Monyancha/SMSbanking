@@ -124,6 +124,9 @@ public class SubRule implements java.io.Serializable {
     public void setExtractionMethod(int extractionMethod) {
 		this.extractionMethod = Method.values()[extractionMethod];
 	}
+	public void setExtractionMethod(Method method) {
+		this.extractionMethod = method;
+	}
 
     public String getConstantValue() {
 		return constantValue;

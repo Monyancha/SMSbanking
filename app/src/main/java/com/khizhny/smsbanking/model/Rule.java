@@ -2,12 +2,15 @@ package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.provider.UserDictionary;
 import android.util.Log;
 
 import com.khizhny.smsbanking.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.khizhny.smsbanking.MyApplication.db;
 
@@ -101,6 +104,7 @@ public class Rule implements java.io.Serializable {
     public int getId() {
         return id;
     }
+
     public int getBankId() {
         return bankId;
     }
@@ -157,7 +161,11 @@ public class Rule implements java.io.Serializable {
         return nameSuggestion;
     }
 
-	public void setSelectedWords(String selectedWords) {
+	/**
+	 * Deprecated method to support old rules (non regexp)
+	 * @param selectedWords
+	 */
+    public void setSelectedWords(String selectedWords) {
 		// function sets selected words flags from string.
 		String[] a = selectedWords.split(",");
 		// setting all to false
@@ -170,7 +178,26 @@ public class Rule implements java.io.Serializable {
 			k = Integer.parseInt(w);
 			wordIsSelected[k] = true;
 		}
-		updateMask();
+
+		//old updateMask();
+		mask="";
+		String delimiter="";
+		String[] words=smsBody.split(" ");
+		if (!smsBody.trim().equals(smsBody)) mask= ".*";
+        boolean skip_wildcard=false;
+		for (int i=1; i<=wordsCount; i++){
+			if (wordIsSelected[i]){
+				mask+=delimiter+"\\Q"+words[i-1]+"\\E";
+				skip_wildcard=false;
+			}else{
+				if (!skip_wildcard) {
+					mask+=delimiter+".*";
+					skip_wildcard=true;
+				}
+			}
+			delimiter=" ";
+		}
+        if (!smsBody.trim().equals(smsBody)) mask+= ".*";
 	}
 
     /**
@@ -189,28 +216,41 @@ public class Rule implements java.io.Serializable {
 	/**
 	 * Function updates sms mask (used to match SMS and Rules) after user change constant words.
 	 */
-	private void updateMask(){
-		mask="";
-        nameSuggestion="";
+	public void updateMask(){
+		mask="^"; // begining
+		nameSuggestion=""; // default rule name
 		String delimiter="";
-		String[] words=smsBody.split(" ");
-		if (!smsBody.trim().equals(smsBody)) mask= ".*";
-        boolean skip_wildcard=false;
-		for (int i=1; i<=wordsCount; i++){
-			if (wordIsSelected[i]){
-				mask+=delimiter+"\\Q"+words[i-1]+"\\E";
-                nameSuggestion+=delimiter+words[i-1];
-				skip_wildcard=false;
+		String mask_delimiter;
+		int prev_word_end_index=-1;
+		for (Word w : words) {
+			if (w.getFirstLetterIndex()-prev_word_end_index>=2) {
+				mask_delimiter = smsBody.substring(prev_word_end_index + 1, w.getFirstLetterIndex());
 			}else{
-				if (!skip_wildcard) {
-					mask+=delimiter+".*";
-					skip_wildcard=true;
-				}				
+				mask_delimiter = "";
+			}
+			//mask+="\\s*"; // any number of spaces between words TODO replace with exact number of spaces
+			mask+=mask_delimiter;
+			switch (w.getWordType()) {
+				case WORD_CONST:
+					mask+="\\Q" + w.getBody() + "\\E"; // actual constant word
+					nameSuggestion+=delimiter+w.getBody();
+					break;
+				case WORD_VARIABLE:
+					mask+="(.*)";
+					break;
+				case WORD_VARIABLE_FIXED_SIZE:
+					mask+="(.{"+w.getBody().length()+"})";
+					break;
 			}
 			delimiter=" ";
+			prev_word_end_index=w.getLastLetterIndex();
 		}
-        nameSuggestion.trim();
-        if (!smsBody.trim().equals(smsBody)) mask+= ".*";
+		if (smsBody.length()-prev_word_end_index>=2) {
+			mask_delimiter = smsBody.substring(prev_word_end_index + 1);
+		}else{
+			mask_delimiter = "";
+		}
+		mask+=mask_delimiter+"$"; // ending
 	}
 
 
@@ -332,7 +372,7 @@ public class Rule implements java.io.Serializable {
 		int word_start=0;
 		int word_end=0;
 
-		for (int i=0; i<smsBody.length()-1;i++) {
+		for (int i=0; i<smsBody.length();i++) {
 			ch=smsBody.charAt(i);
 			if (ch==splitChar) {
 				if (WeNeedToSaveWord) {
@@ -357,6 +397,57 @@ public class Rule implements java.io.Serializable {
 			word_end=smsBody.length()-1;
 			words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
 		}
+	}
+
+	public void mergeRight(Word w){
+		int index= words.indexOf(w);
+		int very_last_index=smsBody.length()-1;
+		if (index >=words.size()-1) { // No words to the right.
+			if (very_last_index==w.getLastLetterIndex()){
+				// no chars to the right. nothing to merge.
+			}else{// some chars to the right. Merging them to body.
+				w.reAssign(w.getFirstLetterIndex(),very_last_index);
+			}
+		}else {  // there is a word to the right
+			Word nextWord = words.get(index+1);
+			w.reAssign(w.getFirstLetterIndex(),nextWord.getLastLetterIndex());
+			words.remove(nextWord);
+		}
+	}
+
+	public void mergeLeft(Word w){
+		int index= words.indexOf(w);
+		if (index ==0) { // No words to the left.
+			if (w.getFirstLetterIndex()==0){
+				// no chars to the left. nothing to merge.
+			}else{// some chars to the left. Merging them to body.
+				w.reAssign(0,w.getLastLetterIndex());
+			}
+		}else {  // there is a word to the left
+			Word prevWord = words.get(index-1);
+			w.reAssign(prevWord.getFirstLetterIndex(),w.getLastLetterIndex());
+			words.remove(prevWord);
+		}
+	}
+
+	public void Split(Word w, int shift){
+		Word newWord = new Word(this,w.getFirstLetterIndex()+shift ,w.getLastLetterIndex(),w.getWordType());
+		w.reAssign(w.getFirstLetterIndex(),shift+w.getFirstLetterIndex()-1);
+		words.add(words.indexOf(w)+1,newWord);
+	}
+
+	public String getValues(){
+		String r="";
+		String delim="";
+		Pattern pattern = Pattern.compile(mask);
+		Matcher matcher = pattern.matcher(smsBody);
+		if (matcher.matches()) {
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				r += delim + matcher.group(i);
+				delim="\n";
+			}
+		}
+		return r;
 	}
 }
 

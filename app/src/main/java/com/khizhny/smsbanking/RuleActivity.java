@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -100,7 +101,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
 		wordButton = new Button(this);
 		wordButton.setText(R.string.begin);
-        wordButton.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+        changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
         wordButton.setMinHeight(0);
         wordButton.setMinWidth(0);
         wordButton.setMinimumHeight(0);
@@ -115,7 +116,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 wordButton=new Button(this);
                 word=rule.words.get(i-1);
                 wordButton.setText("\""+word.getBody()+"\"");
-                wordButton.getBackground().setColorFilter(word.getWordColor(), PorterDuff.Mode.MULTIPLY);
+                changeColor(wordButton,word.getWordType());
                 wordButton.setMinHeight(0);
                 wordButton.setMinWidth(0);
                 wordButton.setMinimumHeight(0);
@@ -126,8 +127,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(View v) {
                         Word word = (Word) v.getTag();
                         word.changeWordType();
-                        v.getBackground().setColorFilter(word.getWordColor(), PorterDuff.Mode.MULTIPLY);
-                        //v.refreshDrawableState();
+                        changeColor(v,word.getWordType());
                     }
                 });
                 wordButtons.add(wordButton);
@@ -136,7 +136,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
             wordButton=new Button(this);
             wordButton.setText(R.string.end);
-            wordButton.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+            changeColor(wordButton,Word.WORD_TYPES.WORD_CONST);
             wordButton.setMinHeight(0);
             wordButton.setMinWidth(0);
             wordButton.setMinimumHeight(0);
@@ -146,6 +146,29 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             flowLayout.addView(wordButton);
         }
 
+    }
+    private void changeColor(View v, Word.WORD_TYPES word_type){
+        int color_id;
+        switch (word_type){
+            case WORD_CONST:
+                color_id=R.color.word_constant;
+                break;
+            case WORD_VARIABLE:
+                color_id=R.color.word_variable;
+                break;
+            case WORD_VARIABLE_FIXED_SIZE:
+                color_id=R.color.word_variable_fixed_size;
+                break;
+            default:
+                color_id=R.color.word_constant;
+                break;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            v.getBackground().setColorFilter(getResources().getColor(color_id,null), PorterDuff.Mode.MULTIPLY);
+        }else{
+            v.getBackground().setColorFilter(getResources().getColor(color_id), PorterDuff.Mode.MULTIPLY);
+        }
     }
 
     @Override
