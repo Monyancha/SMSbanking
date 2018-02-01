@@ -20,8 +20,12 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 
 public class TransactionActivity extends AppCompatActivity implements View.OnClickListener {
+
+    public static final String  KEY_RULE_ID = "rule_id";
+    public static final String  KEY_TODO = "todo";
+    public static final String  KEY_SMS_BODY = "sms_body";
+
     private Rule rule;
-    private Transaction transaction;
     private AlertDialog alertDialog;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,59 +55,44 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         super.onResume();
         Log.d(LOG, "TransactionActivity resuming");
 
+        TextView smsTextView = findViewById(R.id.sms_body);
+        TextView stateAfterView = findViewById(R.id.state_after_value);
+        TextView stateBeforeView = findViewById(R.id.state_before_value);
+        TextView stateChangeView = findViewById(R.id.state_change_value);
+        TextView commissionView =  findViewById(R.id.commision_value);
+        TextView currencyView =  findViewById(R.id.currency_value);
+        TextView extra1View = findViewById(R.id.extra1_value);
+        TextView extra2View =  findViewById(R.id.extra2_value);
+        TextView extra3View =  findViewById(R.id.extra3_value);
+        TextView extra4View =  findViewById(R.id.extra4_value);
+
         // getting Rule ID from Intent
         Intent intent = getIntent();
-        int ruleId = intent.getExtras().getInt("rule_id");
-        Log.d(MyApplication.LOG, "Getting Rule from db.");//
+        if ( intent.hasExtra( KEY_RULE_ID)) {
+            int ruleId;
+            try{
+                ruleId=intent.getExtras().getInt( KEY_RULE_ID);
+                Log.d(MyApplication.LOG, "Getting Rule from db.");//
+                // loading Rule and Bank objects
+                rule = db.getRule(ruleId);
+                Transaction transaction = rule.getSampleTransaction(this);
+                String smsText = getString(R.string.begin) + rule.getSmsBody() + getString(R.string.end);
+                if (smsTextView != null) smsTextView.setText(smsText);
+                stateAfterView.setText(transaction.getStateAfterAsString(false));
+                stateBeforeView.setText(transaction.getStateBeforeAsString(false));
+                stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
+                commissionView.setText(transaction.getCommissionAsString(false, false));
+                currencyView.setText(transaction.getTransactionCurrency());
+                extra1View.setText(transaction.getExtraParam1());
+                extra2View.setText(transaction.getExtraParam2());
+                extra3View.setText(transaction.getExtraParam3());
+                extra4View.setText(transaction.getExtraParam4());
+            }catch (NullPointerException e){
+                Log.d(MyApplication.LOG, "No Rule Id passed with intent to transaction Activity.");
+            }
 
-        // loading Rule and Bank objects
-        rule = db.getRule(ruleId);
-
-        transaction = rule.getSampleTransaction(this);
-
-        TextView smsTextView = (TextView) findViewById(R.id.sms_body);
-        String smsText = getString(R.string.begin) + rule.getSmsBody() + getString(R.string.end);
-        if (smsTextView != null) {
-            smsTextView.setText(smsText);
         }
 
-        TextView stateAfterView = (TextView) findViewById(R.id.state_after_value);
-        stateAfterView.setText(transaction.getStateAfterAsString(false));
-
-        TextView stateBeforeView = (TextView) findViewById(R.id.state_before_value);
-        stateBeforeView.setText(transaction.getStateBeforeAsString(false));
-
-        TextView stateChangeView = (TextView) findViewById(R.id.state_change_value);
-        stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
-
-        TextView commissionView = (TextView) findViewById(R.id.commision_value);
-        commissionView.setText(transaction.getCommissionAsString(false, false));
-
-        TextView currencyView = (TextView) findViewById(R.id.currency_value);
-        currencyView.setText(transaction.getTransactionCurrency());
-
-        TextView extra1View = (TextView) findViewById(R.id.extra1_value);
-        extra1View.setText(transaction.getExtraParam1());
-
-        TextView extra2View = (TextView) findViewById(R.id.extra2_value);
-        extra2View.setText(transaction.getExtraParam2());
-
-        TextView extra3View = (TextView) findViewById(R.id.extra3_value);
-        extra3View.setText(transaction.getExtraParam3());
-
-        TextView extra4View = (TextView) findViewById(R.id.extra4_value);
-        extra4View.setText(transaction.getExtraParam4());
-
-        Button doneButton = (Button) findViewById(R.id.finish_rule);
-        doneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // closing activity and going back to MainActivity
-                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -159,6 +148,12 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
             case R.id.extra4_label:
                 selectedParameter = Transaction.Parameters.EXTRA_4;
                 break;
+            case R.id.finish_rule:
+                // closing activity and going back to MainActivity
+                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return;
             default:
                 Log.e(LOG, "Unexpected parameter found :(");
                 return;

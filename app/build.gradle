@@ -8,7 +8,7 @@ android {
         }
     }
     compileSdkVersion 27
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.khizhny.smsbanking"
         minSdkVersion 14
@@ -36,26 +36,30 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'com.android.support:cardview-v7:27.0.2'
     compile 'com.android.support:recyclerview-v7:27.0.2'
     compile 'com.android.support:design:27.0.2'
+
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
+
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
-    compile 'com.firebaseui:firebase-ui-database:1.0.0'
+
+    compile 'com.firebaseui:firebase-ui-database:1.0.1'
+
     compile 'com.google.firebase:firebase-core:11.8.0'
     compile 'com.google.firebase:firebase-messaging:11.8.0'
     compile 'com.google.firebase:firebase-ads:11.8.0'
     compile 'com.google.firebase:firebase-auth:11.8.0'
     compile 'com.google.firebase:firebase-database:11.8.0'
     compile 'com.google.firebase:firebase-storage:11.8.0'
-    // used for ads
     compile 'com.google.android.gms:play-services-ads:11.8.0'
-    // used for google sign-in
     compile 'com.google.android.gms:play-services-auth:11.8.0'
-    // used for Excel exporting
+
     compile 'net.sourceforge.jexcelapi:jxl:2.6.12'
+
     testCompile 'junit:junit:4.12'
 }
 apply plugin: 'com.google.gms.google-services'

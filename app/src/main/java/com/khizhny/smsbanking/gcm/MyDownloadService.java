@@ -116,8 +116,9 @@ public class MyDownloadService extends MyBaseTaskService {
                         showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
 
                         // importing downloaded template to DB
-                        Bank bank= Bank.importBank(getCacheDir().getAbsolutePath()+"/loaded_bank.dat");
-                        db.useTemplate(bank);
+                        Bank bank= new Bank(Bank.importBank(getCacheDir().getAbsolutePath()+"/loaded_bank.dat"));
+                        db.addOrEditBank(bank,true);
+                        db.setActiveBank(bank.getId());
                         MyApplication.forceRefresh=true;
 
                         // Mark task completed

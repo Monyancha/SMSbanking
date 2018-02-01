@@ -16,7 +16,7 @@
     <string name="action_rule_text">Rule editor</string>
     <string name="action_rate_app">Rate application</string>
 
-    <string name="rule_message">Pick variable words:</string>
+    <string name="rule_message">Pick variable words (Long tap to split):</string>
     <string name="rule_name">Rule name (optional)</string>
 
     <string name="popup_create_rule">Create new rule</string>

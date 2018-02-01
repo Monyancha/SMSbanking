@@ -51,120 +51,35 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="0dp"
         android:entries="@array/method_entries"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toRightOf="@+id/sub_rule_method_label"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/sub_rule_method_label"/>
+        app:layout_constraintTop_toTopOf="@+id/sub_rule_method_label" />
 
     <TextView
-        android:id="@+id/sub_rule_left_n_label"
+        android:id="@+id/sub_rule_phrase_label"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:gravity="center"
-        android:text="@string/n_equal"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textSize="10sp"
-        android:layout_marginTop="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/sub_rule_left_n"
-        android:layout_marginBottom="0dp"
-        app:layout_constraintTop_toTopOf="@+id/sub_rule_left_n"
-        app:layout_constraintVertical_bias="0.0"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/sub_rule_left_n"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:entries="@array/n_entries"
-        android:minHeight="0dp"
-        android:minWidth="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/sub_rule_method"
-        android:layout_marginLeft="0dp"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_left_n_label"/>
-
-    <TextView
-        android:id="@+id/sub_rule_left_n_label2"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
         android:gravity="center"
         android:text="@string/sub_rule_phrase"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textSize="10sp"
-        android:layout_marginTop="0dp"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_left_n"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/sub_rule_left_n_phrase"
-        android:layout_marginBottom="0dp"
-        app:layout_constraintTop_toTopOf="@+id/sub_rule_left_n_phrase"
-        app:layout_constraintVertical_bias="0.0"/>
+        app:layout_constraintBottom_toBottomOf="@+id/sub_rule_phrase"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/sub_rule_phrase"
+        app:layout_constraintVertical_bias="0.0" />
 
     <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/sub_rule_left_n_phrase"
+        android:id="@+id/sub_rule_phrase"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/sub_rule_method"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_left_n_label2"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintHorizontal_bias="0.0"/>
-
-    <TextView
-        android:id="@+id/sub_rule_right_n_label"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginTop="0dp"
-        android:gravity="center"
-        android:text="@string/n_equal"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textSize="10sp"
-        app:layout_constraintBottom_toBottomOf="@+id/sub_rule_right_n"
-        app:layout_constraintTop_toTopOf="@+id/sub_rule_right_n"
-        app:layout_constraintVertical_bias="0.0"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"/>
-
-    <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/sub_rule_right_n"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="8dp"
-        android:entries="@array/n_entries"
-        app:layout_constraintTop_toBottomOf="@+id/sub_rule_left_n"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_right_n_label"/>
-
-    <TextView
-        android:id="@+id/sub_rule_right_n_label2"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:text="@string/sub_rule_phrase"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textSize="10sp"
-        app:layout_constraintTop_toTopOf="@+id/sub_rule_right_n_phrase"
-        android:layout_marginTop="0dp"
-        app:layout_constraintBottom_toBottomOf="@+id/sub_rule_right_n_phrase"
-        android:layout_marginBottom="0dp"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_right_n"
-        android:layout_marginLeft="8dp"/>
-
-    <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/sub_rule_right_n_phrase"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/sub_rule_left_n_phrase"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/sub_rule_right_n_label2"
+        app:layout_constraintLeft_toRightOf="@+id/sub_rule_phrase_label"
         android:layout_marginLeft="8dp"
         app:layout_constraintHorizontal_bias="0.0"/>
 
@@ -178,13 +93,13 @@
         android:ems="10"
         android:enabled="true"
         android:hint="@string/sub_rule_constant_value"
-        android:imeOptions="actionDone|actionSearch"
+        android:imeOptions="normal|actionUnspecified|actionNone|actionDone"
         android:inputType="text"
         android:textSize="10sp"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sub_rule_right_n_phrase"/>
+        app:layout_constraintTop_toBottomOf="@+id/sub_rule_phrase" />
 
     <TextView
         android:id="@+id/sub_rule_separator_label"

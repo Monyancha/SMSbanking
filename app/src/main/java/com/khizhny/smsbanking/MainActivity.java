@@ -81,6 +81,8 @@ import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 import static com.khizhny.smsbanking.MyApplication.hideMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.ignoreClones;
+import static com.khizhny.smsbanking.TransactionActivity.KEY_SMS_BODY;
+import static com.khizhny.smsbanking.TransactionActivity.KEY_TODO;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
         OnItemClickListener,
@@ -128,10 +130,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         setContentView(R.layout.activity_main);
         setTitle("");
-        listView = (ListView) findViewById(R.id.listView);
+        listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(this);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
+        swipeRefreshLayout = findViewById(R.id.swipe_layout);
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.blue, R.color.green);
             swipeRefreshLayout.setOnRefreshListener(this);
@@ -858,8 +860,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     Log.d(LOG, "showCreateNewRuleDialog() next button clicked");
                     String messageBody = edittext.getText().toString();
                     Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                    intent.putExtra("sms_body", messageBody);
-                    intent.putExtra("todo", "add");
+                    intent.putExtra(KEY_SMS_BODY, messageBody);
+                    intent.putExtra(KEY_TODO, "add");
                     startActivity(intent);
                 }
             });
@@ -1042,7 +1044,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             // saving last bank account state to db for later usage
             if (transactionList.size()>0) {
                 activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
-                db.addOrEditBank(activeBank);
+                db.addOrEditBank(activeBank,false);
             }
             Log.d(LOG,"RefreshTransactionsTask.doInBackground() finished");
             return transactionList;

@@ -13,7 +13,7 @@
     <string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оценить программу</string>
 
-	<string name="rule_message">Укажите изменяемые слова:</string>
+	<string name="rule_message">Укажите изменяемые слова (Долгое нажатие для разбиения слов):</string>
     <string name="rule_name">Имя правила(необязательно)</string>
 
     <string name="popup_create_rule">Создать новое правило</string>

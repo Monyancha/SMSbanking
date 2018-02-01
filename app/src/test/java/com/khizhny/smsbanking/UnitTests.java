@@ -2,21 +2,14 @@ package com.khizhny.smsbanking;
 
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
-import com.khizhny.smsbanking.model.SubRule;
-import com.khizhny.smsbanking.model.Transaction;
 
 import org.junit.Test;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
-/**
- * To work on unit tests, switch the Test Artifact in the Build Variants view.
- */
 public class UnitTests {
     @Test
     public void makeInitialWordSplitting() throws Exception {
@@ -27,7 +20,7 @@ public class UnitTests {
         b.setDefaultCurrency("UAH");
 
         // defining Rule
-        Rule r = new Rule(b.getId(),"test rule");
+        Rule r = new Rule(b,"test rule");
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
@@ -48,7 +41,7 @@ public class UnitTests {
         b.setDefaultCurrency("UAH");
 
         // defining Rule
-        Rule r = new Rule(b.getId(),"test rule");
+        Rule r = new Rule(b,"test rule");
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
@@ -78,7 +71,7 @@ public class UnitTests {
         b.setDefaultCurrency("UAH");
 
         // defining Rule
-        Rule r = new Rule(b.getId(),"test rule");
+        Rule r = new Rule(b,"test rule");
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
@@ -107,7 +100,7 @@ public class UnitTests {
         b.setDefaultCurrency("UAH");
 
         // defining Rule
-        Rule r = new Rule(b.getId(),"test rule");
+        Rule r = new Rule(b,"test rule");
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
@@ -133,7 +126,7 @@ public class UnitTests {
         b.setDefaultCurrency("UAH");
 
         // defining Rule
-        Rule r = new Rule(b.getId(),"test rule");
+        Rule r = new Rule(b,"test rule");
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());

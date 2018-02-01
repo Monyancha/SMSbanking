@@ -97,7 +97,6 @@ public class BankActivity extends AppCompatActivity {
                     } else if (nameView.getText().toString().equals("")) {
                         Toast.makeText(BankActivity.this, getString(R.string.bank_name_must_be_set), Toast.LENGTH_SHORT).show();
                     }else {
-
                         // Updating country settings in preferences
                         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                         String country=countryView.getSelectedItem().toString();
@@ -108,7 +107,7 @@ public class BankActivity extends AppCompatActivity {
                         bank.setPhone(phonesView.getText().toString());
                         bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
                         bank.setCountry(arr[countryView.getSelectedItemPosition()]);
-                        db.addOrEditBank(bank);
+                        db.addOrEditBank(bank,false);
                         BankActivity.this.finish();
                     }
                 }

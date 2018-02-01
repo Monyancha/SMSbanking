@@ -2,7 +2,6 @@ package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.provider.UserDictionary;
 import android.util.Log;
 
 import com.khizhny.smsbanking.R;
@@ -12,24 +11,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.khizhny.smsbanking.MyApplication.db;
-
 public class Rule implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
+	private static final long serialVersionUID = 2; // Is used to indicate class version during Import/Export
 	private final static String LOG ="SMS_BANKING";
 
-	private int id;
-	private int bankId;
+	private int id=-1;
+	private Bank bank; // back reference to bank
 	private String name;
-	private String smsBody;
-	private String mask;
-    private String nameSuggestion;
-	private transactionType ruleType;
-	public int wordsCount;
-	public boolean[] wordIsSelected;
-	public List<SubRule> subRuleList;
+	private String smsBody="";
+	private String mask="";
+    private String nameSuggestion="";
+	private transactionType ruleType=transactionType.UNKNOWN;
+	public List<SubRule> subRuleList=new ArrayList<SubRule>();
 	public List<Word> words=new ArrayList<Word>();
+
+	public int wordsCount=0; // for old rules
+	public boolean[] wordIsSelected= null; // for old rules
 
 	/**
 	 * Transaction type icons array.
@@ -45,6 +43,7 @@ public class Rule implements java.io.Serializable {
 			R.drawable.ic_transaction_calculated, // Calculated
 			R.drawable.ic_transaction_ignore // ignore
 	};
+
 	public enum transactionType {
 		UNKNOWN,
 		INCOME,
@@ -59,42 +58,43 @@ public class Rule implements java.io.Serializable {
 
 	/**
 	 * New rule constructor.
-	 * @param bankId Bank ID.
+	 * @param bank Bank.
 	 * @param name Name of the rule
 	 */
-    public Rule(int bankId, String name){
-		this.id=-1;
-		this.bankId=bankId;
+    public Rule(Bank bank, String name){
+		this.bank=bank;
 		this.name=name;
         this.nameSuggestion=name;
-		this.smsBody="";
-		this.mask="";
-        this.ruleType=transactionType.UNKNOWN;
-        this.wordsCount=0;
-        this.wordIsSelected=null;
-        this.subRuleList=null;
-        this.subRuleList=new ArrayList<SubRule>();
 	}
 
 	/**
-	 * Constructor is used for cloning bank object with all Rules and subrules
-	 * @param bankId Bank ID
-	 * @param rule Rule
+	 * Constructor is used for cloning rule object with all Rules,subrules,words
+	 * @param bank Bank to bind the rule.
+	 * @param originRule Rule to be duplicated
 	 */
-    public Rule(Rule rule, int bankId){
-		this.id=-1;
-		this.bankId=bankId;
-		this.name=rule.name;
-        this.nameSuggestion=rule.name;
-		this.smsBody=rule.smsBody;
-		this.mask=rule.mask;
-		this.ruleType=rule.ruleType;
-		this.wordsCount=rule.wordsCount;
-		this.wordIsSelected=null;
-		for (SubRule sr : rule.subRuleList) {
+    public Rule(Rule originRule, Bank bank){
+		this.bank=bank;
+		this.name=originRule.name;
+        this.nameSuggestion=originRule.name;
+		this.smsBody=originRule.smsBody;
+		this.mask=originRule.mask;
+		this.ruleType=originRule.ruleType;
+		this.wordsCount=originRule.wordsCount;
+
+
+
+		// Cloning subrules
+		for (SubRule sr : originRule.subRuleList) {
 			this.subRuleList.add(new SubRule(sr, this));
 		}
-		Log.d(LOG, "Rule " +rule + " was cloned");
+		// Cloning words
+		for (Word w : originRule.words) {
+			this.words.add(new Word(w, this));
+		}
+		// For old rules. Cloning selected words
+		setSelectedWords(originRule.getSelectedWords());
+
+		Log.d(LOG, "Rule " +originRule + " was cloned");
 	}
 
 	public String toString(){
@@ -105,8 +105,8 @@ public class Rule implements java.io.Serializable {
         return id;
     }
 
-    public int getBankId() {
-        return bankId;
+    public Bank getBank() {
+        return bank;
     }
 
 	public void setId(int id) {
@@ -166,7 +166,8 @@ public class Rule implements java.io.Serializable {
 	 * @param selectedWords
 	 */
     public void setSelectedWords(String selectedWords) {
-		if (!selectedWords.isEmpty()) {
+		wordIsSelected=new boolean[wordsCount+2];
+    	if (!selectedWords.isEmpty()) {
 			// function sets selected words flags from string.
 			String[] a = selectedWords.split(",");
 			// setting all to false
@@ -208,7 +209,7 @@ public class Rule implements java.io.Serializable {
      * @return Transaction object
      */
 	public Transaction getSampleTransaction(Context ctx){
-        Bank bank=db.getBank(bankId);
+        //Bank bank=db.getBank(bankId);
         Transaction transaction = new Transaction(smsBody,bank.getDefaultCurrency(),null);
         applyRule(transaction);
         transaction.calculateMissedData();
@@ -222,15 +223,16 @@ public class Rule implements java.io.Serializable {
 		mask="^"; // begining
 		nameSuggestion=""; // default rule name
 		String delimiter="";
-		String mask_delimiter;
+		String mask_delimiter;  // chars in between words
 		int prev_word_end_index=-1;
 		for (Word w : words) {
+
 			if (w.getFirstLetterIndex()-prev_word_end_index>=2) {
 				mask_delimiter = smsBody.substring(prev_word_end_index + 1, w.getFirstLetterIndex());
 			}else{
 				mask_delimiter = "";
 			}
-			//mask+="\\s*"; // any number of spaces between words TODO replace with exact number of spaces
+
 			mask+=mask_delimiter;
 			switch (w.getWordType()) {
 				case WORD_CONST:
@@ -276,6 +278,10 @@ public class Rule implements java.io.Serializable {
 		this.ruleType = transactionType.values()[ruleType];
 	}
 
+	/**
+	 * Used for old rules to get constant phrases
+	 * @return
+	 */
 	public List<String> getConstantPhrases(){
 		List<String> out = new ArrayList<String>();
 		out.add("<BEGIN>");
@@ -302,6 +308,22 @@ public class Rule implements java.io.Serializable {
 	}
 
 	/**
+	 * Used just for Regex method
+	 * @return
+	 */
+	public List<String> getVariablePhrases(){
+		Pattern pattern = Pattern.compile(mask);
+		Matcher matcher = pattern.matcher(smsBody);
+		List<String> results=new ArrayList<String>();
+		if (matcher.matches()) {
+			for (int i =1; i<=matcher.groupCount();i++){
+				results.add(matcher.group(i));
+			}
+		}
+		return results;
+	}
+
+	/**
 	 *
 	 * @return Content values used for database insert or update function.
 	 */
@@ -312,17 +334,9 @@ public class Rule implements java.io.Serializable {
 		v.put("sms_body", smsBody);
 		v.put("mask", mask);
 		v.put("selected_words", getSelectedWords());
-		v.put("bank_id", bankId);
+		v.put("bank_id", bank.getId());
 		v.put("type", ruleType.ordinal());
 		return v;
-	}
-
-	/**
-	 * Function is used to copy bank templates to MyBanks.
-	 * @param bankId Db id of the Bank record.
-	 */
-	public void changeBankId(int bankId){
-		this.bankId=bankId;
 	}
 
     /**
@@ -344,6 +358,7 @@ public class Rule implements java.io.Serializable {
             return false;
         }
 	}
+
 	public Boolean hasIgnoreType(){
 		return ruleType == Rule.transactionType.IGNORE;
 	}
@@ -405,9 +420,8 @@ public class Rule implements java.io.Serializable {
 		int index= words.indexOf(w);
 		int very_last_index=smsBody.length()-1;
 		if (index >=words.size()-1) { // No words to the right.
-			if (very_last_index==w.getLastLetterIndex()){
-				// no chars to the right. nothing to merge.
-			}else{// some chars to the right. Merging them to body.
+			if (very_last_index!=w.getLastLetterIndex()){
+				// some chars to the right. Merging them to body.
 				w.reAssign(w.getFirstLetterIndex(),very_last_index);
 			}
 		}else {  // there is a word to the right
@@ -433,7 +447,7 @@ public class Rule implements java.io.Serializable {
 	}
 
 	public void split(Word w, int shift){
-		Word newWord = new Word(this,w.getFirstLetterIndex()+shift ,w.getLastLetterIndex(),w.getWordType());
+		Word newWord = new Word(this,w.getFirstLetterIndex()+shift ,w.getLastLetterIndex(), Word.WORD_TYPES.WORD_CONST);
 		w.reAssign(w.getFirstLetterIndex(),shift+w.getFirstLetterIndex()-1);
 		words.add(words.indexOf(w)+1,newWord);
 	}

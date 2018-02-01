@@ -19,17 +19,14 @@ import android.widget.TextView;
 import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
 
-import java.util.List;
-
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 
 public class SubRuleActivity extends AppCompatActivity implements View.OnClickListener
 {
 
-    private Rule rule;
+    private Rule rule;       // Parent rule
     private SubRule subRule; // Sub rule which is editing in activity
-    private List<String> phrases;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +36,18 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-        // getting subrule ID from intent
+        // getting sub rule ID from intent
         int subRuleId = getIntent().getIntExtra("subRuleId",-1);
         int ruleId = getIntent().getIntExtra("ruleId",-1);
         setTitle(getIntent().getStringExtra("caption"));
-        if (subRuleId>=0) {
+
+        if (ruleId>=0) {
             rule=db.getRule(ruleId);
             for (SubRule sr: rule.subRuleList) {
                 if (sr.getId()==subRuleId) {
                     subRule=sr;
                 }
             }
-            phrases = rule.getConstantPhrases();
         }
     }
 
@@ -58,80 +55,52 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
     protected void onResume() {
         super.onResume();
 
-
-        //========================================================================================
-        TextView bodyView = (TextView) findViewById(R.id.sms_body);
+        TextView bodyView = findViewById(R.id.sms_body);
         bodyView.setText(rule.getSmsBody());
 
-        //========================================================================================
-        AppCompatSpinner methodView = (AppCompatSpinner) findViewById(R.id.sub_rule_method);
-        methodView.setSelection(subRule.getExtractionMethodInt());
+        //==  Method ====
+        AppCompatSpinner methodView =  findViewById(R.id.sub_rule_method);
+        switch (subRule.getExtractionMethod()){
+            case WORD_AFTER_PHRASE:
+            case WORD_BEFORE_PHRASE:
+            case WORDS_BETWEEN_PHRASES:
+                Log.e(LOG,"SubRuleActivity is trying to edit old subrule!");
+                break;
+            case USE_CONSTANT:
+                methodView.setSelection(0);
+                break;
+            case USE_REGEX:
+                methodView.setSelection(1);
+                break;
+        }
+
         methodView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             // method Spinner change listener
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if (subRule.getExtractionMethodInt() != selectedPosition) {
-                    subRule.setExtractionMethod(selectedPosition);
-                    refreshResult();
+                switch (selectedPosition){
+                    case 0:  subRule.setExtractionMethod(SubRule.Method.USE_CONSTANT); break;
+                    case 1:  subRule.setExtractionMethod(SubRule.Method.USE_REGEX); break;
                 }
+                refreshResult();
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
             }
         });
 
-        //========================================================================================
-        AppCompatSpinner leftNView = (AppCompatSpinner) findViewById(R.id.sub_rule_left_n);
-        leftNView.setSelection(subRule.getDistanceToLeftPhrase() - 1);
-        leftNView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                // Left N value change listener
-                if ((selectedPosition + 1) != subRule.getDistanceToLeftPhrase()) {
-                    subRule.setDistanceToLeftPhrase(selectedPosition + 1);
-                    refreshResult();
-                }
-            }
+        //==  Phrase ====
+        AppCompatSpinner phraseView =findViewById(R.id.sub_rule_phrase);
+        ArrayAdapter phraseAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, rule.getVariablePhrases());
+        //PhraseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); TODO remove
+        phraseView.setAdapter(phraseAdapter);
+        phraseView.setSelection(subRule.regexPhraseIndex);
+        phraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-            }
-        });
-
-        //========================================================================================
-        AppCompatSpinner rightNView = (AppCompatSpinner) findViewById(R.id.sub_rule_right_n);
-        rightNView.setSelection(subRule.getDistanceToRightPhrase() - 1);
-        rightNView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            // Right N value change listener
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if ((selectedPosition + 1) != subRule.getDistanceToRightPhrase()) {
-                    subRule.setDistanceToRightPhrase(selectedPosition + 1);
-                    refreshResult();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-            }
-        });
-
-
-
-        //========================================================================================
-        ArrayAdapter<String> PhraseAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, phrases);
-        PhraseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        AppCompatSpinner leftPhraseView = (AppCompatSpinner) findViewById(R.id.sub_rule_left_n_phrase);
-        leftPhraseView.setAdapter(PhraseAdapter);
-        leftPhraseView.setSelection(phrases.indexOf(subRule.getLeftPhrase()));
-        leftPhraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View v, int selectedPosition, long id) {
-                //Left phrase spinner change listener
-                if (!phrases.get(selectedPosition).equals(subRule.getLeftPhrase())) {
-                    subRule.setLeftPhrase(phrases.get(selectedPosition));
+                if (subRule.regexPhraseIndex!=selectedPosition){
+                    subRule.regexPhraseIndex=selectedPosition;
                     refreshResult();
                 }
             }
@@ -141,59 +110,29 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        //========================================================================================
-        AppCompatSpinner rightPhraseView = (AppCompatSpinner) findViewById(R.id.sub_rule_right_n_phrase);
-        rightPhraseView.setAdapter(PhraseAdapter);
-        rightPhraseView.setSelection(phrases.indexOf(subRule.getRightPhrase()));
-        rightPhraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if (!phrases.get(selectedPosition).equals(subRule.getRightPhrase())) {
-                    subRule.setRightPhrase(phrases.get(selectedPosition));
-                    refreshResult();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-            }
-        });
-
-        //========================================================================================
-        TextView constantView = (TextView) findViewById(R.id.sub_rule_constant_value);
-        switch (subRule.getExtractionMethod()) {
-            case WORD_AFTER_PHRASE:
-            case WORD_BEFORE_PHRASE:
-            case WORDS_BETWEEN_PHRASES:
-                constantView.setText("");
-                break;
-            case USE_CONSTANT:
-                constantView.setText(subRule.getConstantValue());
-                break;
-        }
-
+        //=Constant===========================================================================
+        EditText constantView = findViewById(R.id.sub_rule_constant_value);
+        constantView.setText(subRule.getConstantValue());
         constantView.setOnEditorActionListener(
                 new EditText.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
                         if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
                             return false;
                         } else if (actionId == EditorInfo.IME_ACTION_SEARCH
                                 || event == null
                                 || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                             // the user is done typing.
-                            if (subRule.getExtractionMethod() == SubRule.Method.USE_CONSTANT) {
-                                subRule.setConstantValue(v.getText().toString());
-                                refreshResult();
-                            }
+                            subRule.setConstantValue(v.getText().toString());
+                            refreshResult();
                             return true;
                         }
                         return false; // pass on to other listeners.
                     }
-                });
-
+                });/**/
         //========================================================================================
-        CheckBox negateView = (CheckBox) findViewById(R.id.sub_rule_negate);
+        CheckBox negateView = findViewById(R.id.sub_rule_negate);
         negateView.setChecked(subRule.negate);
         negateView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -207,7 +146,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         //========================================================================================
-        AppCompatSpinner separatorView = (AppCompatSpinner) findViewById(R.id.sub_rule_separator);
+        AppCompatSpinner separatorView = findViewById(R.id.sub_rule_separator);
         separatorView.setSelection(subRule.getDecimalSeparator());
         separatorView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -241,7 +180,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         //========================================================================================
-        AppCompatSpinner ignoreNRightView = (AppCompatSpinner) findViewById(R.id.sub_rule_ignore_n_last);
+        AppCompatSpinner ignoreNRightView = findViewById(R.id.sub_rule_ignore_n_last);
         ignoreNRightView.setSelection(subRule.trimRight);
         ignoreNRightView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -261,72 +200,32 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void refreshResult(){
-        TextView resultView = (TextView) findViewById(R.id.sub_rule_result_value);
-        TextView tipView = (TextView) findViewById(R.id.subrule_tip);
+        TextView resultView = findViewById(R.id.sub_rule_result_value);
+        TextView tipView =  findViewById(R.id.subrule_tip);
         tipView.setText("");
         // hiding unused views depending on used method
         switch (subRule.getExtractionMethod()){
             case WORD_AFTER_PHRASE:
-                findViewById(R.id.sub_rule_left_n).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_phrase).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_label).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_label2).setVisibility(View.VISIBLE);
-
-                findViewById(R.id.sub_rule_right_n).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_phrase).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_label).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_label2).setVisibility(View.GONE);
-
-                findViewById(R.id.sub_rule_ignore).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_first).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_last).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_constant_value).setVisibility(View.GONE);
-                break;
             case WORD_BEFORE_PHRASE:
-                findViewById(R.id.sub_rule_left_n).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_phrase).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_label).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_label2).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_phrase).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_label).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_label2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_first).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_last).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_constant_value).setVisibility(View.GONE);
-                break;
             case WORDS_BETWEEN_PHRASES:
-                findViewById(R.id.sub_rule_left_n).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_phrase).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_label).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_left_n_label2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_phrase).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_label).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_right_n_label2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_first).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore_n_last).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_ignore2).setVisibility(View.VISIBLE);
-                findViewById(R.id.sub_rule_constant_value).setVisibility(View.GONE);
                 break;
             case USE_CONSTANT:
-                findViewById(R.id.sub_rule_left_n).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_phrase).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_label).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_left_n_label2).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_phrase).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_label).setVisibility(View.GONE);
-                findViewById(R.id.sub_rule_right_n_label2).setVisibility(View.GONE);
+                findViewById(R.id.sub_rule_phrase).setVisibility(View.GONE);
+                findViewById(R.id.sub_rule_phrase_label).setVisibility(View.GONE);
                 findViewById(R.id.sub_rule_ignore).setVisibility(View.VISIBLE);
                 findViewById(R.id.sub_rule_ignore_n_first).setVisibility(View.VISIBLE);
                 findViewById(R.id.sub_rule_ignore_n_last).setVisibility(View.VISIBLE);
                 findViewById(R.id.sub_rule_ignore2).setVisibility(View.VISIBLE);
                 findViewById(R.id.sub_rule_constant_value).setVisibility(View.VISIBLE);
+                break;
+            case USE_REGEX:
+                findViewById(R.id.sub_rule_phrase).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_phrase_label).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_ignore).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_ignore_n_first).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_ignore_n_last).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_ignore2).setVisibility(View.VISIBLE);
+                findViewById(R.id.sub_rule_constant_value).setVisibility(View.GONE);
                 break;
         }
 
@@ -342,9 +241,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
             case ACCOUNT_STATE_BEFORE:
             case ACCOUNT_STATE_AFTER:
             case ACCOUNT_DIFFERENCE:
-
                 resultView.setText(subRule.applySubRule(rule.getSmsBody(), 0));
-
                 break;
             // getting result as a string
             case EXTRA_1:
@@ -389,4 +286,14 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         }
         return super.onOptionsItemSelected(item);
     }
+
+   private void setSpinnerByText(AppCompatSpinner s, String text){
+       int total=s.getAdapter().getCount();
+       for (int i=0;i<total;i++){
+           if (text.equals(s.getAdapter().getItem(i))) {
+               s.setSelection(i);
+           }
+       }
+   }
+
 }

@@ -13,7 +13,7 @@
     <string name="action_rule_text">Редактор на правила</string>
     <string name="action_rate_app">Оценка на програмата</string>
 
-	<string name="rule_message">Маркирайте не постоянните думи:</string>
+	<string name="rule_message">Маркирайте не постоянните думи(Натиснете продължително, за да разделите думите):</string>
     <string name="rule_name">Име на правилото (незадължително)</string>
 
     <string name="popup_create_rule">Създаване на ново правило</string>

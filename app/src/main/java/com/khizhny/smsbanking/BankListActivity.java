@@ -130,7 +130,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 
-		listView = (ListView) findViewById(R.id.listView);
+		listView =  findViewById(R.id.listView);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -334,9 +334,10 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                     String importPath;
                     importPath = file.getPath();
                     Log.d(LOG, "File picked " + importPath);
-                    Bank b = (Bank) Bank.importBank(importPath);
-                    if (!(b == null)) {
-                        db.useTemplate(b);
+                    Bank b = new Bank (Bank.importBank(importPath));
+                    if (b != null) {
+                        db.addOrEditBank(b,true);
+                        db.setActiveBank(b.getId());
                        BankListActivity.this.finish();
                     } else {
                         Toast.makeText(BankListActivity.this, getString(R.string.import_failed), Toast.LENGTH_SHORT).show();
@@ -359,9 +360,10 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         builder.setItems(templates, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                db.open();
-                db.useTemplate(bankTemplates.get(which));
-
+                //db.open();
+                Bank b = new Bank(bankTemplates.get(which));
+                db.addOrEditBank(b,true);
+                db.setActiveBank(b.getId());
                 //Refreshing list
                 bankList.clear();
                 bankList.addAll(db.getMyBanks(country));
@@ -426,16 +428,16 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 rowView = vi.inflate(R.layout.activity_bank_list_row, parent, false);
             }
 
-            TextView bankNameView = (TextView) rowView.findViewById(R.id.label);
+            TextView bankNameView =  rowView.findViewById(R.id.label);
             bankNameView.setText(bankList.get(position).getName());
 
-            TextView bankPhoneView = (TextView) rowView.findViewById(R.id.bankPhone);
+            TextView bankPhoneView =  rowView.findViewById(R.id.bankPhone);
             bankPhoneView.setText(bankList.get(position).getPhone());
 
-            TextView bankCurrencyView = (TextView) rowView.findViewById(R.id.bankCurrency);
+            TextView bankCurrencyView = rowView.findViewById(R.id.bankCurrency);
             bankCurrencyView.setText(bankList.get(position).getDefaultCurrency());
 
-            TextView bankValueView = (TextView) rowView.findViewById(R.id.bankValue);
+            TextView bankValueView =  rowView.findViewById(R.id.bankValue);
             bankValueView.setText(bankList.get(position).getCurrentAccountState());
 
             if (!bankList.get(position).isEditable()) {
@@ -450,7 +452,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 rowView.findViewById(R.id.bankCurrency).setVisibility(View.VISIBLE);
             }
 
-            RadioButton RadioButtonView = (RadioButton) rowView.findViewById(R.id.active);
+            RadioButton RadioButtonView =  rowView.findViewById(R.id.active);
             RadioButtonView.setChecked(bankList.get(position).isActive());
             RadioButtonView.setFocusable(false);
             RadioButtonView.setClickable(false);
@@ -544,7 +546,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
                 // Now try auth in Firebase
                 GoogleSignInAccount googleSignInAccount = result.getSignInAccount();
-                String name=googleSignInAccount.getDisplayName();
                 fireBaseAuthWithGoogle(googleSignInAccount);
             }else{
                 Log.d(LOG,"onActivityResult:Unsuccessful "+result.getStatus());
@@ -563,7 +564,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar2);
+        progressBar = findViewById(R.id.progressBar2);
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         progressBar.animate().setDuration(shortAnimTime).alpha(
                 show ? 1 : 0).setListener(new AnimatorListenerAdapter() {

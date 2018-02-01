@@ -23,47 +23,33 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 public class Bank  implements java.io.Serializable{
 
 	// Information   about your bank account
-	private int id;  // id in main DB. If -1 then it is new.
+	private int id=-1;  // id in main DB. If -1 then it is new.
 	public static final long serialVersionUID = 2; // Is used to indicate class version during Import/Export
-	private int editable; // 1 if user is allowed to modify
-	private int active;  // 1 indicates that user want to watch this account info in program. test
+	private int editable=1; // 1 if user is allowed to modify
+	private int active=1;  // 1 indicates that user want to watch this account info in program. test
 	private String name;
 	private String phone;
-    private String country;
+    private String country=null;
 	private String defaultCurrency;
-	private BigDecimal currentAccountState; // used to keep last account state in db for widgets.
-    public List<Rule> ruleList;
+	private BigDecimal currentAccountState=new BigDecimal("0.00"); // used to keep last account state in db for widgets.
+    public List<Rule> ruleList=new ArrayList<Rule>();
 
-	/**
-	 * Bank object constructor
-	 */
     public Bank(){  // default constructor
-		id=-1;  // indicates that object is not in the main DB
-		editable=1;
-		active=1;
-        this.country=null;
-        ruleList=new ArrayList<Rule>();
-		currentAccountState=new BigDecimal("0.00");
-        country="Ukraine";
 	}
 
     /**
      * Constructor is used to clone Bank Object from template with all subrules.
-     * @param origin - Bank object to be copy.
+     * @param originBank - Bank object to be copy.
      */
-	public Bank(Bank origin) {
-		this.id=-1;
-		this.editable=1;
-		this.active=1;
-		this.name = origin.name;
-        this.phone = origin.phone;
-        this.country = origin.country;
-		this.defaultCurrency = origin.defaultCurrency;
-		currentAccountState=new BigDecimal("0.00");
-		for (Rule r : origin.ruleList) {
-			this.ruleList.add( new Rule(r,-1));
+	public Bank(Bank originBank) {
+		this.name = originBank.name;
+        this.phone = originBank.phone;
+        this.country = originBank.country;
+		this.defaultCurrency = originBank.defaultCurrency;
+		// Cloning all rules
+		for (Rule r : originBank.ruleList) {
+			this.ruleList.add( new Rule(r, this));
 		}
-
 	}
 
 	public int getId() {
@@ -100,11 +86,6 @@ public class Bank  implements java.io.Serializable{
 	 */
 	public  void setId(int id){
 		this.id=id;
-		if (ruleList!=null) {
-			for (Rule r : ruleList) {
-				r.changeBankId(id);
-			}
-		}
 	}
     public void setEditable(int editable){
 		this.editable=editable;

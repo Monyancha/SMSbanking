@@ -5,3 +5,5 @@ CREATE TABLE "words" (
                   `word_type`	INTEGER NOT NULL,
               	FOREIGN KEY(`rule_id`) REFERENCES rules ( _id )
               );
+
+ALTER TABLE subrules ADD COLUMN regex_phrase_index INTEGER DEFAULT 0;

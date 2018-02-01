@@ -28,6 +28,19 @@ public class Word implements java.io.Serializable {
         this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
     }
 
+    /**
+     * Constructor for clonong Words from rule templates
+     * @param originWord - word from template
+     * @param rule - new Rule to bind word.
+     */
+    public Word(Word originWord, Rule rule){
+        this.rule=rule;
+        this.word_type=originWord.word_type;
+        this.firstLetterIndex=originWord.firstLetterIndex;
+        this.lastLetterIndex=originWord.lastLetterIndex;
+        this.body=originWord.body;
+    }
+
     public ContentValues getContentValues(){
         ContentValues v = new ContentValues();
         v.put("rule_id", rule.getId());

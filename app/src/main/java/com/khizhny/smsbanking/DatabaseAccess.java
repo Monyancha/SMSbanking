@@ -84,7 +84,7 @@ public class DatabaseAccess {
             do {
                 Bank bank = getBank(cursor.getInt(0));
                 // Adding Rules
-                bank.ruleList=getAllRules(bank.getId());
+                bank.ruleList= getRules(bank);
                 bankList.add(bank);
             } while (cursor.moveToNext());
         }
@@ -103,7 +103,7 @@ public class DatabaseAccess {
         if (cursor.moveToFirst()) {
             do {
                 Bank bank = getBank(cursor.getInt(0));
-                bank.ruleList=getAllRules(bank.getId());
+                bank.ruleList= getRules(bank);
                 bankList.add(bank);
             } while (cursor.moveToNext());
         }
@@ -126,7 +126,7 @@ public class DatabaseAccess {
     }
 
     /**
-     * Reads Bank object from db with all Rules and Subrules
+     * Reads Bank object from db with all Rules,Subrules,Words
      * @param bankId Bank id.
      * @return Bank object.
      */
@@ -142,7 +142,7 @@ public class DatabaseAccess {
             b.setEditable(cursor.getInt(5));
             b.setCurrentAccountState(cursor.getString(6));
             b.setCountry(cursor.getString(7));
-            b.ruleList=getAllRules(cursor.getInt(0));
+            b.ruleList= getRules(b);
             cursor.close();
             return b;
         }
@@ -192,11 +192,11 @@ public class DatabaseAccess {
     }
 
     /**
-     * If bank ID<=0 then new bank will be added to db.
-     * Otherwise bank will be updated
-     * @param bank Bank Object to Add or Edit.
+     * If bank ID<=0 then new bank will be added to db. Otherwise bank will be updated
+     * @param bank - bank object
+     * @param withRules - update rules as well.
      */
-    public synchronized void addOrEditBank (Bank bank) {
+    public synchronized void addOrEditBank (Bank bank, boolean withRules) {
         if (db.isReadOnly())
         {
             Log.d(LOG,"Cant open db with WR rights");
@@ -227,25 +227,30 @@ public class DatabaseAccess {
             ContentValues v =  bank.getContentValues();
             db.update("banks", v, "_id=? and editable<>?", new String[]{bank.getId()+"","0"});
         }
+        if (withRules){
+            for (Rule r: bank.ruleList){
+                addOrEditRule(r);
+            }
+        }
     }
 
     /**
-     * @param bankId Bank Id.
-     * @return a list of rules for particulat Bank (including subrules)
+     * @param bank Bank.
+     * @return a list of rules for particular Bank (including subrules)
      */
-    public synchronized List<Rule> getAllRules(int bankId){
+    public synchronized List<Rule> getRules(Bank bank){
         List<Rule> ruleList = new ArrayList<Rule>();
-        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE bank_id=" + bankId, null);
-        // looping through all rows and adding to list
+        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE bank_id=" + bank.getId(), null);
         if (cursor.moveToFirst()) {
             do {
-                Rule r = new Rule(cursor.getInt(5),cursor.getString(1));
+                Rule r = new Rule(bank,cursor.getString(1));
                 r.setId(cursor.getInt(0));
                 r.setSmsBody(cursor.getString(2));
                 r.setMask(cursor.getString(3));
                 r.setSelectedWords(cursor.getString(4));
                 r.setRuleType(cursor.getInt(6));
                 r.subRuleList=getSubRules(r);
+                getWords(r);
                 ruleList.add(r);
             } while (cursor.moveToNext());
         }
@@ -289,19 +294,12 @@ public class DatabaseAccess {
      * Saves or Updates Rule in database with subrules and words.
      * If Rule.id=-1 new record will be created. Otherwise Rule with such id is updated.
      * @param r Rule
-     * @return Saved Rule ID.
      */
-    public synchronized int addOrEditRule(Rule r){
+    public synchronized void addOrEditRule(Rule r){
         int id = r.getId();
         if (id>=1) {
             //Updating existing rule with same ID
-
             db.update("rules", r.getContentValues(), "_id=?", new String[]{id + ""});
-
-            for (SubRule subrule:r.subRuleList) {
-                //Updating all existing subRrules linked with the rule
-                int subruleId =addOrEditSubRule(subrule);
-            }
         }else{
             // adding new rule
             db.insert("rules", null, r.getContentValues());
@@ -312,8 +310,12 @@ public class DatabaseAccess {
             c.close();
             r.setId(id);
         }
+        // updating Subrules
+        for (SubRule subrule:r.subRuleList) {
+            addOrEditSubRule(subrule);
+        }
+        // updating Words
         if (r.words.size()>0) addOrEditWords(r);
-        return id;
     }
 
     /**
@@ -322,24 +324,23 @@ public class DatabaseAccess {
      * @return Rule object
      */
     public synchronized Rule getRule(int ruleId){
-        String selectQuery = "SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE _id="+ruleId;
+        String selectQuery = "SELECT distinct bank_id FROM rules WHERE _id="+ruleId;
+
         Cursor cursor = db.rawQuery(selectQuery, null);
-        Rule r=null;
-        if (cursor.moveToFirst()) {
-            r = new Rule(cursor.getInt(5),cursor.getString(1));
-            r.setId(ruleId);
-            r.setSmsBody(cursor.getString(2));
-            r.setMask(cursor.getString(3));
-            r.setSelectedWords(cursor.getString(4));
-            r.setRuleType(cursor.getInt(6));
-            r.subRuleList=getSubRules(r);
-            getWords(r);
-        }  else {
-            Log.e("DatabaseHelper.getRule", "rule id duplicated or not found.");
+        int bankId=-1;
+        if (cursor.moveToFirst()) bankId=cursor.getInt(0);
+        if (bankId>=0) {
+            Bank b = getBank(bankId);
+            for (Rule r:b.ruleList) {
+                if (r.getId()==ruleId) return r;
+            }
+        } else {
+            Log.e("DatabaseHelper.getRule", "rule with id="+ruleId+" not found in DB .");
         }
         cursor.close();
-        return r;
+        return null;
     }
+
     /**
      * Deletes rule from DB with all subrules
      * @param ruleId ID of the rule to delete.
@@ -351,10 +352,28 @@ public class DatabaseAccess {
         db.execSQL("DELETE FROM rules WHERE _id=" + ruleId);
     }
 
-
+    /**
+     * Gets All subrules for a Rule
+     * @param rule -Rule object
+     */
     public synchronized List<SubRule> getSubRules(Rule rule){
         List<SubRule> subRuleList = new ArrayList<SubRule>();
-        String selectQuery = "SELECT _id, left_phrase,right_phrase, distance_to_left_phrase, distance_to_right_phrase, constant_value, extracted_parameter,extraction_method,decimal_separator,trim_left,trim_right,negate  FROM subrules WHERE rule_id="+rule.getId();
+        String selectQuery = "SELECT \n" +
+                "_id,\n" +
+                "left_phrase,\n" +
+                "right_phrase,\n" +
+                "distance_to_left_phrase,\n" +
+                "distance_to_right_phrase,\n" +
+                "constant_value,\n" +
+                "extracted_parameter,\n" +
+                "extraction_method,\n" +
+                "decimal_separator,\n" +
+                "trim_left,\n" +
+                "trim_right,\n" +
+                "negate,\n" +
+                "regex_phrase_index\n" +
+                "FROM subrules \n" +
+                "WHERE rule_id="+rule.getId();
         Cursor cursor = db.rawQuery(selectQuery, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -371,11 +390,9 @@ public class DatabaseAccess {
                 subRule.setDecimalSeparator(cursor.getInt(8));
                 subRule.trimLeft=cursor.getInt(9);
                 subRule.trimRight=cursor.getInt(10);
-                if (cursor.getInt(11)==0) {
-                    subRule.negate=false;
-                } else {
-                    subRule.negate=true;
-                }
+                subRule.negate=cursor.getInt(11)!=0;
+                subRule.regexPhraseIndex=cursor.getInt(12);
+
                 // Adding contact to list
                 subRuleList.add(subRule);
             } while (cursor.moveToNext());
@@ -386,11 +403,13 @@ public class DatabaseAccess {
 
     public synchronized void getWords(Rule rule){
         rule.words.clear();
-        String selectQuery = "SELECT " +
-                "first_letter_index, " +
-                "last_letter_index, " +
-                "word_type " +
-                "FROM words WHERE rule_id="+rule.getId()+" order by first_letter_index";
+        String selectQuery = "SELECT \n"+
+                "first_letter_index, \n"+
+                "last_letter_index, \n"+
+                "word_type\n"+
+                "FROM words\n"+
+                "WHERE rule_id="+rule.getId()+"\n"+
+                "ORDER BY first_letter_index";
         Cursor cursor = db.rawQuery(selectQuery, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -406,6 +425,10 @@ public class DatabaseAccess {
         if (rule.words.size()==0) rule.makeInitialWordSplitting();
     }
 
+    /**
+     * Rewrites all Words for a Rule
+     * @param rule
+     */
     public synchronized void addOrEditWords(Rule rule){
         if (rule.getId()>0) {
             // deleting all existing word from db if they exist for this rule
@@ -422,26 +445,24 @@ public class DatabaseAccess {
      * if ID<=0 rule will be added and new ID will be returned.
      * Otherwise corrresponding record record will be updated.
      * @param sr Subrule object
-     * @return SubRule ID
      */
-    public synchronized int addOrEditSubRule(SubRule sr){
-        int id=sr.getId();
-        if (id<=0){// Adding new SubRule
+    public synchronized void addOrEditSubRule(SubRule sr){
+        if (sr.getId()<=0){// Adding new SubRule
             long rowId = db.insert("subrules",null,sr.getContentValues());
             if (rowId>=0) {
-                Cursor c=db.rawQuery("SELECT _id FROM subrules WHERE ROWID="+rowId,null);
+                Cursor c=db.rawQuery("SELECT _id " +
+                        "FROM subrules " +
+                        "WHERE ROWID="+rowId,null);
                 if (c.moveToFirst()) {
-                    id= c.getInt(0);
+                    sr.setId(c.getInt(0));
                 }
                 c.close();
             } else {
                 Log.d(LOG,"Error while inserting new Subrule");
             }
         }else {	// Updating existing Rule
-            db.update("subrules", sr.getContentValues(), "_id=?", new String[]{id + ""});
+            db.update("subrules", sr.getContentValues(), "_id=?", new String[]{sr.getId() + ""});
         }
-        sr.setId(id);
-        return id;
     }
 
     /**
@@ -452,51 +473,6 @@ public class DatabaseAccess {
         db.delete("subrules","_id=?", new String[]{subRuleId + ""});
     }
 
-    /**
-     * Function will save Template Bank as My Bank with all Rules and SubRules.
-     * @param b - Template Bank to be used as MyBank
-     */
-    public synchronized void useTemplate (Bank b) {
-        if (db.isReadOnly())
-        {
-            Log.d(LOG,"Cant open db with WR rights");
-            return;
-        }
-        ContentValues v = new ContentValues();
-
-        // making all existing banks not active and making new bank active
-        v.put("active", 0);
-        db.update("banks", v, "editable <> ?", new String[]{"0"});
-        b.setActive(1);
-        b.setEditable(1);
-        b.setId(-1);
-        // saving Bank info
-        v = b.getContentValues();
-        long dbRowNum = db.insert("banks", null, v);
-        if (dbRowNum==-1){
-            Log.d(LOG,"Error inserting " +b+" to DBd ");
-        }else
-        {
-            // getting new bank id assigned in db
-            Cursor c=db.rawQuery("SELECT _id FROM banks WHERE rowid="+dbRowNum,null);
-            int newBankId=0;
-            if (c.moveToFirst()) newBankId=c.getInt(0);
-            c.close();
-
-            for (Rule r: b.ruleList) { //Saving rules
-                r.setId(-1); // set to -1 will make new record instead updating
-                r.changeBankId(newBankId);
-                int newRuleId =addOrEditRule(r);
-                for (SubRule sr:r.subRuleList){ //Saving SubRules
-                    sr.setId(-1);  // set to -1 will make new record instead updating
-                    //sr.changeRuleId(newRuleId); // TODO Validate
-                    addOrEditSubRule(sr);
-                }
-            }
-        }
-
-
-    }
 
     /**
      * Saves to db user choices for messages with conflictiong rules.

@@ -29,6 +29,9 @@ import com.khizhny.smsbanking.model.Word;
 
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
+import static com.khizhny.smsbanking.TransactionActivity.KEY_RULE_ID;
+import static com.khizhny.smsbanking.TransactionActivity.KEY_SMS_BODY;
+import static com.khizhny.smsbanking.TransactionActivity.KEY_TODO;
 
 public class RuleActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -37,7 +40,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 	private TextView ruleNameView;
 	private ImageView imageView;
     private AlertDialog alertDialog;
-    private boolean editingOldRule=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
+    private boolean weNeedToDeleteAllSubrules=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,17 +57,22 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 		Intent intent = getIntent();
         Bank bank = db.getActiveBank();
 		String todo=null;
-        if (intent.hasExtra("todo")) todo = intent.getExtras().getString("todo");
+        if (intent.hasExtra(KEY_TODO)) todo = intent.getExtras().getString(KEY_TODO);
+        int rule_id=-1;
+        if (intent.hasExtra(KEY_RULE_ID)) rule_id=intent.getExtras().getInt(KEY_RULE_ID);
 		if (todo!=null){
 			if (todo.equals("add")){
 				// adding new rule
-				rule = new Rule(bank.getId(),"");
-				rule.setSmsBody(intent.getExtras().getString("sms_body"));
+				rule = new Rule(bank,"");
+				rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
                 rule.makeInitialWordSplitting();
 			} else	{
-				// loading existing rule for editing.
-				rule=db.getRule(intent.getExtras().getInt("rule_id"));
-				if (!rule.getMask().startsWith("^")) editingOldRule=true;
+				// picking existing rule for editing.
+                for (Rule r: bank.ruleList) {
+                    if (r.getId()==rule_id)
+                        rule=r;
+                }
+				if (!rule.getMask().startsWith("^")) weNeedToDeleteAllSubrules=true;
 			}
 		}
 
@@ -164,14 +173,14 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                     rule.setName(ruleNameView.getText().toString());
                 }
 
-                //  If we were editing old rule then  delete all defined old subrules
-                if (editingOldRule) {
+                //  If we changed mask or editing old rule entire rule must be redefined.
+                if (weNeedToDeleteAllSubrules) {
                     rule.subRuleList.clear();
                     db.deleteRule(rule.getId());
                 }
 
                 // Saving or Updating Rule in DB.
-                rule.setId(db.addOrEditRule(rule));
+                db.addOrEditRule(rule);
 
                 if (rule.getRuleType()== Rule.transactionType.IGNORE) {
                     forceRefresh=true;
@@ -179,7 +188,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
                 } else {
                     Intent intent = new Intent(v.getContext(), TransactionActivity.class);
-                    intent.putExtra("rule_id", rule.getId());
+                    intent.putExtra(KEY_RULE_ID, rule.getId());
                     startActivity(intent);
                 }
                 break;
@@ -204,6 +213,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 w.rule.mergeLeft(w);
                 dialog.dismiss();
+                weNeedToDeleteAllSubrules=true;
                 updateWordsLayout();
             }
         });
@@ -213,6 +223,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 w.rule.mergeRight(w);
                 dialog.dismiss();
+                weNeedToDeleteAllSubrules=true;
                 updateWordsLayout();
             }
         });
@@ -222,11 +233,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             for (int i=1;i<=w.getBody().length()-1;i++){
                 splitOptions[i-1]=w.getBody().substring(0,i)+" >< "+w.getBody().substring(i);
             }
-
             builder.setSingleChoiceItems(splitOptions, -1, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     w.rule.split(w,which+1);
+                    weNeedToDeleteAllSubrules=true;
                     dialog.dismiss();
                     updateWordsLayout();
                 }
@@ -267,13 +278,13 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 wordButton.setMinWidth(0);
                 wordButton.setMinimumHeight(0);
                 wordButton.setMinimumWidth(0);
-                //wordButton.setPadding(8,8,8,8);
                 wordButton.setTag(rule.words.get(i-1));
                 wordButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         Word word = (Word) v.getTag();
                         word.changeWordType();
                         changeColor(v,word.getWordType());
+                        weNeedToDeleteAllSubrules=true;
                     }
                 });
                 wordButton.setOnLongClickListener(new View.OnLongClickListener() {

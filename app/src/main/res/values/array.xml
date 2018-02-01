@@ -11,11 +11,8 @@
     </string-array>
 
     <string-array name="method_entries">
-        <item>n-th word after Phrase</item>
-        <item>n-th word before Phrase</item>
-        <item>all words between Phrases</item>
-        <item>use constant Value</item>
-        <item>Regex</item>
+        <item>Constant value</item>
+        <item>Regular expression</item>
     </string-array>
 
     <string-array name="transaction_types">

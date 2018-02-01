@@ -76,12 +76,11 @@
             android:id="@+id/finish_rule"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
+            android:onClick="onClick"
             android:text="@string/done"
             app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginTop="0dp"
-            app:layout_constraintTop_toBottomOf="@+id/separator"/>
+            app:layout_constraintTop_toBottomOf="@+id/separator" />
 
         <TableLayout
             android:layout_width="0dp"

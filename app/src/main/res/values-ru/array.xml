@@ -11,9 +11,6 @@
     </string-array>
 
     <string-array name="method_entries">
-        <item>N-ное слово после фразы</item>
-        <item>N-ное слово до фразы</item>
-        <item>все слова между фразами</item>
         <item>использовать константу</item>
         <item>Regex</item>
     </string-array>

@@ -2,6 +2,10 @@ package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
 import android.util.Log;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class SubRule implements java.io.Serializable {
@@ -20,7 +24,9 @@ public class SubRule implements java.io.Serializable {
 	private String separator;
 	public int trimLeft;
 	public int trimRight;
+	public int regexPhraseIndex;
 	public boolean negate;
+
 
     public enum Method {
 		WORD_AFTER_PHRASE,
@@ -39,11 +45,12 @@ public class SubRule implements java.io.Serializable {
 		this.rightPhrase="";
 		this.constantValue="";
 		this.extractedParameter = extractedParameter;
-		this.extractionMethod = Method.WORDS_BETWEEN_PHRASES;
+		this.extractionMethod = Method.USE_REGEX;
 		this.decimalSeparator = 0;
 		this.separator = ".";
 		this.trimLeft = 0;
 		this.trimRight = 0;
+		this.regexPhraseIndex=0;
 		this.negate = false;
 	}
 
@@ -61,6 +68,7 @@ public class SubRule implements java.io.Serializable {
 		this.separator = origin.separator;
 		this.trimLeft = origin.trimLeft;
 		this.trimRight = origin.trimRight;
+		regexPhraseIndex = origin.regexPhraseIndex;
 		this.negate = origin.negate;
 	}
 
@@ -158,12 +166,12 @@ public class SubRule implements java.io.Serializable {
 	 * If returnedType=1 result will be Alphabetical.
 	 * If returnedType>1 result will be String AS-IS. Unchanged after extraction.
 	 *
-	 * @param msg          SMS message text
+	 * @param smsMsg          SMS message text
 	 * @param returnedType Zero for decimal, One for Alphabetical, Other for unchanged string.
 	 * @return Parameter value
 	 */
-    public String applySubRule(String msg, int returnedType) {
-		msg = "<BEGIN> " + msg + " <END>";
+    public String applySubRule(String smsMsg, int returnedType) {
+		String msg = "<BEGIN> " + smsMsg + " <END>";
 		String temp = "";
 		try {
             String[] arr;
@@ -206,8 +214,11 @@ public class SubRule implements java.io.Serializable {
 					temp = constantValue;
 					break;
 				case USE_REGEX:
-					// TODO extraction
-					//temp =
+                    Pattern pattern = Pattern.compile(rule.getMask());
+                    Matcher matcher = pattern.matcher(smsMsg);
+                    if (matcher.matches()) {
+                        if (matcher.groupCount() > regexPhraseIndex) temp = matcher.group(regexPhraseIndex+1);
+                    }
 					break;
 			}
 		} catch (Exception e) {
@@ -291,10 +302,6 @@ public class SubRule implements java.io.Serializable {
 
 	}
 
-    public void changeRule(Rule rule) {
-		this.rule = rule;
-	}
-
 	/**
 	 * @return Content values used for database insert or update function.
 	 */
@@ -312,6 +319,7 @@ public class SubRule implements java.io.Serializable {
 		v.put("decimal_separator", decimalSeparator);
 		v.put("trim_left", trimLeft);
 		v.put("trim_right", trimRight);
+		v.put("regex_phrase_index", regexPhraseIndex);
 		v.put("negate", negate ? -1 : 0);
 		return v;
 	}

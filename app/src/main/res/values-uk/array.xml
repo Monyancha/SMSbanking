@@ -11,9 +11,6 @@
     </string-array>
 
     <string-array name="method_entries">
-        <item>N-не слово післе фрази</item>
-        <item>N-не слово до фрази</item>
-        <item>усі слова між фразами</item>
         <item>використовувати константу</item>
         <item>Regex</item>
     </string-array>

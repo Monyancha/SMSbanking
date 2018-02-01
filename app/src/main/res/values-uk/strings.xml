@@ -13,7 +13,7 @@
 	<string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оцінити програму</string>
 
-	<string name="rule_message">Вкажіть змінні слова:</string>
+	<string name="rule_message">Вкажіть змінні слова (довгий тап для розділення слів):</string>
 	<string name="rule_name">Назва правила (не обов\'язкова)</string>
 
     <string name="popup_create_rule">Створити нове правило</string>

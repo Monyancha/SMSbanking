@@ -605,7 +605,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         // saving last bank account state to db for later usage
         if (transactionList.size()>0){
             activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
-            db.addOrEditBank(activeBank);
+            db.addOrEditBank(activeBank,false);
         }
         return transactionList;
     }/**/
