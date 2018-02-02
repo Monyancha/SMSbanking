@@ -2,6 +2,7 @@ package com.khizhny.smsbanking;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -26,20 +27,23 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     public static final String  KEY_SMS_BODY = "sms_body";
 
     private Rule rule;
+    private Transaction transaction; // sample transaction with sample message
     private AlertDialog alertDialog;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Saving all then subrules in our list.
-        db.addOrEditRule(rule);
+        db.addOrEditRule(rule,true);
     }
 
     @Override
@@ -53,6 +57,25 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
+
+        // getting Rule object in on resume because we will get back here from Subrule Activity
+        Intent intent = getIntent();
+        if ( intent.hasExtra( KEY_RULE_ID)) {
+            int ruleId;
+            try{
+                ruleId=intent.getExtras().getInt( KEY_RULE_ID);
+                Log.d(MyApplication.LOG, "Getting Rule from db.");//
+                // loading Rule and Bank objects
+                rule = db.getRule(ruleId);
+                transaction = rule.getSampleTransaction(this);
+
+            }catch (NullPointerException e){
+                Log.d(MyApplication.LOG, "No Rule Id passed with intent to transaction Activity.");
+            }
+
+        }
+        if (rule==null) Log.e(MyApplication.LOG, "Rule for Transaction Activity not found.");
+
         Log.d(LOG, "TransactionActivity resuming");
 
         TextView smsTextView = findViewById(R.id.sms_body);
@@ -66,33 +89,22 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         TextView extra3View =  findViewById(R.id.extra3_value);
         TextView extra4View =  findViewById(R.id.extra4_value);
 
-        // getting Rule ID from Intent
-        Intent intent = getIntent();
-        if ( intent.hasExtra( KEY_RULE_ID)) {
-            int ruleId;
-            try{
-                ruleId=intent.getExtras().getInt( KEY_RULE_ID);
-                Log.d(MyApplication.LOG, "Getting Rule from db.");//
-                // loading Rule and Bank objects
-                rule = db.getRule(ruleId);
-                Transaction transaction = rule.getSampleTransaction(this);
-                String smsText = getString(R.string.begin) + rule.getSmsBody() + getString(R.string.end);
-                if (smsTextView != null) smsTextView.setText(smsText);
-                stateAfterView.setText(transaction.getStateAfterAsString(false));
-                stateBeforeView.setText(transaction.getStateBeforeAsString(false));
-                stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
-                commissionView.setText(transaction.getCommissionAsString(false, false));
-                currencyView.setText(transaction.getTransactionCurrency());
-                extra1View.setText(transaction.getExtraParam1());
-                extra2View.setText(transaction.getExtraParam2());
-                extra3View.setText(transaction.getExtraParam3());
-                extra4View.setText(transaction.getExtraParam4());
-            }catch (NullPointerException e){
-                Log.d(MyApplication.LOG, "No Rule Id passed with intent to transaction Activity.");
-            }
 
-        }
+        if (smsTextView != null) smsTextView.setText(String.format("%s%s%s", getString(R.string.begin), rule.getSmsBody(), getString(R.string.end)));
+        stateAfterView.setText(transaction.getStateAfterAsString(false));
+        stateBeforeView.setText(transaction.getStateBeforeAsString(false));
+        stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
+        commissionView.setText(transaction.getCommissionAsString(false, false));
+        currencyView.setText(transaction.getTransactionCurrency());
+        extra1View.setText(transaction.getExtraParam1());
+        extra2View.setText(transaction.getExtraParam2());
+        extra3View.setText(transaction.getExtraParam3());
+        extra4View.setText(transaction.getExtraParam4());
 
+        stateAfterView.setTextColor(transaction.hasCalculatedAccountStateAfter?Color.BLACK:Color.BLUE);
+        stateBeforeView.setTextColor(transaction.hasCalculatedAccountStateBefore?Color.BLACK:Color.BLUE);
+        stateChangeView.setTextColor(transaction.hasCalculatedAccountDifference?Color.BLACK:Color.BLUE);
+        currencyView.setTextColor(transaction.hasTransactionCurrency?Color.BLACK:Color.BLUE);
     }
 
     @Override

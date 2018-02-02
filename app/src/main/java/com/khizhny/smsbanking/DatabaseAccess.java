@@ -196,7 +196,7 @@ public class DatabaseAccess {
      * @param bank - bank object
      * @param withRules - update rules as well.
      */
-    public synchronized void addOrEditBank (Bank bank, boolean withRules) {
+    public synchronized void addOrEditBank (Bank bank, boolean withRules, boolean withSubRules) {
         if (db.isReadOnly())
         {
             Log.d(LOG,"Cant open db with WR rights");
@@ -229,7 +229,7 @@ public class DatabaseAccess {
         }
         if (withRules){
             for (Rule r: bank.ruleList){
-                addOrEditRule(r);
+                addOrEditRule(r,withSubRules);
             }
         }
     }
@@ -240,7 +240,7 @@ public class DatabaseAccess {
      */
     public synchronized List<Rule> getRules(Bank bank){
         List<Rule> ruleList = new ArrayList<Rule>();
-        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type FROM rules WHERE bank_id=" + bank.getId(), null);
+        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type, advanced FROM rules WHERE bank_id=" + bank.getId(), null);
         if (cursor.moveToFirst()) {
             do {
                 Rule r = new Rule(bank,cursor.getString(1));
@@ -250,6 +250,7 @@ public class DatabaseAccess {
                 r.setSelectedWords(cursor.getString(4));
                 r.setRuleType(cursor.getInt(6));
                 r.subRuleList=getSubRules(r);
+                r.setAdvanced(cursor.getInt(7));
                 getWords(r);
                 ruleList.add(r);
             } while (cursor.moveToNext());
@@ -295,7 +296,7 @@ public class DatabaseAccess {
      * If Rule.id=-1 new record will be created. Otherwise Rule with such id is updated.
      * @param r Rule
      */
-    public synchronized void addOrEditRule(Rule r){
+    public synchronized void addOrEditRule(Rule r, boolean withSubrules){
         int id = r.getId();
         if (id>=1) {
             //Updating existing rule with same ID
@@ -310,12 +311,16 @@ public class DatabaseAccess {
             c.close();
             r.setId(id);
         }
-        // updating Subrules
-        for (SubRule subrule:r.subRuleList) {
-            addOrEditSubRule(subrule);
-        }
+
         // updating Words
         if (r.words.size()>0) addOrEditWords(r);
+
+        if (withSubrules) {
+            // updating Subrules
+            for (SubRule subrule : r.subRuleList) {
+                addOrEditSubRule(subrule);
+            }
+        }
     }
 
     /**

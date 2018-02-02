@@ -6,4 +6,5 @@ CREATE TABLE "words" (
               	FOREIGN KEY(`rule_id`) REFERENCES rules ( _id )
               );
 
-ALTER TABLE subrules ADD COLUMN regex_phrase_index INTEGER DEFAULT 0;
+ALTER TABLE "subrules" ADD COLUMN regex_phrase_index INTEGER DEFAULT 0;
+ALTER TABLE "rules" ADD COLUMN advanced INTEGER DEFAULT 0;

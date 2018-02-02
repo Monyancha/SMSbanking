@@ -7,6 +7,7 @@ import android.util.Log;
 import com.khizhny.smsbanking.R;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +22,7 @@ public class Rule implements java.io.Serializable {
 	private String name;
 	private String smsBody="";
 	private String mask="";
+	private Boolean advanced=false;
     private String nameSuggestion="";
 	private transactionType ruleType=transactionType.UNKNOWN;
 	public List<SubRule> subRuleList=new ArrayList<SubRule>();
@@ -78,6 +80,7 @@ public class Rule implements java.io.Serializable {
         this.nameSuggestion=originRule.name;
 		this.smsBody=originRule.smsBody;
 		this.mask=originRule.mask;
+		this.advanced=originRule.advanced;
 		this.ruleType=originRule.ruleType;
 		this.wordsCount=originRule.wordsCount;
 
@@ -163,7 +166,7 @@ public class Rule implements java.io.Serializable {
 
 	/**
 	 * Deprecated method to support old rules (non regexp)
-	 * @param selectedWords
+	 * @param selectedWords sets array of selected words
 	 */
     public void setSelectedWords(String selectedWords) {
 		wordIsSelected=new boolean[wordsCount+2];
@@ -220,6 +223,7 @@ public class Rule implements java.io.Serializable {
 	 * Function updates sms mask (used to match SMS and Rules) after user change constant words.
 	 */
 	public void updateMask(){
+		if (advanced) return; // Do not overwrite user defined custom mask if advanced flag is set.
 		mask="^"; // begining
 		nameSuggestion=""; // default rule name
 		String delimiter="";
@@ -333,6 +337,7 @@ public class Rule implements java.io.Serializable {
 		v.put("name", name);
 		v.put("sms_body", smsBody);
 		v.put("mask", mask);
+		v.put("advanced", (advanced ? -1 : 0));
 		v.put("selected_words", getSelectedWords());
 		v.put("bank_id", bank.getId());
 		v.put("type", ruleType.ordinal());
@@ -453,17 +458,26 @@ public class Rule implements java.io.Serializable {
 	}
 
 	public String getValues(){
-		String r="";
+		StringBuilder r= new StringBuilder();
 		String delim="";
 		Pattern pattern = Pattern.compile(mask);
 		Matcher matcher = pattern.matcher(smsBody);
 		if (matcher.matches()) {
 			for (int i = 1; i <= matcher.groupCount(); i++) {
-				r += delim + matcher.group(i);
+				r.append(delim).append(matcher.group(i));
 				delim="\n";
 			}
 		}
-		return r;
+		return r.toString();
 	}
+
+	public void  setAdvanced(int advancedInt){
+		advanced = (advancedInt!=0);
+	}
+
+	public boolean isAdvanced(){
+		return advanced;
+	}
+
 }
 

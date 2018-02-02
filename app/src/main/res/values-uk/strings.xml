@@ -183,6 +183,12 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижний Андрій\nпереклад: Машковський Дмитро</string>
     <string name="split">Розділити</string>
-    <string name="merge_left" translatable="false">&lt;&lt;Обїднати</string>
-    <string name="merge_right" translatable="false">Обїднати&gt;&gt;</string>
+    <string name="merge_left">&lt;&lt;Обїднати</string>
+    <string name="merge_right">Обїднати&gt;&gt;</string>
+    <string name="variable_size_fixed">Змінне(фікс.довж.)</string>
+    <string name="word_variable">Змінне</string>
+    <string name="word_fixed">Постійне</string>
+    <string name="delete_sub_rule">Delete sub rule</string>
+    <string name="advanced">Я гуру RegExp</string>
+    <string name="regular_expression">Regular Expression</string>
 </resources>

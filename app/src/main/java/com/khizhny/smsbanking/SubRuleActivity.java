@@ -287,13 +287,13 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         return super.onOptionsItemSelected(item);
     }
 
-   private void setSpinnerByText(AppCompatSpinner s, String text){
+ /*  private void setSpinnerByText(AppCompatSpinner s, String text){
        int total=s.getAdapter().getCount();
        for (int i=0;i<total;i++){
            if (text.equals(s.getAdapter().getItem(i))) {
                s.setSelection(i);
            }
        }
-   }
+   }*/
 
 }

@@ -41,13 +41,13 @@ public class BankActivity extends AppCompatActivity {
 	protected void onResume() {
 		super.onResume();
 		// getting available Views
-		nameView = (TextView) findViewById(R.id.name);
-		phonesView = (EditText) findViewById(R.id.bank_phones);
-        currencyView = (AppCompatSpinner) findViewById(R.id.currency);
-        countryView = (AppCompatSpinner) findViewById(R.id.country);
-		Button saveView = (Button) findViewById(R.id.sub_rule_save);
-		ImageButton addPhone = (ImageButton) findViewById(R.id.add_phone_button);
-		ImageButton clearPhones = (ImageButton) findViewById(R.id.clear_phones);
+		nameView =  findViewById(R.id.name);
+		phonesView =  findViewById(R.id.bank_phones);
+        currencyView =  findViewById(R.id.currency);
+        countryView = findViewById(R.id.country);
+		Button saveView =  findViewById(R.id.sub_rule_save);
+		ImageButton addPhone =  findViewById(R.id.add_phone_button);
+		ImageButton clearPhones = findViewById(R.id.clear_phones);
 
         final String arr[]=getResources().getStringArray(R.array.countries_array);
         String country=getCountry();
@@ -107,7 +107,7 @@ public class BankActivity extends AppCompatActivity {
                         bank.setPhone(phonesView.getText().toString());
                         bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
                         bank.setCountry(arr[countryView.getSelectedItemPosition()]);
-                        db.addOrEditBank(bank,false);
+                        db.addOrEditBank(bank,false,false);
                         BankActivity.this.finish();
                     }
                 }
@@ -141,16 +141,16 @@ public class BankActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     // if clear button clicked we will delete last added phone number.
                     String[] s=phonesView.getText().toString().split(";");
-                    String s2="";
+                    StringBuilder s2= new StringBuilder();
                     for (int i=0;i<s.length-1;i++) {
                         if (i==0) {
-                            s2=s[0];
+                            s2 = new StringBuilder(s[0]);
                         } else {
-                            s2=s2+";"+s[i];
+                            s2.append(";").append(s[i]);
                         }
 
                     }
-                    phonesView.setText(s2);
+                    phonesView.setText(s2.toString());
                 }
             });
         }

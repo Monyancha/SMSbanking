@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -19,12 +20,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.TextView;
 
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Word;
 
 import static com.khizhny.smsbanking.MyApplication.db;
@@ -36,10 +41,15 @@ import static com.khizhny.smsbanking.TransactionActivity.KEY_TODO;
 public class RuleActivity extends AppCompatActivity implements View.OnClickListener{
 
     private List<Button> wordButtons= new ArrayList <Button>();
-	private Rule rule;
-	private TextView ruleNameView;
-	private ImageView imageView;
+	private Bank bank;
+    private Rule rule;
+
+    private TextView tvRuleName;
+	private TextView tvResults;
+	private ImageView ivIcon;
     private AlertDialog alertDialog;
+    private CheckBox cbAdvanced;
+    private EditText etRegExp;
     private boolean weNeedToDeleteAllSubrules=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
 
 
@@ -48,40 +58,93 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
+
+        // getting rule object for editing
+        Intent intent = getIntent();
+        bank = db.getActiveBank();
+        String todo=null;
+        if (intent.hasExtra(KEY_TODO)) todo = intent.getExtras().getString(KEY_TODO);
+        int rule_id=-1;
+        if (intent.hasExtra(KEY_RULE_ID)) rule_id=intent.getExtras().getInt(KEY_RULE_ID);
+        if (todo!=null){
+            if (todo.equals("add")){
+                // adding new rule
+                rule = new Rule(bank,"");
+                rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
+                rule.makeInitialWordSplitting();
+            } else	{
+                // picking existing rule for editing.
+                for (Rule r: bank.ruleList) {
+                    if (r.getId()==rule_id)
+                        rule=r;
+                }
+            }
+        }
+        // restoring user changes
+        if (savedInstanceState!=null){
+            rule.setName(savedInstanceState.getString("rule_name"));
+            rule.setRuleType(savedInstanceState.getInt("rule_type"));
+            int wordsCount = savedInstanceState.getInt("words_count");
+            rule.words.clear();
+            for (int i = 0; i<wordsCount; i++) {
+                rule.words.add((Word)savedInstanceState.getSerializable("word"+i));
+            }
+            weNeedToDeleteAllSubrules=savedInstanceState.getBoolean("delete_rules");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putString("rule_name", rule.getName());
+        savedInstanceState.putInt("rule_type", rule.getRuleTypeInt());
+        savedInstanceState.putInt("words_count", rule.words.size());
+        for (int i = 0; i<rule.words.size(); i++) {
+            savedInstanceState.putSerializable("word"+i,rule.words.get(i));
+        }
+        savedInstanceState.putBoolean("delete_rules", weNeedToDeleteAllSubrules);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setContentView(R.layout.activity_rule);
-		Intent intent = getIntent();
-        Bank bank = db.getActiveBank();
-		String todo=null;
-        if (intent.hasExtra(KEY_TODO)) todo = intent.getExtras().getString(KEY_TODO);
-        int rule_id=-1;
-        if (intent.hasExtra(KEY_RULE_ID)) rule_id=intent.getExtras().getInt(KEY_RULE_ID);
-		if (todo!=null){
-			if (todo.equals("add")){
-				// adding new rule
-				rule = new Rule(bank,"");
-				rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
-                rule.makeInitialWordSplitting();
-			} else	{
-				// picking existing rule for editing.
-                for (Rule r: bank.ruleList) {
-                    if (r.getId()==rule_id)
-                        rule=r;
+
+        cbAdvanced=findViewById(R.id.cbAdvanced);
+        cbAdvanced.setChecked(rule.isAdvanced());
+        cbAdvanced.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                rule.setAdvanced(isChecked?1:0);
+                if (isChecked) {
+                    etRegExp.setVisibility(View.VISIBLE);
+                }else{
+                    rule.updateMask();
+                    etRegExp.setText(rule.getMask());
+                    etRegExp.setVisibility(View.GONE);
                 }
-				if (!rule.getMask().startsWith("^")) weNeedToDeleteAllSubrules=true;
-			}
-		}
+            }
+        });
 
-        imageView = this.findViewById(R.id.image);
+        etRegExp=findViewById(R.id.etRegex);
+        etRegExp.setText(rule.getMask());
+        if (rule.isAdvanced()) {
+            etRegExp.setVisibility(View.VISIBLE);
+        }else{
+            etRegExp.setVisibility(View.GONE);
+        }
 
-		ruleNameView =  this.findViewById(R.id.rule_name);
-		ruleNameView.setText(rule.getName());
+        tvResults=findViewById(R.id.tvResults);
+        tvResults.setText(rule.getValues());
+
+		tvRuleName =  findViewById(R.id.rule_name);
+		tvRuleName.setText(rule.getName());
 
 		AppCompatSpinner ruleTypeView = this.findViewById(R.id.rule_type);
+        ivIcon = this.findViewById(R.id.image);
         if (ruleTypeView != null) {
             ruleTypeView.setSelection(rule.getRuleTypeInt());
         }
@@ -89,22 +152,31 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             ruleTypeView.setOnItemSelectedListener(new OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
-                    imageView.setImageResource(Rule.ruleTypeIcons[position]);
+                    ivIcon.setImageResource(Rule.ruleTypeIcons[position]);
                     rule.setRuleType(position);
                 }
 
                 @Override
                 public void onNothingSelected(AdapterView<?> arg0) {
-                    imageView.setImageResource(Rule.ruleTypeIcons[0]);
+                    ivIcon.setImageResource(Rule.ruleTypeIcons[0]);
                     rule.setRuleType(0);/**/
                 }
             });
         }
-
-
-        imageView.setImageResource(rule.getRuleTypeDrawable());
+        ivIcon.setImageResource(rule.getRuleTypeDrawable());
         updateWordsLayout();
+
+        // Coloring sample buttons
+        changeColor(findViewById(R.id.btn_variable), Word.WORD_TYPES.WORD_VARIABLE);
+        changeColor(findViewById(R.id.btn_fixed), Word.WORD_TYPES.WORD_CONST);
+        changeColor(findViewById(R.id.btn_variable_fixed_size), Word.WORD_TYPES.WORD_VARIABLE_FIXED_SIZE);
     }
+
+    /**
+     * Changes color of a word button
+     * @param v - buttoon View
+     * @param word_type - Selected word type
+     */
     private void changeColor(View v, Word.WORD_TYPES word_type){
         int color_id;
         switch (word_type){
@@ -165,24 +237,34 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()){
             // next button click handler
             case R.id.rule_next:
-                rule.updateMask();
-                if (ruleNameView.getText().toString().equals("")) {
-                    ruleNameView.setText(rule.getRuleNameSuggestion());
-                    rule.setName(ruleNameView.getText().toString());
-                }else{
-                    rule.setName(ruleNameView.getText().toString());
+                if (rule.isAdvanced()) {
+                    rule.setMask(etRegExp.getText().toString());
+                }else {
+                    rule.updateMask();
                 }
+
+                if (tvRuleName.getText().toString().equals("")) {
+                    tvRuleName.setText(rule.getRuleNameSuggestion());
+                    rule.setName(tvRuleName.getText().toString());
+
+                }else{
+                    rule.setName(tvRuleName.getText().toString());
+                }
+
+                removeOldSubrules();
 
                 //  If we changed mask or editing old rule entire rule must be redefined.
                 if (weNeedToDeleteAllSubrules) {
+                    for (SubRule sr: rule.subRuleList)
+                        db.deleteSubRule(sr.getId());
                     rule.subRuleList.clear();
-                    db.deleteRule(rule.getId());
                 }
 
-                // Saving or Updating Rule in DB.
-                db.addOrEditRule(rule);
+                // Saving Rule changes in DB.
+                db.addOrEditRule(rule,true);
 
                 if (rule.getRuleType()== Rule.transactionType.IGNORE) {
+                    // if subrules is not needed for the rule going back to MainActivity
                     forceRefresh=true;
                     super.onBackPressed();
 
@@ -195,6 +277,28 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
 
+        }
+    }
+
+    /**
+     * Removes rubrules with old extraction methods to prevent their modify attempts
+     */
+    public void removeOldSubrules(){
+        Iterator<SubRule> i = rule.subRuleList.iterator();
+        while (i.hasNext()) {
+            SubRule sr = i.next();
+            switch (sr.getExtractionMethod())
+            {
+                case WORD_AFTER_PHRASE:
+                case WORD_BEFORE_PHRASE:
+                case WORDS_BETWEEN_PHRASES:
+                    db.deleteSubRule(sr.getId());
+                    i.remove();
+                    break;
+                case USE_CONSTANT:
+                case USE_REGEX:
+                    break;
+            }
         }
     }
 
@@ -281,15 +385,20 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 wordButton.setTag(rule.words.get(i-1));
                 wordButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
+                        rule.setAdvanced(0);
+                        cbAdvanced.setChecked(false);
                         Word word = (Word) v.getTag();
                         word.changeWordType();
-                        changeColor(v,word.getWordType());
-                        weNeedToDeleteAllSubrules=true;
+                        changeColor(v, word.getWordType());
+                        weNeedToDeleteAllSubrules = true;
+                        refreshResults();
                     }
                 });
                 wordButton.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
+                        rule.setAdvanced(0);
+                        cbAdvanced.setChecked(false);
                         showDialogToChangeWord((Word) v.getTag());
                         return false;
                     }
@@ -309,5 +418,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             wordButtons.add(wordButton);
             flowLayout.addView(wordButton);
         }
+        refreshResults();
+    }
+    private void refreshResults(){
+        rule.updateMask();
+        tvResults.setText(rule.getValues());
+        etRegExp.setText(rule.getMask());
     }
 }

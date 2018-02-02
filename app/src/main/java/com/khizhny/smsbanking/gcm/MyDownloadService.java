@@ -117,7 +117,7 @@ public class MyDownloadService extends MyBaseTaskService {
 
                         // importing downloaded template to DB
                         Bank bank= new Bank(Bank.importBank(getCacheDir().getAbsolutePath()+"/loaded_bank.dat"));
-                        db.addOrEditBank(bank,true);
+                        db.addOrEditBank(bank,true,true);
                         db.setActiveBank(bank.getId());
                         MyApplication.forceRefresh=true;
 

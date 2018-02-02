@@ -181,7 +181,13 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижный Андрей</string>
     <string name="split">Разделить</string>
-    <string name="merge_left" translatable="false">&lt;&lt;Объединить</string>
-    <string name="merge_right" translatable="false">Объединить&gt;&gt;</string>
+    <string name="merge_left">&lt;&lt;Объединить</string>
+    <string name="merge_right">Объединить&gt;&gt;</string>
+    <string name="variable_size_fixed">Изменяемое(фикс.дл.)</string>
+    <string name="word_variable">Изменяемое</string>
+    <string name="word_fixed">Постоянное</string>
+    <string name="delete_sub_rule">Delete sub rule</string>
+    <string name="advanced">Эксперт</string>
+    <string name="regular_expression">Regular Expression</string>
 </resources>
 

@@ -332,7 +332,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
 
     public void setTransactionCurrency(String transactionCurrency) {
         this.transactionCurrency = transactionCurrency;
-        //this.hasTransactionCurrency =true;
+        this.hasTransactionCurrency =true;
 
     }
     public void setStateBefore(BigDecimal stateBefore) {
@@ -605,7 +605,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         // saving last bank account state to db for later usage
         if (transactionList.size()>0){
             activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
-            db.addOrEditBank(activeBank,false);
+            db.addOrEditBank(activeBank,false,false);
         }
         return transactionList;
     }/**/

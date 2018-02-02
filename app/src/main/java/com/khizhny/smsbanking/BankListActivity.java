@@ -336,7 +336,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                     Log.d(LOG, "File picked " + importPath);
                     Bank b = new Bank (Bank.importBank(importPath));
                     if (b != null) {
-                        db.addOrEditBank(b,true);
+                        db.addOrEditBank(b,true,true);
                         db.setActiveBank(b.getId());
                        BankListActivity.this.finish();
                     } else {
@@ -362,7 +362,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             public void onClick(DialogInterface dialog, int which) {
                 //db.open();
                 Bank b = new Bank(bankTemplates.get(which));
-                db.addOrEditBank(b,true);
+                db.addOrEditBank(b,true,true);
                 db.setActiveBank(b.getId());
                 //Refreshing list
                 bankList.clear();

@@ -180,6 +180,12 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
     <string name="split">Split</string>
-    <string name="merge_left" translatable="false">&lt;&lt;Merge left</string>
-    <string name="merge_right" translatable="false">Merge&gt;&gt;</string>
+    <string name="merge_left">&lt;&lt;Merge left</string>
+    <string name="merge_right">Merge&gt;&gt;</string>
+    <string name="variable_size_fixed">variable (size fixed)</string>
+    <string name="word_variable">Variable</string>
+    <string name="word_fixed">fixed</string>
+    <string name="delete_sub_rule">Delete sub rule</string>
+    <string name="advanced">Advanced</string>
+    <string name="regular_expression">Regular Expression</string>
 </resources>

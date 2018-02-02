@@ -1044,7 +1044,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             // saving last bank account state to db for later usage
             if (transactionList.size()>0) {
                 activeBank.setCurrentAccountState(transactionList.get(0).getStateAfter());
-                db.addOrEditBank(activeBank,false);
+                db.addOrEditBank(activeBank,false,false);
             }
             Log.d(LOG,"RefreshTransactionsTask.doInBackground() finished");
             return transactionList;

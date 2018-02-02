@@ -195,6 +195,12 @@
     <string name="merge_left">&lt;&lt;Merge left</string>
     <string name="merge_right">Merge&gt;&gt;</string>
     <string name="split">Split</string>
+    <string name="variable_size_fixed">variable (size fixed)</string>
+    <string name="word_variable">variable</string>
+    <string name="word_fixed">fixed</string>
+    <string name="delete_sub_rule">Delete sub rule</string>
+    <string name="advanced">Advanced</string>
+    <string name="regular_expression">Regular Expression</string>
 
 </resources>
 
