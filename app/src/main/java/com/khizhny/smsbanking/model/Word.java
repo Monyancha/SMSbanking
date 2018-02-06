@@ -10,7 +10,7 @@ public class Word implements java.io.Serializable {
         WORD_VARIABLE_FIXED_SIZE
 
     }
-    private static final long serialVersionUID = 1; // Is used to indicate class version during Import/Export
+    private static final long serialVersionUID = 3; // Is used to indicate class version during Import/Export
 
     private int firstLetterIndex;    // index of word letter in Rule message
     private int lastLetterIndex;     // index of 1-st letter in Rule message

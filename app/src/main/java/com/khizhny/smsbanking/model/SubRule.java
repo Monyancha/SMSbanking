@@ -10,7 +10,7 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class SubRule implements java.io.Serializable {
 
-	private final static long serialVersionUID = 2; // Is used to indicate class version during Import/Export
+	private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
 	private int id;
 	private Rule rule; // back reference to rule
 	private int distanceToLeftPhrase;
@@ -20,13 +20,11 @@ public class SubRule implements java.io.Serializable {
 	private String constantValue;
 	private Transaction.Parameters extractedParameter;
 	private Method extractionMethod;
-	private int decimalSeparator;
-	private String separator;
+	private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_DOT;  // 0 - dot,  1-coma, 2 - auto
 	public int trimLeft;
 	public int trimRight;
 	public int regexPhraseIndex;
 	public boolean negate;
-
 
     public enum Method {
 		WORD_AFTER_PHRASE,
@@ -34,6 +32,12 @@ public class SubRule implements java.io.Serializable {
 		WORDS_BETWEEN_PHRASES,
 		USE_CONSTANT,
 		USE_REGEX
+	}
+
+	public enum DECIMAL_SEPARATOR {
+		SEPARATOR_DOT,
+		SEPARATOR_COMA,
+		SEPARATOR_AUTO,
 	}
 
     public SubRule(Rule rule, Transaction.Parameters extractedParameter) {
@@ -46,8 +50,6 @@ public class SubRule implements java.io.Serializable {
 		this.constantValue="";
 		this.extractedParameter = extractedParameter;
 		this.extractionMethod = Method.USE_REGEX;
-		this.decimalSeparator = 0;
-		this.separator = ".";
 		this.trimLeft = 0;
 		this.trimRight = 0;
 		this.regexPhraseIndex=0;
@@ -65,7 +67,6 @@ public class SubRule implements java.io.Serializable {
 		this.extractedParameter = origin.extractedParameter;
 		this.extractionMethod = origin.extractionMethod;
 		this.decimalSeparator = origin.decimalSeparator;
-		this.separator = origin.separator;
 		this.trimLeft = origin.trimLeft;
 		this.trimRight = origin.trimRight;
 		regexPhraseIndex = origin.regexPhraseIndex;
@@ -143,20 +144,28 @@ public class SubRule implements java.io.Serializable {
 		return extractedParameter;
 	}
 
-    public int getDecimalSeparator() {
-        return decimalSeparator;
-    }
+	public DECIMAL_SEPARATOR getDecimalSeparator() {
+		return decimalSeparator;
+	}
 
-    /**
-     * Sets decimal separator.
-     * @param decimalSeparator  1 for ","  or 0 for "."
-     */
-    public void setDecimalSeparator(int decimalSeparator) {
-		if (decimalSeparator == 0) {
-            this.separator = ".";
-		} else {
-            this.separator = ",";
+	public String getDecimalSeparatorString(String word) {
+    	switch (decimalSeparator){
+			case SEPARATOR_DOT:
+				return ".";
+			case SEPARATOR_COMA:
+				return ",";
+			case SEPARATOR_AUTO: // first dot or coma from right
+				for (int i=word.length()-1; i>=0; i--){
+					if (word.charAt(i)=='.')return ".";
+					if (word.charAt(i)==',')return ",";
+					}
+				return ".";
+			default:
+				return ".";
 		}
+	}
+
+	public void setDecimalSeparator(DECIMAL_SEPARATOR decimalSeparator) {
 		this.decimalSeparator = decimalSeparator;
 	}
 
@@ -217,7 +226,9 @@ public class SubRule implements java.io.Serializable {
                     Pattern pattern = Pattern.compile(rule.getMask());
                     Matcher matcher = pattern.matcher(smsMsg);
                     if (matcher.matches()) {
-                        if (matcher.groupCount() > regexPhraseIndex) temp = matcher.group(regexPhraseIndex+1);
+                        if (matcher.groupCount() > regexPhraseIndex) {
+                        	temp = matcher.group(regexPhraseIndex+1);
+						}
                     }
 					break;
 			}
@@ -245,7 +256,7 @@ public class SubRule implements java.io.Serializable {
 							temp = temp.replace("-", "");
 						}
 					}
-					temp=temp.replaceAll("[^0-9" + separator + "-]", "");
+					temp=temp.replaceAll("[^0-9" + getDecimalSeparatorString(temp) + "-]", "");
 				} catch (Exception e) {
                     temp="0";
 				}
@@ -316,7 +327,7 @@ public class SubRule implements java.io.Serializable {
 		v.put("constant_value", constantValue);
 		v.put("extracted_parameter", getExtractedParameterInt());
 		v.put("extraction_method", getExtractionMethodInt());
-		v.put("decimal_separator", decimalSeparator);
+		v.put("decimal_separator", decimalSeparator.ordinal());
 		v.put("trim_left", trimLeft);
 		v.put("trim_right", trimRight);
 		v.put("regex_phrase_index", regexPhraseIndex);

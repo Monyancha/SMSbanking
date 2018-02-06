@@ -25,8 +25,8 @@ public class FileDialog {
     public interface DirectorySelectedListener {
         void directorySelected(File directory);
     }
-    private ListenerList<FileSelectedListener> fileListenerList = new ListenerList<FileDialog.FileSelectedListener>();
-    private ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<FileDialog.DirectorySelectedListener>();
+    private final ListenerList<FileSelectedListener> fileListenerList = new ListenerList<FileDialog.FileSelectedListener>();
+    private final ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<FileDialog.DirectorySelectedListener>();
     private final Activity activity;
     private boolean selectDirectoryOption;
     private String fileEndsWith;
@@ -135,13 +135,9 @@ public class FileDialog {
                     else {
                         boolean endsWith;
                         if (fileEndsWith != null) {
-                            if (filename.toLowerCase().endsWith(fileEndsWith))
-                                endsWith = true;
-                            else endsWith = false;
+                            endsWith = filename.toLowerCase().endsWith(fileEndsWith);
                         } else {
-                            if (true)
-                                endsWith = true;
-                            else endsWith = false;
+                            endsWith = true;
                         }
                         return endsWith || sel.isDirectory();
                     }
@@ -155,7 +151,7 @@ public class FileDialog {
             }
         }
         Collections.sort(r);
-        fileList = (String[]) r.toArray(new String[]{});
+        fileList = r.toArray(new String[]{});
     }
 
     private File getChosenFile(String fileChosen) {
@@ -170,7 +166,7 @@ public class FileDialog {
 }
 
 class ListenerList<L> {
-    private List<L> listenerList = new ArrayList<L>();
+    private final List<L> listenerList = new ArrayList<L>();
 
     public interface FireHandler<L> {
         void fireEvent(L listener);

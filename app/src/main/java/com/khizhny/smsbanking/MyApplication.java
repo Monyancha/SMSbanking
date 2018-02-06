@@ -116,17 +116,29 @@ public class MyApplication extends Application {
         }
     }
 
-   public static void restart(Context context, int delay) {
+    /**
+     * Restarts entire Application
+     * @param context
+     */
+   public static void restart(Context context) {
         Log.d(LOG, "MyApplication.restart() started");
-        if (delay == 0) delay = 1;
-
         Intent restartIntent = context.getPackageManager()
                 .getLaunchIntentForPackage(context.getPackageName() );
         PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        manager.set(AlarmManager.RTC, System.currentTimeMillis() + delay, intent);
+        manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, intent);
         System.exit(2);
         Log.d(LOG, "MyApplication.restart() finished");
     }
 
+    public static  String[] getExtraParameterNames(Context ctx){
+        // Restoring preferences
+        String[] res=new String[4];
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+        res[0] = settings.getString("extra1_name", "" );
+        res[1] = settings.getString("extra2_name", "");
+        res[2] = settings.getString("extra3_name", "");
+        res[3] = settings.getString("extra4_name", "");
+        return res;
+    }
 }

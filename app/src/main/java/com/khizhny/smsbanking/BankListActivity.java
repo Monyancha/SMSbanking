@@ -87,6 +87,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
     private ProgressBar progressBar;
     private BroadcastReceiver mBroadcastReceiver;
 
+
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bank_list);
@@ -222,7 +223,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 return true;
 
 			case R.id.bank_add:
-				// Calling Bank Activity to add new Bank
+				// Calling BankV2 Activity to add new BankV2
 				intent.putExtra("todo", "add");
 				startActivity(intent);
 				bankListAdapter.notifyDataSetChanged();
@@ -275,7 +276,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 return true;
 
 			case R.id.bank_edit: // Editing Active Bank from myBanks to sdcard
-				intent= new Intent(this, BankActivity.class);
+                db.setActiveBank(selectedBank.getId());
+                intent= new Intent(this, BankActivity.class);
 				intent.putExtra("todo", "edit");
 				startActivity(intent);
 				bankListAdapter.notifyDataSetChanged();
@@ -305,6 +307,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                  bank2Share=selectedBank;
                  if (mAuth.getCurrentUser()==null){
                      Toast.makeText(this,R.string.login_first,Toast.LENGTH_SHORT).show();
+                     googleSignIn();
                  }else {
                      exportBankToCloud();
                  }
@@ -398,7 +401,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             int hasWritePermission = ActivityCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE);
             if (hasWritePermission != PackageManager.PERMISSION_GRANTED) {
                 if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    showMessageOKCancel("Starting from Android 6.0 you need to allow access to SD",
+                    showMessageOKCancel(getString(R.string.sd_card_msg),
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -590,6 +593,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                             // if sign in successful then auth state listener will handle it.
                                         Toast.makeText(BankListActivity.this,"Welcome "+getUserName(),Toast.LENGTH_LONG).show();
                             Log.d(LOG, "signInWithCredential:success");
+                            importBankFromCloud();
                         }else{
                             // if sign in fails show message to user.
                             Log.d(LOG, "signInWithCredential:failed");
@@ -608,21 +612,12 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         }
     }
 
-
-    private void showMessageDialog(String title, String message) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .create();
-        ad.show();
-    }
-
-    public String getCountry(){
+    private String getCountry(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         return settings.getString("country_preference",null);
     }
 
-    public String getUserName() {
+    private String getUserName() {
         FirebaseUser user=mAuth.getCurrentUser();
         for (UserInfo i : user.getProviderData()){
             if (i.getDisplayName()!=null) {

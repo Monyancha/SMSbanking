@@ -115,8 +115,9 @@ public class MyDownloadService extends MyBaseTaskService {
 
                         showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
 
+                        Bank bank;
                         // importing downloaded template to DB
-                        Bank bank= new Bank(Bank.importBank(getCacheDir().getAbsolutePath()+"/loaded_bank.dat"));
+                        bank = new Bank(Bank.importBank(getCacheDir().getAbsolutePath() + "/loaded_bank.dat"));
                         db.addOrEditBank(bank,true,true);
                         db.setActiveBank(bank.getId());
                         MyApplication.forceRefresh=true;
@@ -171,7 +172,7 @@ public class MyDownloadService extends MyBaseTaskService {
 
         boolean success = bytesDownloaded != -1;
         String caption = success ? getString(R.string.download_success) : getString(R.string.download_failure);
-        showFinishedNotification(caption, intent, true);
+        showFinishedNotification(caption, intent, success);
     }
 
 

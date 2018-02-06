@@ -75,6 +75,8 @@
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="@+id/field_comment_text"
-        android:layout_marginBottom="0dp"/>
+        android:layout_marginBottom="0dp"
+        android:contentDescription="@string/image"
+        android:layout_marginEnd="8dp" />
 
 </android.support.constraint.ConstraintLayout>

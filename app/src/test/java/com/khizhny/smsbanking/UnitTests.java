@@ -2,12 +2,14 @@ package com.khizhny.smsbanking;
 
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
 
 import org.junit.Test;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.khizhny.smsbanking.MyApplication.db;
 import static org.junit.Assert.*;
 
 public class UnitTests {
@@ -15,7 +17,7 @@ public class UnitTests {
     public void makeInitialWordSplitting() throws Exception {
         //           0    1   2    3         4       5    6    7    8    9       10
         String msg=" This is test message. Withdraw 50.34 UAH. You have 50.65UAH left ";
-        // defining Bank
+        // defining BankV2
         Bank b = new Bank();
         b.setDefaultCurrency("UAH");
 
@@ -36,7 +38,7 @@ public class UnitTests {
         //           0    1   2    3         4       5    6    7    8    9       10
         String msg="This is test message. Withdraw 50.34 UAH. You have 50.65UAH left ";
 
-        // defining Bank
+        // defining BankV2
         Bank b = new Bank();
         b.setDefaultCurrency("UAH");
 
@@ -66,7 +68,7 @@ public class UnitTests {
     public void MergeLeft() throws Exception {
         //           0    1   2    3         4       5    6    7    8    9       10
         String msg="This is test message. Withdraw 50.34 UAH. You have 50.65UAH left ";
-        // defining Bank
+        // defining BankV2
         Bank b = new Bank();
         b.setDefaultCurrency("UAH");
 
@@ -95,7 +97,7 @@ public class UnitTests {
     public void Split() throws Exception {
         //           0    1   2    3         4       5    6    7    8    9       10
         String msg="This is test message. Withdraw 50.34 UAH. You have 50.65UAH left ";
-        // defining Bank
+        // defining BankV2
         Bank b = new Bank();
         b.setDefaultCurrency("UAH");
 
@@ -121,7 +123,7 @@ public class UnitTests {
         //              0    1   2    3         4       5    6    7    8    9       10
         String msg="  This  is test message. Withdraw 50.34  UAH. You have 50.65UAH left  ";
 
-        // defining Bank
+        // defining BankV2
         Bank b = new Bank();
         b.setDefaultCurrency("UAH");
 
@@ -172,5 +174,28 @@ public class UnitTests {
             assertEquals("found","not found");
         }
 
+    }
+    @Test
+    public void Migration_test() throws Exception {
+
+        for (Bank b: db.getMyBanks("*")){
+            for (Rule r: b.ruleList){
+                for (SubRule sr: r.subRuleList) {
+                    switch (sr.getExtractionMethod()) {
+                        case WORD_AFTER_PHRASE:
+                            break;
+                        case WORD_BEFORE_PHRASE:
+                            break;
+                        case WORDS_BETWEEN_PHRASES:
+                            break;
+                        case USE_CONSTANT:
+                            break;
+                        case USE_REGEX:
+                            break;
+                    }
+                    assertEquals(1, 1);
+                }
+            }
+       }
     }
 }

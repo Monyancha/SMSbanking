@@ -9,7 +9,7 @@ public class MyPostsFragment extends PostListFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // todo  All my posts
+        // All my posts
         return databaseReference.child("user-posts")
                 .child(getUid())
                 .orderByChild("starCount");

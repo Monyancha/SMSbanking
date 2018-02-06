@@ -13,7 +13,7 @@
     <string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оценить программу</string>
 
-	<string name="rule_message">Укажите изменяемые слова (Долгое нажатие для разбиения слов):</string>
+	<string name="rule_message">Укажите изменяемые слова (Долгое нажатие для разбиения слов, swype-для объединения):</string>
     <string name="rule_name">Имя правила(необязательно)</string>
 
     <string name="popup_create_rule">Создать новое правило</string>
@@ -172,7 +172,7 @@
     <string name="download_success">Загрузка окончена</string>
     <string name="download_failure">Сбой загрузки</string>
     <string name="comments">Комментарии</string>
-    <string name="your_country">Сстрана</string>
+    <string name="your_country">Страна</string>
     <string name="about">О программе</string>
     <string name="create_new_rule">Новое правило</string>
     <string name="next">Далее</string>
@@ -181,13 +181,12 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижный Андрей</string>
     <string name="split">Разделить</string>
-    <string name="merge_left">&lt;&lt;Объединить</string>
-    <string name="merge_right">Объединить&gt;&gt;</string>
     <string name="variable_size_fixed">Изменяемое(фикс.дл.)</string>
     <string name="word_variable">Изменяемое</string>
     <string name="word_fixed">Постоянное</string>
     <string name="delete_sub_rule">Delete sub rule</string>
     <string name="advanced">Эксперт</string>
     <string name="regular_expression">Regular Expression</string>
+    <string name="sd_card_msg">Нужен доступ к SD.</string>
 </resources>
 

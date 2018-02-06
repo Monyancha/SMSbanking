@@ -7,18 +7,17 @@ import android.util.Log;
 import com.khizhny.smsbanking.R;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Rule implements java.io.Serializable {
 
-	private static final long serialVersionUID = 2; // Is used to indicate class version during Import/Export
+	private static final long serialVersionUID = 3; // Is used to indicate class version during Import/Export
 	private final static String LOG ="SMS_BANKING";
 
 	private int id=-1;
-	private Bank bank; // back reference to bank
+	private final Bank bank; // back reference to bank
 	private String name;
 	private String smsBody="";
 	private String mask="";
@@ -26,7 +25,7 @@ public class Rule implements java.io.Serializable {
     private String nameSuggestion="";
 	private transactionType ruleType=transactionType.UNKNOWN;
 	public List<SubRule> subRuleList=new ArrayList<SubRule>();
-	public List<Word> words=new ArrayList<Word>();
+	public final List<Word> words=new ArrayList<Word>();
 
 	public int wordsCount=0; // for old rules
 	public boolean[] wordIsSelected= null; // for old rules
@@ -34,7 +33,7 @@ public class Rule implements java.io.Serializable {
 	/**
 	 * Transaction type icons array.
 	 */
-	public static int[] ruleTypeIcons ={
+	public static final int[] ruleTypeIcons ={
 			R.drawable.ic_transaction_unknown,
 			R.drawable.ic_transaction_income,
 			R.drawable.ic_transaction_withdraw,
@@ -83,8 +82,6 @@ public class Rule implements java.io.Serializable {
 		this.advanced=originRule.advanced;
 		this.ruleType=originRule.ruleType;
 		this.wordsCount=originRule.wordsCount;
-
-
 
 		// Cloning subrules
 		for (SubRule sr : originRule.subRuleList) {
@@ -212,7 +209,7 @@ public class Rule implements java.io.Serializable {
      * @return Transaction object
      */
 	public Transaction getSampleTransaction(Context ctx){
-        //Bank bank=db.getBank(bankId);
+        //BankV2 bank=db.getBank(bankId);
         Transaction transaction = new Transaction(smsBody,bank.getDefaultCurrency(),null);
         applyRule(transaction);
         transaction.calculateMissedData();
@@ -259,6 +256,7 @@ public class Rule implements java.io.Serializable {
 			mask_delimiter = "";
 		}
 		mask+=mask_delimiter+"$"; // ending
+		mask=mask.replace("\\E \\Q"," "); // small optimization
 	}
 
 

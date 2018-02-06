@@ -29,8 +29,9 @@ import java.util.concurrent.TimeUnit;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 
-public class Transaction implements Comparable<Transaction>, java.io.Serializable  {
-    private final static long serialVersionUID = 1; // Is used to indicate class version during Import/Export
+public class Transaction implements Comparable<Transaction> {
+
+  //  private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
     public int icon;  // R.id of the icon
     private String smsBody;
     public long smsId;
@@ -48,7 +49,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
     private String extraParam3;
     private String extraParam4;
 
-    public int selectedRuleId;        // id if transactions forced to be used by the user for this transaction.
+    private int selectedRuleId;        // id if transactions forced to be used by the user for this transaction.
     public List <Rule> applicableRules;  // list of rules that can be used for this transaction
 
     public enum Parameters {
@@ -509,7 +510,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
 
     /**
      * Function loads a list of transactions from SMS to a List
-     * @param activeBank Bank object with all extraction settings and rules.
+     * @param activeBank BankV2 object with all extraction settings and rules.
      * @param context Context
      * @return List of Transaction objects. (sorted)
      */
@@ -610,7 +611,7 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
         return transactionList;
     }/**/
 
-    public Rule getSelectedRule(){
+    private Rule getSelectedRule(){
         for (Rule r : applicableRules) {
             if (r.getId()==selectedRuleId) return r;
         }
@@ -626,20 +627,23 @@ public class Transaction implements Comparable<Transaction>, java.io.Serializabl
      * Seves changes to db.
      */
     public void switchToNextRule(){
-        if (applicableRules.size()<2) return;
+        if (applicableRules.size()<2) {
+            return;
+        }else {
 
-        if (selectedRuleId==-1) {
-            selectedRuleId = applicableRules.indexOf(getRuleWitLongestMask(applicableRules));
-        }
+            if (selectedRuleId == -1) {
+                selectedRuleId = applicableRules.get(1).getId();
+            }
 
-        for (int i = 0; i< applicableRules.size(); i++) {
-            if (applicableRules.get(i).getId()==selectedRuleId) {
-                if (i+1== applicableRules.size()){
-                    switchToRule(applicableRules.get(0));
-                    return;
-                }else{
-                    switchToRule(applicableRules.get(i+1));
-                    return;
+            for (int i = 0; i < applicableRules.size(); i++) {
+                if (applicableRules.get(i).getId() == selectedRuleId) {
+                    if (i + 1 == applicableRules.size()) {
+                        switchToRule(applicableRules.get(0));
+                        return;
+                    } else {
+                        switchToRule(applicableRules.get(i + 1));
+                        return;
+                    }
                 }
             }
         }

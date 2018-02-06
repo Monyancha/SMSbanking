@@ -28,6 +28,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
     private Rule rule;       // Parent rule
     private SubRule subRule; // Sub rule which is editing in activity
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,8 +93,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         //==  Phrase ====
         AppCompatSpinner phraseView =findViewById(R.id.sub_rule_phrase);
         ArrayAdapter phraseAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, rule.getVariablePhrases());
-        //PhraseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); TODO remove
-        phraseView.setAdapter(phraseAdapter);
+       phraseView.setAdapter(phraseAdapter);
         phraseView.setSelection(subRule.regexPhraseIndex);
         phraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -147,12 +147,12 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
         //========================================================================================
         AppCompatSpinner separatorView = findViewById(R.id.sub_rule_separator);
-        separatorView.setSelection(subRule.getDecimalSeparator());
+        separatorView.setSelection(subRule.getDecimalSeparator().ordinal());
         separatorView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int selectedPosition, long id) {
-                if (subRule.getDecimalSeparator() != selectedPosition) {
-                    subRule.setDecimalSeparator(selectedPosition);
+                if (subRule.getDecimalSeparator().ordinal() != selectedPosition) {
+                    subRule.setDecimalSeparator(SubRule.DECIMAL_SEPARATOR.values()[selectedPosition]);
                     refreshResult();
                 }
             }
@@ -287,13 +287,5 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         return super.onOptionsItemSelected(item);
     }
 
- /*  private void setSpinnerByText(AppCompatSpinner s, String text){
-       int total=s.getAdapter().getCount();
-       for (int i=0;i<total;i++){
-           if (text.equals(s.getAdapter().getItem(i))) {
-               s.setSelection(i);
-           }
-       }
-   }*/
 
 }

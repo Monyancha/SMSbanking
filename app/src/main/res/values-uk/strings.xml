@@ -13,7 +13,7 @@
 	<string name="action_rule_text">Редактор правила</string>
     <string name="action_rate_app">Оцінити програму</string>
 
-	<string name="rule_message">Вкажіть змінні слова (довгий тап для розділення слів):</string>
+	<string name="rule_message">Вкажіть змінні слова (довгий тап для розділення слів, swype для приєднання):</string>
 	<string name="rule_name">Назва правила (не обов\'язкова)</string>
 
     <string name="popup_create_rule">Створити нове правило</string>
@@ -183,12 +183,11 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижний Андрій\nпереклад: Машковський Дмитро</string>
     <string name="split">Розділити</string>
-    <string name="merge_left">&lt;&lt;Обїднати</string>
-    <string name="merge_right">Обїднати&gt;&gt;</string>
     <string name="variable_size_fixed">Змінне(фікс.довж.)</string>
     <string name="word_variable">Змінне</string>
     <string name="word_fixed">Постійне</string>
     <string name="delete_sub_rule">Delete sub rule</string>
-    <string name="advanced">Я гуру RegExp</string>
+    <string name="advanced">Експерт</string>
     <string name="regular_expression">Regular Expression</string>
+    <string name="sd_card_msg">Потрібен доступ до SD картки.</string>
 </resources>

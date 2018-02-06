@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:configure="xml.SmsBankingWidgetConfigureActivity"
     android:initialKeyguardLayout="@layout/sms_banking_widget"
     android:initialLayout="@layout/sms_banking_widget"
@@ -7,6 +8,7 @@
     android:minWidth="40dp"
     android:resizeMode="horizontal"
     android:updatePeriodMillis="180000"
-    android:widgetCategory="home_screen">
+    android:widgetCategory="home_screen"
+    tools:ignore="UnusedAttribute">
 
 </appwidget-provider>

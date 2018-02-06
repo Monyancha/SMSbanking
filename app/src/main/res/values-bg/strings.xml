@@ -13,7 +13,7 @@
     <string name="action_rule_text">Редактор на правила</string>
     <string name="action_rate_app">Оценка на програмата</string>
 
-	<string name="rule_message">Маркирайте не постоянните думи(Натиснете продължително, за да разделите думите):</string>
+	<string name="rule_message">Маркирайте не постоянните думи(Натиснете продължително, за да разделите думите, Swype-присъедини):</string>
     <string name="rule_name">Име на правилото (незадължително)</string>
 
     <string name="popup_create_rule">Създаване на ново правило</string>
@@ -180,12 +180,11 @@
     <string name="pref_lang">Language</string>
     <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
     <string name="split">Split</string>
-    <string name="merge_left">&lt;&lt;Merge left</string>
-    <string name="merge_right">Merge&gt;&gt;</string>
-    <string name="variable_size_fixed">variable (size fixed)</string>
-    <string name="word_variable">Variable</string>
-    <string name="word_fixed">fixed</string>
+    <string name="variable_size_fixed">Променлив(size fixed)</string>
+    <string name="word_variable">Променлив</string>
+    <string name="word_fixed">Ппределен</string>
     <string name="delete_sub_rule">Delete sub rule</string>
-    <string name="advanced">Advanced</string>
+    <string name="advanced">Експерт</string>
     <string name="regular_expression">Regular Expression</string>
+    <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
 </resources>

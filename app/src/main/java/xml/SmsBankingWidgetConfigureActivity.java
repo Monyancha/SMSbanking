@@ -1,6 +1,5 @@
 package xml;
 
-import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +8,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -27,7 +27,7 @@ import static com.khizhny.smsbanking.MyApplication.db;
 /**
  * The configuration screen for the {@link SmsBankingWidget SmsBankingWidget} AppWidget.
  */
-public class SmsBankingWidgetConfigureActivity extends Activity {
+public class SmsBankingWidgetConfigureActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String PREFS_NAME = "xml.SmsBankingWidget";
     public static final String PREF_BANK_ID = "bank_id_for_widget_";
@@ -47,27 +47,6 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
     int textColor;
     int backColor;
     int textSize;
-
-    View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        public void onClick(View v) {
-            // Add button listener
-            final Context context = SmsBankingWidgetConfigureActivity.this;
-
-            // When the button is clicked, store the string locally
-            Bank bank = (Bank) myBank.getSelectedItem();
-            if (bank!=null) {
-                saveWidgetPref(context, mAppWidgetId, bank.getId(), textColor, backColor, textSize);
-                // It is the responsibility of the configuration activity to update the app widget
-                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                SmsBankingWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
-                // Make sure we pass back the original appWidgetId
-                Intent resultValue = new Intent();
-                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-                setResult(RESULT_OK, resultValue);
-            }
-            finish();
-        }
-    };
 
     public SmsBankingWidgetConfigureActivity() {
         super();
@@ -140,7 +119,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
 
         setContentView(R.layout.sms_banking_widget_configure);
 
-        findViewById(R.id.add_button).setOnClickListener(mOnClickListener);
+        findViewById(R.id.add_button).setOnClickListener(this);
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
@@ -160,7 +139,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         List <Bank> banks = db.getMyBanks(getCountry());
         ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter <Bank>(this,
                 android.R.layout.simple_spinner_item, banks);
-        myBank = (Spinner) findViewById(R.id.my_bank);
+        myBank = findViewById(R.id.my_bank);
         myBank.setAdapter(myBankAdapter);
 
         // last used default colors and sizes loading from preferences
@@ -172,11 +151,11 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
         if (textSize<MIN_FONT_SIZE) textSize=MIN_FONT_SIZE;
 
         // Aplying to sample
-        sampleText = (TextView)  findViewById(R.id.widget_sample);
+        sampleText = findViewById(R.id.widget_sample);
         sampleText.setTextColor(textColor);
         sampleText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
 
-        sampleBackground = (ImageView)  findViewById(R.id.widget_sample_background);
+        sampleBackground = findViewById(R.id.widget_sample_background);
         sampleBackground.setColorFilter(backColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             sampleBackground.setImageAlpha(Color.alpha(backColor));
@@ -185,7 +164,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
             sampleBackground.setAlpha(Color.alpha(backColor));
         }
 
-        ColorPickerView textColorPickerView = (ColorPickerView)  findViewById(R.id.text_color);
+        ColorPickerView textColorPickerView = findViewById(R.id.text_color);
         textColorPickerView.setAlphaSliderVisible(true);
         textColorPickerView.setColor(textColor);
         textColorPickerView.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
@@ -196,7 +175,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
             }
         });
 
-        ColorPickerView backColorPickerView = (ColorPickerView)  findViewById(R.id.text_background);
+        ColorPickerView backColorPickerView = findViewById(R.id.text_background);
         backColorPickerView.setAlphaSliderVisible(true);
         backColorPickerView.setColor(backColor);
 
@@ -215,7 +194,7 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
             }
         });
 
-        fontSize  = (SeekBar)  findViewById(R.id.font_size);
+        fontSize  = findViewById(R.id.font_size);
         fontSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -239,6 +218,28 @@ public class SmsBankingWidgetConfigureActivity extends Activity {
     private String getCountry(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         return settings.getString("country_preference",null);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.add_button: // Add button listener
+            final Context context = SmsBankingWidgetConfigureActivity.this;
+            // When the button is clicked, store the string locally
+            Bank bank = (Bank) myBank.getSelectedItem();
+            if (bank != null) {
+                saveWidgetPref(context, mAppWidgetId, bank.getId(), textColor, backColor, textSize);
+                // It is the responsibility of the configuration activity to update the app widget
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                SmsBankingWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+                // Make sure we pass back the original appWidgetId
+                Intent resultValue = new Intent();
+                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+                setResult(RESULT_OK, resultValue);
+            }
+            finish();
+            break;
+        }
     }
 }
 

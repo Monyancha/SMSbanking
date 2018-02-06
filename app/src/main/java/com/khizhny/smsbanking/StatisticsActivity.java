@@ -67,7 +67,7 @@ public class StatisticsActivity extends AppCompatActivity{
         showIncome = settings.getBoolean("showIncome", true);
         showOutcome = settings.getBoolean("showOutcome", true);
         showBalance = settings.getBoolean("showBalance", true);
-        CombinedChart chart = (CombinedChart) findViewById(R.id.chart);
+        CombinedChart chart = findViewById(R.id.chart);
         if (chart != null) {
             chart.setDescription("Statistics");
             chart.setDescriptionPosition(0, 0);
@@ -101,7 +101,7 @@ public class StatisticsActivity extends AppCompatActivity{
             XAxis xAxis = chart.getXAxis();
             xAxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
 
-            AppCompatSpinner stepView = (AppCompatSpinner) findViewById(R.id.rule_type);
+            AppCompatSpinner stepView = findViewById(R.id.rule_type);
             if (stepView != null) {
                 stepView.setSelection(step);
                 stepView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -367,7 +367,7 @@ public class StatisticsActivity extends AppCompatActivity{
         public MyMarkerView(Context context, int layoutResource) {
             super(context, layoutResource);
 
-            tvContent = (TextView) findViewById(R.id.tvContent);
+            tvContent = findViewById(R.id.tvContent);
         }
 
         // callbacks everytime the MarkerView is redrawn, can be used to update the

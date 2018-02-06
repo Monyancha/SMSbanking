@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <PreferenceCategory 
+	<PreferenceCategory
         android:title="@string/pref_title">
 		<ListPreference
 			android:entries="@array/countries_array"
@@ -50,6 +48,32 @@
             android:title="@string/pref_hide_ads"
             android:summary="@string/pref_hide_ads_summary">
         </CheckBoxPreference>-->
+		</PreferenceCategory>
+	<PreferenceCategory android:title="Extra parameters">
+		<EditTextPreference
+			android:defaultValue="Card/Account"
+			android:key="extra1_name"
+			android:selectAllOnFocus="true"
+			android:singleLine="true"
+			android:title="Define name of extra1 parameter." />
+		<EditTextPreference
+			android:defaultValue="Place"
+			android:key="extra2_name"
+			android:selectAllOnFocus="true"
+			android:singleLine="true"
+			android:title="Define name of extra2 parameter." />
+		<EditTextPreference
+			android:defaultValue="Date"
+			android:key="extra3_name"
+			android:selectAllOnFocus="true"
+			android:singleLine="true"
+			android:title="Define name of extra3 parameter." />
+		<EditTextPreference
+			android:defaultValue="Time"
+			android:key="extra4_name"
+			android:selectAllOnFocus="true"
+			android:singleLine="true"
+			android:title="Define name of extra4 parameter." />
+	</PreferenceCategory>
 
-    </PreferenceCategory>
 </PreferenceScreen>

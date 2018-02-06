@@ -16,7 +16,7 @@
     <string name="action_rule_text">Rule editor</string>
     <string name="action_rate_app">Rate application</string>
 
-    <string name="rule_message">Pick variable words (Long tap to split):</string>
+    <string name="rule_message">Pick variable words (Long tap to split, Swype to join):</string>
     <string name="rule_name">Rule name (optional)</string>
 
     <string name="popup_create_rule">Create new rule</string>
@@ -192,15 +192,15 @@
     <string name="pick_your_country">Pick your country</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">Created by Andrey Khizhny</string>
-    <string name="merge_left">&lt;&lt;Merge left</string>
-    <string name="merge_right">Merge&gt;&gt;</string>
     <string name="split">Split</string>
-    <string name="variable_size_fixed">variable (size fixed)</string>
+    <string name="variable_size_fixed">variable(size fixed)</string>
     <string name="word_variable">variable</string>
     <string name="word_fixed">fixed</string>
     <string name="delete_sub_rule">Delete sub rule</string>
     <string name="advanced">Advanced</string>
     <string name="regular_expression">Regular Expression</string>
+    <string name="image" translatable="false">image</string>
+    <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
 
 </resources>
 

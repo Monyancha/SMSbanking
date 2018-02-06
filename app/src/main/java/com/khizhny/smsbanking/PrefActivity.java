@@ -59,7 +59,7 @@ public class PrefActivity extends PreferenceActivity {
             new_lang = "(System language)";
         }
         if (!MyApplication.language.equals(new_lang)) {
-            MyApplication.restart(getBaseContext(),1);
+            MyApplication.restart(getBaseContext());
         }
         Log.d(LOG, "PrefActivity.onStop() finnished");
         super.onStop();

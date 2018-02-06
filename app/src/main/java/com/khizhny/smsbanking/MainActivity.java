@@ -1,6 +1,7 @@
 package com.khizhny.smsbanking;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
@@ -78,6 +79,7 @@ import xml.SmsBankingWidget;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
+import static com.khizhny.smsbanking.MyApplication.getExtraParameterNames;
 import static com.khizhny.smsbanking.MyApplication.hideMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.ignoreClones;
@@ -356,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
 
         // enabling ads banner
-        AdView mAdView = (AdView) findViewById(R.id.adView);
+        AdView mAdView = findViewById(R.id.adView);
         if (!hideAds) {
             // real: ca-app-pub-1260562111804726/2944681295
             MobileAds.initialize(getApplicationContext(), getResources().getString(R.string.banner_ad_unit_id));
@@ -511,6 +513,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         }
 
+        @SuppressLint("DefaultLocale")
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -524,11 +527,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             TextView smsTextView;
 
             // Filling Massage text
-            smsTextView = (TextView) rowView.findViewById(R.id.smsBody);
+            smsTextView = rowView.findViewById(R.id.smsBody);
             smsTextView.setText(t.getSmsBody());
 
             // Warning sign
-            TextView warnView = (TextView) rowView.findViewById(R.id.warning_sign);
+            TextView warnView = rowView.findViewById(R.id.warning_sign);
             warnView.setTextColor(Color.DKGRAY);
             if (t.isCached) {
                 warnView.setText("(c)");
@@ -540,25 +543,25 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 
             // Filling Before state
-            TextView accountBeforeView = (TextView) rowView.findViewById(R.id.stateBefore);
+            TextView accountBeforeView = rowView.findViewById(R.id.stateBefore);
             if (t.hasStateBefore){
                 accountBeforeView.setText(t.getStateBeforeAsString(hideCurrency));
             } else {
                 accountBeforeView.setText("");
             }
             // Filling Transaction Date
-            TextView dateView = (TextView) rowView.findViewById(R.id.transaction_date);
+            TextView dateView = rowView.findViewById(R.id.transaction_date);
             dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
 
             // Filling After state
-            TextView accountAfterView = (TextView) rowView.findViewById(R.id.stateAfter);
+            TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
             if (t.hasStateAfter){
                 accountAfterView.setText(t.getStateAfterAsString(hideCurrency));
             }else {
                 accountAfterView.setText("");
             }
             // Filling commission
-            TextView accountCommissionView = (TextView) rowView.findViewById(R.id.transactionComission);
+            TextView accountCommissionView = rowView.findViewById(R.id.transactionComission);
             if (t.getCommission().equals(new BigDecimal("0.00"))) {
                 accountCommissionView.setVisibility(View.GONE);
             } else {
@@ -567,7 +570,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 accountCommissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
             }
             // Filling difference
-            TextView accountDifferenceView = (TextView) rowView.findViewById(R.id.stateDifference);
+            TextView accountDifferenceView = rowView.findViewById(R.id.stateDifference);
             if (t.hasStateDifference){
                 accountDifferenceView.setVisibility(View.VISIBLE);
                 accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency,inverseRate,false));
@@ -586,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 accountDifferenceView.setText("");
             }
             // Changing icon
-            ImageView iconView = (ImageView) rowView.findViewById(R.id.transactionIcon);
+            ImageView iconView = rowView.findViewById(R.id.transactionIcon);
             iconView.setImageResource(t.icon);
 
             // Filling Extra parameters
@@ -614,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     private class RuleListAdapter extends ArrayAdapter<Rule> {
         private Rule selectedRule;
-        private Transaction selectedTransaction;
+        private final Transaction selectedTransaction;
 
         public RuleListAdapter(List<Rule> ruleList, Transaction t) {
             super(MainActivity.this,R.layout.activity_rule_list_row, ruleList);
@@ -629,7 +632,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 rowView = vi.inflate(R.layout.activity_rule_list_row, parent, false);
             }
 
-            TextView ruleNameView = (TextView) rowView.findViewById(R.id.ruleName);
+            TextView ruleNameView = rowView.findViewById(R.id.ruleName);
             Rule r = ruleListAdapter.getItem(position);
             ruleNameView.setText(r != null ? r.getName() : "---");
 
@@ -653,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
             });
 
-            ImageButton vDeleteRule = (ImageButton) rowView.findViewById(R.id.delete_rule_button);
+            ImageButton vDeleteRule = rowView.findViewById(R.id.delete_rule_button);
             vDeleteRule.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -664,7 +667,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
             });
 
-            ImageButton vEditRule = (ImageButton) rowView.findViewById(R.id.edit_rule_button);
+            ImageButton vEditRule = rowView.findViewById(R.id.edit_rule_button);
             vEditRule.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -714,6 +717,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
                 try {
                     int i = 0;
+                    String extraParameterNames[]= getExtraParameterNames(this);
                     worksheet.addCell(new Label(0, i, "N"));
                     worksheet.addCell(new Label(1, i, "TransactionDate"));
                     worksheet.addCell(new Label(2, i, "State before"));
@@ -723,10 +727,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     worksheet.addCell(new Label(6, i, "Commission"));
                     worksheet.addCell(new Label(7, i, "StateAfter"));
                     worksheet.addCell(new Label(8, i, "TransactionCurrency"));
-                    worksheet.addCell(new Label(9, i, "ExtraParam1"));
-                    worksheet.addCell(new Label(10, i, "ExtraParam2"));
-                    worksheet.addCell(new Label(11, i, "ExtraParam3"));
-                    worksheet.addCell(new Label(12, i, "ExtraParam4"));
+                    worksheet.addCell(new Label(9, i,  !extraParameterNames[0].equals("")? extraParameterNames[0]:"ExtraParam1"));
+                    worksheet.addCell(new Label(10, i, !extraParameterNames[1].equals("")? extraParameterNames[1]:"ExtraParam2"));
+                    worksheet.addCell(new Label(11, i, !extraParameterNames[2].equals("")? extraParameterNames[2]:"ExtraParam3"));
+                    worksheet.addCell(new Label(12, i, !extraParameterNames[3].equals("")? extraParameterNames[3]:"ExtraParam4"));
                     worksheet.addCell(new Label(13, i, "TransactionType"));
                     worksheet.addCell(new Label(14, i, "SMS"));
 
@@ -846,26 +850,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private void showCreateNewRuleDialog(String smsBody) {
         Log.d(LOG, "showCreateNewRuleDialog() started");
         if (smsBody != null) {
-            final EditText edittext = new EditText(this);
-            edittext.setPadding(8,8,8,8);
-            //edittext.setWidth(340);
-            edittext.setText(smsBody);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.create_new_rule);
-            builder.setMessage(R.string.relpace_private);
-            builder.setView(edittext);
-            builder.setPositiveButton(R.string.next, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    //What ever you want to do with the value
-                    Log.d(LOG, "showCreateNewRuleDialog() next button clicked");
-                    String messageBody = edittext.getText().toString();
-                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                    intent.putExtra(KEY_SMS_BODY, messageBody);
-                    intent.putExtra(KEY_TODO, "add");
-                    startActivity(intent);
-                }
-            });
-            builder.create().show();
+            Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+            intent.putExtra(KEY_SMS_BODY, smsBody);
+            intent.putExtra(KEY_TODO, "add");
+            startActivity(intent);
         }
     }
 
@@ -923,8 +911,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
     /**
-     * Task loads a list of transactions from SMS using rules defined for Bank
-     * Bank
+     * Task loads a list of transactions from SMS using rules defined for BankV2
+     * BankV2
      */
     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
 

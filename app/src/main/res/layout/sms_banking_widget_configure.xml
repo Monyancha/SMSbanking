@@ -167,7 +167,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/widget_sample"
         app:layout_constraintRight_toRightOf="@+id/widget_sample"
         app:layout_constraintTop_toTopOf="@+id/widget_sample"
-        />
+        tools:ignore="UnusedAttribute" />
 
     <TextView
         android:layout_width="wrap_content"

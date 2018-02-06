@@ -23,7 +23,7 @@ import java.util.Locale;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class DatabaseAccess {
-    private SQLiteOpenHelper openHelper;
+    private final SQLiteOpenHelper openHelper;
     private SQLiteDatabase db;
     private static DatabaseAccess instance;
 
@@ -32,7 +32,7 @@ public class DatabaseAccess {
      *
      * @param context context
      */
-    private DatabaseAccess(Context context) {
+    DatabaseAccess(Context context) {
         this.openHelper = new DbOpenHelper(context);
     }
 
@@ -126,9 +126,9 @@ public class DatabaseAccess {
     }
 
     /**
-     * Reads Bank object from db with all Rules,Subrules,Words
-     * @param bankId Bank id.
-     * @return Bank object.
+     * Reads BankV2 object from db with all Rules,Subrules,Words
+     * @param bankId BankV2 id.
+     * @return BankV2 object.
      */
     public synchronized Bank getBank (int bankId) {
         Bank b = new Bank();
@@ -151,8 +151,8 @@ public class DatabaseAccess {
     }
 
     /**
-     * Returns Active Bank object.
-     * @return Bank object or null if not found.
+     * Returns Active BankV2 object.
+     * @return BankV2 object or null if not found.
      */
     public Bank getActiveBank () {
         Cursor c=db.rawQuery("SELECT _id FROM banks where active=1 and editable=1", null);
@@ -175,7 +175,7 @@ public class DatabaseAccess {
 
     /**
      * Deletes bank with bankId from database. Including all related Rules and Subrules.
-     * @param bankId Bank id
+     * @param bankId BankV2 id
      */
     public synchronized void deleteBank (int bankId) {
         // deleting all subrules and rules of active bank
@@ -210,7 +210,7 @@ public class DatabaseAccess {
             // making new bank active
             bank.setActive(1);
             bank.setEditable(1);
-            // saving Bank info
+            // saving BankV2 info
             v = bank.getContentValues();
             db.insert("banks",null,v);
 
@@ -235,8 +235,8 @@ public class DatabaseAccess {
     }
 
     /**
-     * @param bank Bank.
-     * @return a list of rules for particular Bank (including subrules)
+     * @param bank BankV2.
+     * @return a list of rules for particular BankV2 (including subrules)
      */
     public synchronized List<Rule> getRules(Bank bank){
         List<Rule> ruleList = new ArrayList<Rule>();
@@ -392,7 +392,7 @@ public class DatabaseAccess {
                 subRule.setDistanceToRightPhrase(cursor.getInt(4));
                 subRule.setConstantValue(cursor.getString(5));
                 subRule.setExtractionMethod(cursor.getInt(7));
-                subRule.setDecimalSeparator(cursor.getInt(8));
+                subRule.setDecimalSeparator(SubRule.DECIMAL_SEPARATOR.values()[cursor.getInt(8)]);
                 subRule.trimLeft=cursor.getInt(9);
                 subRule.trimRight=cursor.getInt(10);
                 subRule.negate=cursor.getInt(11)!=0;

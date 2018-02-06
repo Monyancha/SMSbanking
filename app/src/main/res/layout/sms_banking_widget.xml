@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="@dimen/widget_margin"
@@ -35,7 +36,9 @@
             android:allowUndo="false"
             android:clickable="true"
             android:gravity="bottom|center"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:focusable="true"
+            tools:ignore="UnusedAttribute" />
 
         <TextView
                 android:id="@+id/widget_value"
@@ -50,7 +53,9 @@
                 android:allowUndo="true"
                 android:clickable="true"
                 android:gravity="top|center"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+            android:focusable="true"
+            tools:ignore="UnusedAttribute" />
     </LinearLayout>
 
 </RelativeLayout>

@@ -9,6 +9,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_centerVertical="true"
+        android:contentDescription="@string/image"
         android:src="@drawable/ic_account_circle"/>
 
     <LinearLayout
@@ -25,7 +26,8 @@
             android:layout_height="wrap_content"
             android:allowUndo="true"
             android:textSize="12sp"
-            tools:text="29.02.2017"/>
+            tools:text="29.02.2017"
+            tools:ignore="UnusedAttribute" />
 
         <TextView
             android:id="@+id/comment_author"

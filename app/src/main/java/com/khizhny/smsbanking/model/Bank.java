@@ -10,8 +10,10 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
@@ -22,9 +24,8 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class Bank  implements java.io.Serializable{
 
-	// Information   about your bank account
 	private int id=-1;  // id in main DB. If -1 then it is new.
-	public static final long serialVersionUID = 2; // Is used to indicate class version during Import/Export
+	public static final long serialVersionUID = 3;
 	private int editable=1; // 1 if user is allowed to modify
 	private int active=1;  // 1 indicates that user want to watch this account info in program. test
 	private String name;
@@ -38,8 +39,8 @@ public class Bank  implements java.io.Serializable{
 	}
 
     /**
-     * Constructor is used to clone Bank Object from template with all subrules.
-     * @param originBank - Bank object to be copy.
+     * Constructor is used to clone BankV2 Object from template with all subrules.
+     * @param originBank - BankV2 object to be copy.
      */
 	public Bank(Bank originBank) {
 		this.name = originBank.name;
@@ -51,6 +52,8 @@ public class Bank  implements java.io.Serializable{
 			this.ruleList.add( new Rule(r, this));
 		}
 	}
+
+
 
 	public int getId() {
 		return id;
@@ -112,9 +115,9 @@ public class Bank  implements java.io.Serializable{
 	}
 
 	/**
-	 * Function will export all Bank settings including Rules and subrules to a file.
-	 * @param b Bank object which is exported.
-	 * @param filePath File path where Bank should be exported
+	 * Function will export all BankV2 settings including Rules and subrules to a file.
+	 * @param b BankV2 object which is exported.
+	 * @param filePath File path where BankV2 should be exported
 	 * @return True if success, False if failed.
 	 */
 	public static Uri exportBank(Bank b, String filePath){
@@ -149,12 +152,20 @@ public class Bank  implements java.io.Serializable{
             b.setCurrentAccountState("0");
             return b;
 		}
-		catch(Exception e)
-		{
+		catch(InvalidClassException e) {
+			if (e.getMessage().equals("Incompatible class (SUID): com.khizhny.smsbanking.model.Rule: static final long serialVersionUID =1L; but expected com.khizhny.smsbanking.model.Rule: static final long serialVersionUID =2L;")) {
+				// Reading to old ModelV2
+			}
 			Log.v(LOG,e.getMessage());
 			e.printStackTrace();
-            return null;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
+		return null;
 	}
 
     public ContentValues getContentValues(){

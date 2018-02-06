@@ -25,7 +25,6 @@ public class DbOpenHelper  extends SQLiteAssetHelper {
                 db.execSQL("ALTER TABLE banks ADD COLUMN editable;");
                 db.execSQL("ALTER TABLE banks ADD COLUMN current_account_state;");
                 db.execSQL("UPDATE banks SET editable=1, current_account_state=0");
-                db.execSQL("INSERT INTO sqlite_sequence(rowid,name,seq) VALUES(87,'banks',4);");
                 db.execSQL("UPDATE version SET version=5");
                 Log.v(LOG, "DB Updated from 4 to 5");
             case 5: // these version is used only  in 1.10

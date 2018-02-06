@@ -53,7 +53,7 @@ public abstract class PostListFragment extends Fragment {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        mRecycler = (RecyclerView) rootView.findViewById(R.id.messages_list);
+        mRecycler = rootView.findViewById(R.id.messages_list);
         mRecycler.setHasFixedSize(true);
 
         return rootView;

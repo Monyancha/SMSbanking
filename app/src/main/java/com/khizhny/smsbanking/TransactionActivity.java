@@ -2,8 +2,10 @@ package com.khizhny.smsbanking;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.khizhny.smsbanking.model.Transaction;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
+import static com.khizhny.smsbanking.MyApplication.getExtraParameterNames;
 
 public class TransactionActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -57,7 +60,6 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
-
         // getting Rule object in on resume because we will get back here from Subrule Activity
         Intent intent = getIntent();
         if ( intent.hasExtra( KEY_RULE_ID)) {
@@ -65,7 +67,7 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
             try{
                 ruleId=intent.getExtras().getInt( KEY_RULE_ID);
                 Log.d(MyApplication.LOG, "Getting Rule from db.");//
-                // loading Rule and Bank objects
+                // loading Rule and BankV2 objects
                 rule = db.getRule(ruleId);
                 transaction = rule.getSampleTransaction(this);
 
@@ -89,6 +91,12 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         TextView extra3View =  findViewById(R.id.extra3_value);
         TextView extra4View =  findViewById(R.id.extra4_value);
 
+        String extranames[]= getExtraParameterNames(this);
+        if (!extranames[0].equals("")) ((Button)findViewById(R.id.extra1_label)).setText(extranames[0]);
+        if (!extranames[1].equals("")) ((Button)findViewById(R.id.extra2_label)).setText(extranames[1]);
+        if (!extranames[2].equals("")) ((Button)findViewById(R.id.extra3_label)).setText(extranames[2]);
+        if (!extranames[3].equals("")) ((Button)findViewById(R.id.extra4_label)).setText(extranames[3]);
+
 
         if (smsTextView != null) smsTextView.setText(String.format("%s%s%s", getString(R.string.begin), rule.getSmsBody(), getString(R.string.end)));
         stateAfterView.setText(transaction.getStateAfterAsString(false));
@@ -101,10 +109,17 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         extra3View.setText(transaction.getExtraParam3());
         extra4View.setText(transaction.getExtraParam4());
 
+
         stateAfterView.setTextColor(transaction.hasCalculatedAccountStateAfter?Color.BLACK:Color.BLUE);
         stateBeforeView.setTextColor(transaction.hasCalculatedAccountStateBefore?Color.BLACK:Color.BLUE);
         stateChangeView.setTextColor(transaction.hasCalculatedAccountDifference?Color.BLACK:Color.BLUE);
-        currencyView.setTextColor(transaction.hasTransactionCurrency?Color.BLACK:Color.BLUE);
+        currencyView.setTextColor(!transaction.hasTransactionCurrency?Color.BLACK:Color.BLUE);
+        extra1View.setTextColor(Color.BLUE);
+        extra2View.setTextColor(Color.BLUE);
+        extra3View.setTextColor(Color.BLUE);
+        extra4View.setTextColor(Color.BLUE);
+        commissionView.setTextColor(transaction.getCommission().signum()==0?Color.BLACK:Color.BLUE);
+
     }
 
     @Override
@@ -184,4 +199,5 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
 
 
     }
+
 }

@@ -93,7 +93,7 @@ public class MyUploadService extends MyBaseTaskService implements
         taskStarted();
         showProgressNotification("progress_uploading", 0, 0);
 
-        final StorageReference bankTemplateRef = mStorageRef.child("banks V"+bank.serialVersionUID)
+        final StorageReference bankTemplateRef = mStorageRef.child("banks V"+ Bank.serialVersionUID)
                 .child(country)
                 .child(firebaseFileName);
 
@@ -172,7 +172,7 @@ public class MyUploadService extends MyBaseTaskService implements
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<String, Object>();
-        childUpdates.put("/posts V"+bank.serialVersionUID+"/"+country+"/" + key, postValues);
+        childUpdates.put("/posts V"+ Bank.serialVersionUID +"/"+country+"/" + key, postValues);
         childUpdates.put("/user-posts/"+ userId+"/" + key, postValues);
         mDatabase.updateChildren(childUpdates);
     }

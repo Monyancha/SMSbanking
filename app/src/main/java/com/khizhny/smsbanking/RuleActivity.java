@@ -13,10 +13,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
@@ -44,14 +48,14 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 	private Bank bank;
     private Rule rule;
 
-    private TextView tvRuleName;
+    private TextView tvMessageBody;
 	private TextView tvResults;
 	private ImageView ivIcon;
     private AlertDialog alertDialog;
     private CheckBox cbAdvanced;
     private EditText etRegExp;
     private boolean weNeedToDeleteAllSubrules=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
-
+    private OnSwipeTouchListener onSwipeTouchListener=new OnSwipeTouchListener();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -113,6 +117,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         setContentView(R.layout.activity_rule);
 
+        // Coloring sample buttons
+        changeColor(findViewById(R.id.btn_variable), Word.WORD_TYPES.WORD_VARIABLE);
+        changeColor(findViewById(R.id.btn_fixed), Word.WORD_TYPES.WORD_CONST);
+        changeColor(findViewById(R.id.btn_variable_fixed_size), Word.WORD_TYPES.WORD_VARIABLE_FIXED_SIZE);
+
         cbAdvanced=findViewById(R.id.cbAdvanced);
         cbAdvanced.setChecked(rule.isAdvanced());
         cbAdvanced.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -140,8 +149,27 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         tvResults=findViewById(R.id.tvResults);
         tvResults.setText(rule.getValues());
 
-		tvRuleName =  findViewById(R.id.rule_name);
-		tvRuleName.setText(rule.getName());
+		tvMessageBody =  findViewById(R.id.rule_sms_body);
+		tvMessageBody.setText(rule.getSmsBody());
+        tvMessageBody.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
+                if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
+                    return false;
+                } else if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || event == null
+                        || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    // the user is done typing.
+                    rule.setSmsBody(v.getText().toString());
+                    rule.makeInitialWordSplitting();
+                    weNeedToDeleteAllSubrules=true;
+                    updateWordsLayout();
+                    return true;
+                }
+                return false; // pass on to other listeners.
+            }
+        });
 
 		AppCompatSpinner ruleTypeView = this.findViewById(R.id.rule_type);
         ivIcon = this.findViewById(R.id.image);
@@ -166,10 +194,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         ivIcon.setImageResource(rule.getRuleTypeDrawable());
         updateWordsLayout();
 
-        // Coloring sample buttons
-        changeColor(findViewById(R.id.btn_variable), Word.WORD_TYPES.WORD_VARIABLE);
-        changeColor(findViewById(R.id.btn_fixed), Word.WORD_TYPES.WORD_CONST);
-        changeColor(findViewById(R.id.btn_variable_fixed_size), Word.WORD_TYPES.WORD_VARIABLE_FIXED_SIZE);
+
     }
 
     /**
@@ -235,44 +260,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            // next button click handler
             case R.id.rule_next:
-                if (rule.isAdvanced()) {
-                    rule.setMask(etRegExp.getText().toString());
-                }else {
-                    rule.updateMask();
-                }
-
-                if (tvRuleName.getText().toString().equals("")) {
-                    tvRuleName.setText(rule.getRuleNameSuggestion());
-                    rule.setName(tvRuleName.getText().toString());
-
-                }else{
-                    rule.setName(tvRuleName.getText().toString());
-                }
-
-                removeOldSubrules();
-
-                //  If we changed mask or editing old rule entire rule must be redefined.
-                if (weNeedToDeleteAllSubrules) {
-                    for (SubRule sr: rule.subRuleList)
-                        db.deleteSubRule(sr.getId());
-                    rule.subRuleList.clear();
-                }
-
-                // Saving Rule changes in DB.
-                db.addOrEditRule(rule,true);
-
-                if (rule.getRuleType()== Rule.transactionType.IGNORE) {
-                    // if subrules is not needed for the rule going back to MainActivity
-                    forceRefresh=true;
-                    super.onBackPressed();
-
-                } else {
-                    Intent intent = new Intent(v.getContext(), TransactionActivity.class);
-                    intent.putExtra(KEY_RULE_ID, rule.getId());
-                    startActivity(intent);
-                }
+                onNextBtnClick();
                 break;
             default:
                 break;
@@ -281,7 +270,42 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Removes rubrules with old extraction methods to prevent their modify attempts
+     * next button click handler
+     */
+    private void onNextBtnClick(){
+        // Saving all changes to Rule object and saves them to db
+        if (rule.isAdvanced()) {
+            rule.setMask(etRegExp.getText().toString());
+        }else {
+            rule.updateMask();
+        }
+
+        tvMessageBody.setText(rule.getRuleNameSuggestion());
+
+        removeOldSubrules();
+        //  If we changed mask or editing old rule entire rule must be redefined.
+        if (weNeedToDeleteAllSubrules) {
+            for (SubRule sr: rule.subRuleList)
+                db.deleteSubRule(sr.getId());
+            rule.subRuleList.clear();
+        }
+
+        // Saving Rule changes in DB.
+        db.addOrEditRule(rule,true);
+
+        if (rule.getRuleType()== Rule.transactionType.IGNORE) {
+            // if subrules is not needed going back to MainActivity
+            forceRefresh=true;
+            super.onBackPressed();
+        } else {
+            Intent intent = new Intent(this, TransactionActivity.class);
+            intent.putExtra(KEY_RULE_ID, rule.getId());
+            startActivity(intent);
+        }
+    }
+
+    /**
+     * Removes subrules with old extraction methods to prevent their modify attempts
      */
     public void removeOldSubrules(){
         Iterator<SubRule> i = rule.subRuleList.iterator();
@@ -312,7 +336,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     private void showDialogToChangeWord(final Word w){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.split);
-        builder.setNeutralButton(R.string.merge_left, new DialogInterface.OnClickListener() {
+        builder.setNeutralButton("<<", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 w.rule.mergeLeft(w);
@@ -322,7 +346,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        builder.setPositiveButton(R.string.merge_right, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(">>", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 w.rule.mergeRight(w);
@@ -403,6 +427,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                         return false;
                     }
                 });
+
+                wordButton.setOnTouchListener(onSwipeTouchListener);
                 wordButtons.add(wordButton);
                 flowLayout.addView(wordButton);
             }
@@ -424,5 +450,77 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         rule.updateMask();
         tvResults.setText(rule.getValues());
         etRegExp.setText(rule.getMask());
+    }
+
+    /**
+     * Detects left and right swipes across a view.
+     */
+    public class OnSwipeTouchListener implements View.OnTouchListener {
+
+        private final GestureDetector gestureDetector = new GestureDetector(new GestureListener());
+        public Word word;
+
+        public boolean onTouch(final View v, final MotionEvent event) {
+            word=(Word) v.getTag();
+            return gestureDetector.onTouchEvent(event);
+        }
+
+        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+            private static final int SWIPE_THRESHOLD = 100;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                boolean result = false;
+                try {
+                    float diffY = e2.getY() - e1.getY();
+                    float diffX = e2.getX() - e1.getX();
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffX > 0) {
+                                result = onSwipeRight();
+                            } else {
+                                result = onSwipeLeft();
+                            }
+                        }
+                    } else {
+                        if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffY > 0) {
+                                result = onSwipeBottom();
+                            } else {
+                                result = onSwipeTop();
+                            }
+                        }
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+                return result;
+            }
+        }
+
+        public boolean onSwipeRight() {
+            word.rule.mergeRight(word);
+            weNeedToDeleteAllSubrules=true;
+            updateWordsLayout();
+            return true;
+        }
+
+        public boolean onSwipeLeft() {
+            word.rule.mergeLeft(word);
+            weNeedToDeleteAllSubrules=true;
+            updateWordsLayout();
+            return true;
+        }
+
+        public boolean onSwipeTop() {
+            return false;
+        }
+
+        public boolean onSwipeBottom() {
+            return false;
+        }
     }
 }

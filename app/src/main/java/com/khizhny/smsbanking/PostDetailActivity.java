@@ -1,5 +1,6 @@
 package com.khizhny.smsbanking;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -77,11 +78,11 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
                 ;
 
         // Initialize Views
-        mAuthorView = (TextView) findViewById(R.id.post_author);
-        mTitleView = (TextView) findViewById(R.id.post_title);
-        mCommentField = (EditText) findViewById(R.id.field_comment_text);
-        mCommentButton = (ImageButton) findViewById(R.id.button_post_comment);
-        mCommentsRecycler = (RecyclerView) findViewById(R.id.recycler_comments);
+        mAuthorView = findViewById(R.id.post_author);
+        mTitleView = findViewById(R.id.post_title);
+        mCommentField = findViewById(R.id.field_comment_text);
+        mCommentButton = findViewById(R.id.button_post_comment);
+        mCommentsRecycler = findViewById(R.id.recycler_comments);
 
         mCommentButton.setOnClickListener(this);
         LinearLayoutManager mLayoutManager=new LinearLayoutManager(this);
@@ -149,7 +150,7 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
 
     public static String convertTime(long time){
         Date date = new Date(time);
-        Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        @SuppressLint("SimpleDateFormat") Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return format.format(date);
     }
 
@@ -192,9 +193,9 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
         public CommentViewHolder(View itemView) {
             super(itemView);
 
-            authorView = (TextView) itemView.findViewById(R.id.comment_author);
-            bodyView = (TextView) itemView.findViewById(R.id.comment_body);
-            dateView = (TextView) itemView.findViewById(R.id.comment_date);
+            authorView = itemView.findViewById(R.id.comment_author);
+            bodyView = itemView.findViewById(R.id.comment_body);
+            dateView = itemView.findViewById(R.id.comment_date);
         }
     }
 

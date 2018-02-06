@@ -1,5 +1,6 @@
 package com.khizhny.smsbanking.viewholder;
 
+import android.annotation.SuppressLint;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,14 +28,14 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
     public PostViewHolder(View itemView) {
         super(itemView);
-        dateView = (TextView) itemView.findViewById(R.id.post_date);
-        titleView = (TextView) itemView.findViewById(R.id.post_title);
-        authorView = (TextView) itemView.findViewById(R.id.post_author);
-        likeView = (ImageView) itemView.findViewById(R.id.like);
-        dislikeView = (ImageView) itemView.findViewById(R.id.dislike);
-        numStarsView = (TextView) itemView.findViewById(R.id.post_num_stars);
-        deleteView = (ImageButton) itemView.findViewById(R.id.delete_post);
-        downloadView = (ImageButton) itemView.findViewById(R.id.download_post);
+        dateView = itemView.findViewById(R.id.post_date);
+        titleView = itemView.findViewById(R.id.post_title);
+        authorView = itemView.findViewById(R.id.post_author);
+        likeView = itemView.findViewById(R.id.like);
+        dislikeView = itemView.findViewById(R.id.dislike);
+        numStarsView = itemView.findViewById(R.id.post_num_stars);
+        deleteView = itemView.findViewById(R.id.delete_post);
+        downloadView = itemView.findViewById(R.id.download_post);
     }
 
     public void bindToPost(Post post, View.OnClickListener clickListener) {
@@ -50,7 +51,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
     public static String convertTime(long time){
         Date date = new Date(time);
-        Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        @SuppressLint("SimpleDateFormat") Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return format.format(date);
     }
 }

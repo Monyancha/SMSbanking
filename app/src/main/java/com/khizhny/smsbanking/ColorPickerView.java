@@ -39,10 +39,11 @@ import android.view.View;
  *
  * @author Daniel Nilsson
  */
+@SuppressWarnings("SameParameterValue")
 public class ColorPickerView extends View {
 
     public interface OnColorChangedListener {
-        public void onColorChanged(int color);
+        void onColorChanged(int color);
     }
 
     private final static int PANEL_SAT_VAL = 0;
@@ -492,7 +493,6 @@ public class ColorPickerView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean update = false;
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mStartTouchPoint = new Point((int) event.getX(), (int) event.getY());
@@ -516,7 +516,6 @@ public class ColorPickerView extends View {
             invalidate();
             return true;
         }
-
         return super.onTouchEvent(event);
     }
 
@@ -733,7 +732,7 @@ public class ColorPickerView extends View {
      * @param callback If you want to get a callback to your
      *            OnColorChangedListener.
      */
-    public void setColor(int color, boolean callback) {
+    private void setColor(int color, boolean callback) {
         int alpha = Color.alpha(color);
         int red = Color.red(color);
         int blue = Color.blue(color);
@@ -816,7 +815,7 @@ public class ColorPickerView extends View {
      *
      * @param text Text that should be shown.
      */
-    public void setAlphaSliderText(String text) {
+    private void setAlphaSliderText(String text) {
         mAlphaSliderText = text;
         invalidate();
     }
