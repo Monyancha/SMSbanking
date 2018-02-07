@@ -13,9 +13,8 @@ public class MyCountryPostsFragment extends PostListFragment {
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
 
-        Query recentPostsQuery = databaseReference.child("posts V"+ Bank.serialVersionUID)
+        return databaseReference.child("posts V"+ Bank.serialVersionUID)
                 .child(country)
                 .orderByChild("starCount");
-        return recentPostsQuery;
     }
 }

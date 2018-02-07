@@ -14,7 +14,6 @@
     <string name="action_rate_app">Оцінити програму</string>
 
 	<string name="rule_message">Вкажіть змінні слова (довгий тап для розділення слів, swype для приєднання):</string>
-	<string name="rule_name">Назва правила (не обов\'язкова)</string>
 
     <string name="popup_create_rule">Створити нове правило</string>
 	<string name="popup_edit_rule">Редагувати правило</string>
@@ -105,8 +104,7 @@
 	<string name="phone_number_not_set">Телефон не вказан</string>
     <string name="export_failed">Экспортував невдало</string>
     <string name="import_failed">Імпортував невдало</string>
-    <string name="n_equal">n=</string>
-	<string name="add_widget">Додати віджет</string>
+    <string name="add_widget">Додати віджет</string>
 	<string name="appwidget_text">0.00</string>
     <string name="widget_default_name">Банк</string>
 	<string name="appwidget_currency">UAH</string>
@@ -165,20 +163,18 @@
     <string name="action_sign_in">Увійти</string>
     <string name="commission_tip">Значення повинно бути позитивне.</string>
     <string name="load_template">Завантаження шаблону</string>
-    <string name="progress_downloading">Завантаження...</string>
+    <string name="progress_downloading">Завантаження…</string>
     <string name="sign_out">Вийти</string>
     <string name="my_posts">Мої банки</string>
     <string name="country">Держава:</string>
-    <string name="write_comment">Коментар...</string>
+    <string name="write_comment">Коментар…</string>
     <string name="login_first">Спочатку треба увійти.</string>
     <string name="download_success">Завантаженя завершено</string>
     <string name="download_failure">Збій завантаження</string>
     <string name="comments">Коментарі</string>
     <string name="your_country">Країна</string>
     <string name="about">Про додаток</string>
-    <string name="relpace_private">Змінить ваші приватні дані якщо бажаете ділитися шаблоном.</string>
-    <string name="next">Далі</string>
-    <string name="create_new_rule">Нове правило</string>
+    <string name="replace_private">Змінить ваші приватні дані якщо бажаете ділитися шаблоном.</string>
     <string name="pick_your_country">Оберіть вашу державу</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижний Андрій\nпереклад: Машковський Дмитро</string>
@@ -190,4 +186,5 @@
     <string name="advanced">Експерт</string>
     <string name="regular_expression">Regular Expression</string>
     <string name="sd_card_msg">Потрібен доступ до SD картки.</string>
+    <string name="message">сообщение</string>
 </resources>

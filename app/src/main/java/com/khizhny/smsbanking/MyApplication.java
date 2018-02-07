@@ -31,7 +31,6 @@ public class MyApplication extends Application {
     public static boolean forceRefresh;
 
     public static String language;
-    private Locale locale = null;
 
     @Override
     public void onCreate() {
@@ -60,7 +59,7 @@ public class MyApplication extends Application {
         super.onCreate();
         String lang;
         Configuration config = getBaseContext().getResources().getConfiguration();
-        String systemLocale = getSystemLocale(config).getLanguage();
+        //String systemLocale = getSystemLocale(config).getLanguage();
 
         if (settings.contains("language")){
             language = settings.getString("language","(System language)");
@@ -74,7 +73,7 @@ public class MyApplication extends Application {
             if (language.equals("Bulgarian")) lang="bg";
             if (language.equals("Russian")) lang="ru";
             if (language.equals("Ukrainian")) lang="uk";
-            locale = new Locale(lang);
+            Locale locale = new Locale(lang);
             Locale.setDefault(locale);
             setSystemLocale(config, locale);
             updateConfiguration(config);
@@ -89,14 +88,6 @@ public class MyApplication extends Application {
         super.onTerminate();
     }
 
-    @SuppressWarnings("deprecation")
-    private static Locale getSystemLocale(Configuration config) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return config.getLocales().get(0);
-        } else {
-            return config.locale;
-        }
-    }
 
     @SuppressWarnings("deprecation")
     private static void setSystemLocale(Configuration config, Locale locale) {
@@ -107,7 +98,7 @@ public class MyApplication extends Application {
         }
     }
 
-    @SuppressWarnings("deprecation")
+
     private void updateConfiguration(Configuration config) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             getBaseContext().createConfigurationContext(config);
@@ -116,19 +107,17 @@ public class MyApplication extends Application {
         }
     }
 
-    /**
-     * Restarts entire Application
-     * @param context
-     */
    public static void restart(Context context) {
         Log.d(LOG, "MyApplication.restart() started");
         Intent restartIntent = context.getPackageManager()
                 .getLaunchIntentForPackage(context.getPackageName() );
         PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, intent);
-        System.exit(2);
-        Log.d(LOG, "MyApplication.restart() finished");
+       if (manager != null) {
+           manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, intent);
+           System.exit(2);
+           Log.d(LOG, "MyApplication.restart() finished");
+       }
     }
 
     public static  String[] getExtraParameterNames(Context ctx){

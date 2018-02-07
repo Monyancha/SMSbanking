@@ -30,6 +30,7 @@
         android:fullBackupContent="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:supportsRtl="true"
         android:theme="@style/Theme.Mytheme">
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -128,13 +129,15 @@
             </intent-filter>
         </service>
 
-        <service android:name=".gcm.MyFirebaseMessagingService">
+        <service android:name=".gcm.MyFirebaseMessagingService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
 
-        <service android:name=".gcm.MyFirebaseInstanceIDService">
+        <service android:name=".gcm.MyFirebaseInstanceIDService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>

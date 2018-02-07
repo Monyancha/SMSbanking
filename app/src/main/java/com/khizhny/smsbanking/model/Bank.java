@@ -1,10 +1,7 @@
 package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -39,8 +36,8 @@ public class Bank  implements java.io.Serializable{
 	}
 
     /**
-     * Constructor is used to clone BankV2 Object from template with all subrules.
-     * @param originBank - BankV2 object to be copy.
+     * Constructor is used to clone BankV2 Object from template with all subRules.
+     * @param originBank - Bank object to be copy.
      */
 	public Bank(Bank originBank) {
 		this.name = originBank.name;
@@ -63,9 +60,7 @@ public class Bank  implements java.io.Serializable{
 	public String getName() {
         return name;
     }
-    public String getCountry() {
-        return country;
-    }
+
     public String getPhone() {
 		return phone;
 	}
@@ -84,7 +79,7 @@ public class Bank  implements java.io.Serializable{
 	}
 
 	/**
-	 * Sets bank id and changes all bankid in subrules.
+	 * Sets bank id and changes all bankid in subRules.
 	 * @param id ID
 	 */
 	public  void setId(int id){
@@ -124,7 +119,6 @@ public class Bank  implements java.io.Serializable{
 		try{
 
             b.setCurrentAccountState("0");
-            //filePath="/storage/sdcard0/test.dat";  // used for testing while usb storage is mountd
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filePath)));
 			oos.writeObject(b);
 			oos.flush();
@@ -139,7 +133,7 @@ public class Bank  implements java.io.Serializable{
 
 
 	/**
-	 * These function reads OBject from file
+	 * These function reads Object from file
 	 * @param filePath File path
 	 * @return Object read from file or null.
 	 */
@@ -153,9 +147,6 @@ public class Bank  implements java.io.Serializable{
             return b;
 		}
 		catch(InvalidClassException e) {
-			if (e.getMessage().equals("Incompatible class (SUID): com.khizhny.smsbanking.model.Rule: static final long serialVersionUID =1L; but expected com.khizhny.smsbanking.model.Rule: static final long serialVersionUID =2L;")) {
-				// Reading to old ModelV2
-			}
 			Log.v(LOG,e.getMessage());
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -189,12 +180,7 @@ public class Bank  implements java.io.Serializable{
 		this.currentAccountState = new BigDecimal(currentAccountState.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 
-    private String getCountry(Context ctx){
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
-        return settings.getString("country_preference",null);
-    }
-
-    public String getCurrentAccountState() {
+     public String getCurrentAccountState() {
 		return currentAccountState.toString();
 	}
 }

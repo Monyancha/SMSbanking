@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -36,16 +37,16 @@ import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Word;
 
+import static com.khizhny.smsbanking.MainActivity.KEY_RULE_ID;
+import static com.khizhny.smsbanking.MainActivity.KEY_SMS_BODY;
+import static com.khizhny.smsbanking.MainActivity.KEY_TODO;
+import static com.khizhny.smsbanking.MainActivity.KEY_TODO_ADD;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
-import static com.khizhny.smsbanking.TransactionActivity.KEY_RULE_ID;
-import static com.khizhny.smsbanking.TransactionActivity.KEY_SMS_BODY;
-import static com.khizhny.smsbanking.TransactionActivity.KEY_TODO;
 
 public class RuleActivity extends AppCompatActivity implements View.OnClickListener{
 
     private List<Button> wordButtons= new ArrayList <Button>();
-	private Bank bank;
     private Rule rule;
 
     private TextView tvMessageBody;
@@ -65,35 +66,37 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
         // getting rule object for editing
         Intent intent = getIntent();
-        bank = db.getActiveBank();
-        String todo=null;
-        if (intent.hasExtra(KEY_TODO)) todo = intent.getExtras().getString(KEY_TODO);
-        int rule_id=-1;
-        if (intent.hasExtra(KEY_RULE_ID)) rule_id=intent.getExtras().getInt(KEY_RULE_ID);
-        if (todo!=null){
-            if (todo.equals("add")){
-                // adding new rule
-                rule = new Rule(bank,"");
-                rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
-                rule.makeInitialWordSplitting();
-            } else	{
-                // picking existing rule for editing.
-                for (Rule r: bank.ruleList) {
-                    if (r.getId()==rule_id)
-                        rule=r;
+        Bank bank = db.getActiveBank();
+        Bundle bundle=intent.getExtras();
+        if (bundle!=null) {
+            String todo = bundle.getString(KEY_TODO);
+            int rule_id = bundle.getInt(KEY_RULE_ID);
+            if (todo != null) {
+                if (todo.equals(KEY_TODO_ADD)) {
+                    // adding new rule
+                    rule = new Rule(bank, "");
+                    rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
+                    rule.makeInitialWordSplitting();
+                } else {
+                    // picking existing rule for editing.
+                    for (Rule r : bank.ruleList) {
+                        if (r.getId() == rule_id)
+                            rule = r;
+                    }
                 }
             }
-        }
-        // restoring user changes
-        if (savedInstanceState!=null){
-            rule.setName(savedInstanceState.getString("rule_name"));
-            rule.setRuleType(savedInstanceState.getInt("rule_type"));
-            int wordsCount = savedInstanceState.getInt("words_count");
-            rule.words.clear();
-            for (int i = 0; i<wordsCount; i++) {
-                rule.words.add((Word)savedInstanceState.getSerializable("word"+i));
+
+            // restoring user changes
+            if (savedInstanceState != null) {
+                rule.setName(savedInstanceState.getString("rule_name"));
+                rule.setRuleType(savedInstanceState.getInt("rule_type"));
+                int wordsCount = savedInstanceState.getInt("words_count");
+                rule.words.clear();
+                for (int i = 0; i < wordsCount; i++) {
+                    rule.words.add((Word) savedInstanceState.getSerializable("word" + i));
+                }
+                weNeedToDeleteAllSubrules = savedInstanceState.getBoolean("delete_rules");
             }
-            weNeedToDeleteAllSubrules=savedInstanceState.getBoolean("delete_rules");
         }
     }
 
@@ -280,7 +283,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             rule.updateMask();
         }
 
-        tvMessageBody.setText(rule.getRuleNameSuggestion());
+        rule.setName(rule.getRuleNameSuggestion());
 
         removeOldSubrules();
         //  If we changed mask or editing old rule entire rule must be redefined.
@@ -305,7 +308,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * Removes subrules with old extraction methods to prevent their modify attempts
+     * Removes subRules with old extraction methods to prevent their modify attempts
      */
     public void removeOldSubrules(){
         Iterator<SubRule> i = rule.subRuleList.iterator();
@@ -375,6 +378,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void updateWordsLayout(){
         FlowLayout flowLayout = this.findViewById(R.id.rule1_flow_layout);
         // Deleting all buttons if any existed
@@ -427,8 +431,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                         return false;
                     }
                 });
-
                 wordButton.setOnTouchListener(onSwipeTouchListener);
+
                 wordButtons.add(wordButton);
                 flowLayout.addView(wordButton);
             }
@@ -458,18 +462,21 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     public class OnSwipeTouchListener implements View.OnTouchListener {
 
         private final GestureDetector gestureDetector = new GestureDetector(new GestureListener());
-        public Word word;
 
+        Word word;
+
+
+        @SuppressLint("ClickableViewAccessibility")
         public boolean onTouch(final View v, final MotionEvent event) {
             word=(Word) v.getTag();
             return gestureDetector.onTouchEvent(event);
+
         }
 
         private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
             private static final int SWIPE_THRESHOLD = 100;
             private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
@@ -501,25 +508,25 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        public boolean onSwipeRight() {
+        boolean onSwipeRight() {
             word.rule.mergeRight(word);
             weNeedToDeleteAllSubrules=true;
             updateWordsLayout();
             return true;
         }
 
-        public boolean onSwipeLeft() {
+        boolean onSwipeLeft() {
             word.rule.mergeLeft(word);
             weNeedToDeleteAllSubrules=true;
             updateWordsLayout();
             return true;
         }
 
-        public boolean onSwipeTop() {
+        boolean onSwipeTop() {
             return false;
         }
 
-        public boolean onSwipeBottom() {
+        boolean onSwipeBottom() {
             return false;
         }
     }

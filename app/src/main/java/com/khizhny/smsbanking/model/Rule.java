@@ -1,7 +1,7 @@
 package com.khizhny.smsbanking.model;
 
 import android.content.ContentValues;
-import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.khizhny.smsbanking.R;
@@ -146,15 +146,15 @@ public class Rule implements java.io.Serializable {
 
 	public String getSelectedWords() {
 		if (mask.startsWith("^")) return ""; // selected words is not used any more in new versions.
-		String r="";
+		StringBuilder r= new StringBuilder();
 		String delimiter="";
 		for (int i=0; i<=wordsCount+1;i++) {
 			if (wordIsSelected[i]) {
-				r+=delimiter+i;
+				r.append(delimiter).append(i);
 				delimiter=",";
 			}
 		}
-		return r;
+		return r.toString();
 	}
 
     public String getRuleNameSuggestion() {
@@ -182,24 +182,26 @@ public class Rule implements java.io.Serializable {
 			}
 
 			//old updateMask();
-			mask = "";
+			StringBuilder sb=new StringBuilder();
 			String delimiter = "";
 			String[] words = smsBody.split(" ");
-			if (!smsBody.trim().equals(smsBody)) mask = ".*";
+			if (!smsBody.trim().equals(smsBody)) sb.append(".*");
 			boolean skip_wildcard = false;
 			for (int i = 1; i <= wordsCount; i++) {
 				if (wordIsSelected[i]) {
-					mask += delimiter + "\\Q" + words[i - 1] + "\\E";
+
+					sb.append(delimiter).append("\\Q").append(words[i - 1]).append("\\E");
 					skip_wildcard = false;
 				} else {
 					if (!skip_wildcard) {
-						mask += delimiter + ".*";
+						sb.append(delimiter).append(".*");
 						skip_wildcard = true;
 					}
 				}
 				delimiter = " ";
 			}
-			if (!smsBody.trim().equals(smsBody)) mask += ".*";
+			if (!smsBody.trim().equals(smsBody)) sb.append(".*");
+			mask=sb.toString();
 		}
 	}
 
@@ -208,10 +210,9 @@ public class Rule implements java.io.Serializable {
      * all of the subrules within the rule.
      * @return Transaction object
      */
-	public Transaction getSampleTransaction(Context ctx){
-        //BankV2 bank=db.getBank(bankId);
+	public Transaction getSampleTransaction(){
         Transaction transaction = new Transaction(smsBody,bank.getDefaultCurrency(),null);
-        applyRule(transaction);
+        applyToTransaction(transaction);
         transaction.calculateMissedData();
         return  transaction;
     }
@@ -221,7 +222,8 @@ public class Rule implements java.io.Serializable {
 	 */
 	public void updateMask(){
 		if (advanced) return; // Do not overwrite user defined custom mask if advanced flag is set.
-		mask="^"; // begining
+		StringBuilder s=new StringBuilder();
+		s.append("^"); // begining
 		nameSuggestion=""; // default rule name
 		String delimiter="";
 		String mask_delimiter;  // chars in between words
@@ -234,17 +236,17 @@ public class Rule implements java.io.Serializable {
 				mask_delimiter = "";
 			}
 
-			mask+=mask_delimiter;
+			s.append(mask_delimiter);
 			switch (w.getWordType()) {
 				case WORD_CONST:
-					mask+="\\Q" + w.getBody() + "\\E"; // actual constant word
+					s.append("\\Q").append(w.getBody()).append("\\E"); // actual constant word
 					nameSuggestion+=delimiter+w.getBody();
 					break;
 				case WORD_VARIABLE:
-					mask+="(.*)";
+					s.append("(.*)");
 					break;
 				case WORD_VARIABLE_FIXED_SIZE:
-					mask+="(.{"+w.getBody().length()+"})";
+					s.append("(.{").append(w.getBody().length()).append("})");
 					break;
 			}
 			delimiter=" ";
@@ -255,7 +257,8 @@ public class Rule implements java.io.Serializable {
 		}else{
 			mask_delimiter = "";
 		}
-		mask+=mask_delimiter+"$"; // ending
+		s.append(mask_delimiter).append("$"); // ending
+		mask=s.toString();
 		mask=mask.replace("\\E \\Q"," "); // small optimization
 	}
 
@@ -281,37 +284,8 @@ public class Rule implements java.io.Serializable {
 	}
 
 	/**
-	 * Used for old rules to get constant phrases
-	 * @return
-	 */
-	public List<String> getConstantPhrases(){
-		List<String> out = new ArrayList<String>();
-		out.add("<BEGIN>");
-		int phraseCount=1;
-		boolean startNewPhrase=true;
-		String[] words=smsBody.split(" ");
-		for (int i=1; i<=wordsCount; i++){
-			if (wordIsSelected[i]){
-				if (startNewPhrase) {
-					phraseCount+=1;
-					out.add(words[i-1]);
-					startNewPhrase=false;
-				} else
-				{
-					out.set(phraseCount-1, out.get(phraseCount-1)+" "+(words[i-1]));
-				}
-				
-			}else{
-				startNewPhrase=true;
-			}
-		}
-		out.add("<END>");
-		return out;
-	}
-
-	/**
 	 * Used just for Regex method
-	 * @return
+	 * @return list of varible phrases.
 	 */
 	public List<String> getVariablePhrases(){
 		Pattern pattern = Pattern.compile(mask);
@@ -343,23 +317,16 @@ public class Rule implements java.io.Serializable {
 	}
 
     /**
-     * Apply current Rule to Transaction.
+     * Apply Rule to Transaction.
      * @param transaction Transaction on which rule will be applied.
-     * @return TRUE if Rule was applied. False if rule can not be applied.
      */
-	public Boolean applyRule(Transaction transaction ){
-		if (transaction!=null) {
-            String sms_body = transaction.getSmsBody();
-            if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
-                return false;  //  rule is not for this SMS.
-            } else {
-                transaction.icon = getRuleTypeDrawable();
-                for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
-                return true;
-            }
-        } else {
-            return false;
-        }
+	public void applyToTransaction(@NonNull Transaction transaction ){
+		String sms_body = transaction.getSmsBody();
+		if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
+		} else {
+			transaction.icon = getRuleTypeDrawable();
+			for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
+		}
 	}
 
 	public Boolean hasIgnoreType(){
@@ -368,8 +335,8 @@ public class Rule implements java.io.Serializable {
 
     /**
      * Function gets existing subrule for parameter or creates a new one for it.
-     * @param transactionParameter
-     * @return
+     * @param transactionParameter - Which transaction parameter is calculated by subrule
+     * @return Subrule for calculating defined transactionParameter
      */
 	public SubRule getOrCreateSubRule(Transaction.Parameters transactionParameter){
         // looking for existing subrule.
@@ -390,7 +357,7 @@ public class Rule implements java.io.Serializable {
 		char splitChar=' ';
 		boolean WeNeedToSaveWord=false;
 		int word_start=0;
-		int word_end=0;
+		int word_end;
 
 		for (int i=0; i<smsBody.length();i++) {
 			ch=smsBody.charAt(i);
@@ -399,14 +366,10 @@ public class Rule implements java.io.Serializable {
 					// we are at the end of word
 					word_end=i-1;
 					words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
-				}else{
-					// we are between words.
 				}
 				WeNeedToSaveWord=false;
 			} else {
-				if (WeNeedToSaveWord) {
-					// we are in the middle of word
-				} else {
+				if (!WeNeedToSaveWord) {
 					// we are at then begining of word
 					word_start=i;
 				}
@@ -437,9 +400,8 @@ public class Rule implements java.io.Serializable {
 	public void mergeLeft(Word w){
 		int index= words.indexOf(w);
 		if (index ==0) { // No words to the left.
-			if (w.getFirstLetterIndex()==0){
-				// no chars to the left. nothing to merge.
-			}else{// some chars to the left. Merging them to body.
+			if (w.getFirstLetterIndex()!=0){
+				// some chars to the left. Merging them to body.
 				w.reAssign(0,w.getLastLetterIndex());
 			}
 		}else {  // there is a word to the left

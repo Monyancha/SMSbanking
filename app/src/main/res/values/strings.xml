@@ -17,7 +17,6 @@
     <string name="action_rate_app">Rate application</string>
 
     <string name="rule_message">Pick variable words (Long tap to split, Swype to join):</string>
-    <string name="rule_name">Rule name (optional)</string>
 
     <string name="popup_create_rule">Create new rule</string>
     <string name="popup_edit_rule">Edit rule</string>
@@ -110,7 +109,6 @@
     <string name="phone_number_not_set">Phone number must be set.</string>
     <string name="export_failed">Export failed</string>
     <string name="import_failed">import_failed</string>
-    <string name="n_equal">n=</string>
     <string name="appwidget_text">0.00</string>
     <string name="add_widget">Add widget</string>
     <string name="widget_default_name">Bank</string>
@@ -186,9 +184,7 @@
     <string name="your_country">Country</string>
     <string name="anonymous" translatable="false">Anonymous</string>
     <string name="about">About</string>
-    <string name="create_new_rule">Create new rule</string>
-    <string name="relpace_private">Replace you private data here if you wish to share template later.</string>
-    <string name="next">Next</string>
+    <string name="replace_private">Replace you private data here if you wish to share template later.</string>
     <string name="pick_your_country">Pick your country</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">Created by Andrey Khizhny</string>
@@ -201,6 +197,7 @@
     <string name="regular_expression">Regular Expression</string>
     <string name="image" translatable="false">image</string>
     <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
+    <string name="message">message</string>
 
 </resources>
 

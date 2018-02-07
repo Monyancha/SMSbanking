@@ -14,7 +14,6 @@
     <string name="action_rate_app">Оценка на програмата</string>
 
 	<string name="rule_message">Маркирайте не постоянните думи(Натиснете продължително, за да разделите думите, Swype-присъедини):</string>
-    <string name="rule_name">Име на правилото (незадължително)</string>
 
     <string name="popup_create_rule">Създаване на ново правило</string>
 	<string name="popup_edit_rule">Редактиране на правилото</string>
@@ -102,8 +101,7 @@
 	<string name="phone_number_not_set">Не е зададен номер на телефона</string>
 	<string name="export_failed">Експортът е неуспешен</string>
 	<string name="import_failed">Импортът е неуспешен</string>
-	<string name="n_equal">N=</string>
-	<string name="add_widget">Добавяне на widged</string>
+    <string name="add_widget">Добавяне на widged</string>
 	<string name="appwidget_text">0.00</string>
 	<string name="widget_default_name">Банка</string>
 	<string name="appwidget_currency">BGN</string>
@@ -173,9 +171,7 @@
     <string name="comments">Коментари</string>
     <string name="your_country">Промяна на страната</string>
     <string name="about">За програмата</string>
-    <string name="create_new_rule">Ново правило</string>
-    <string name="next">Напред</string>
-    <string name="relpace_private">Заменете личните данни в текста, ако планирате да споделите шаблона.</string>
+    <string name="replace_private">Заменете личните данни в текста, ако планирате да споделите шаблона.</string>
     <string name="pick_your_country">Изберете Вашата страна</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
@@ -187,4 +183,5 @@
     <string name="advanced">Експерт</string>
     <string name="regular_expression">Regular Expression</string>
     <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
+    <string name="message">message</string>
 </resources>

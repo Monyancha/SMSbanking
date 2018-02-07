@@ -2,10 +2,8 @@ package com.khizhny.smsbanking;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,15 +17,14 @@ import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Transaction;
 
+import static com.khizhny.smsbanking.MainActivity.KEY_RULE_ID;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.getExtraParameterNames;
 
 public class TransactionActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String  KEY_RULE_ID = "rule_id";
-    public static final String  KEY_TODO = "todo";
-    public static final String  KEY_SMS_BODY = "sms_body";
+
 
     private Rule rule;
     private Transaction transaction; // sample transaction with sample message
@@ -64,21 +61,21 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         Intent intent = getIntent();
         if ( intent.hasExtra( KEY_RULE_ID)) {
             int ruleId;
-            try{
-                ruleId=intent.getExtras().getInt( KEY_RULE_ID);
+            Bundle b=intent.getExtras();
+            if (b!=null) {
+                ruleId = b.getInt(KEY_RULE_ID);
                 Log.d(MyApplication.LOG, "Getting Rule from db.");//
                 // loading Rule and BankV2 objects
                 rule = db.getRule(ruleId);
-                transaction = rule.getSampleTransaction(this);
-
-            }catch (NullPointerException e){
+                transaction = rule.getSampleTransaction();
+            }else{
                 Log.d(MyApplication.LOG, "No Rule Id passed with intent to transaction Activity.");
             }
 
         }
         if (rule==null) Log.e(MyApplication.LOG, "Rule for Transaction Activity not found.");
 
-        Log.d(LOG, "TransactionActivity resuming");
+        Log.d(LOG, "Transaction Activity resuming");
 
         TextView smsTextView = findViewById(R.id.sms_body);
         TextView stateAfterView = findViewById(R.id.state_after_value);

@@ -100,12 +100,14 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 showProgress(false);
 
                 String s = intent.getAction();
-                if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {
+                if (s != null) {
+                    if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {
 
-                } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {
+                    } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {
 
-                } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
-                    onUploadResultIntent(intent);
+                    } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
+                        onUploadResultIntent(intent);
+                    }
                 }
             }
         };
@@ -258,61 +260,62 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		// handles popup items clicks
 		Bank selectedBank= bankListAdapter.getItem(selected_row);
 		Intent intent;
-         switch (item.getItemId()) {
+		if (selectedBank!=null) {
+            switch (item.getItemId()) {
+                case R.id.bank_activate:// Marking selected bank as Active in DB
+                    db.setActiveBank(selectedBank.getId());
+                    bankList.clear();
+                    bankList.addAll(db.getMyBanks(country));
+                    forceRefresh = true;
+                    bankListAdapter.notifyDataSetChanged();
+                    Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
+                    return true;
 
-			case R.id.bank_activate:// Marking selected bank as Active in DB
-                db.setActiveBank(selectedBank.getId());
-				bankList.clear();
-				bankList.addAll(db.getMyBanks(country));
-                forceRefresh=true;
-				bankListAdapter.notifyDataSetChanged();
-				Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
-				return true;
+                case R.id.bank_clear_cache:
+                    db.deleteBankCache(selectedBank.getId());
+                    forceRefresh = true;
+                    Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
+                    return true;
 
-            case R.id.bank_clear_cache:
-                db.deleteBankCache(selectedBank.getId());
-                forceRefresh=true;
-                Toast.makeText(BankListActivity.this, R.string.cache_deleted, Toast.LENGTH_SHORT).show();
-                return true;
+                case R.id.bank_edit: // Editing Active Bank from myBanks to sdcard
+                    db.setActiveBank(selectedBank.getId());
+                    intent = new Intent(this, BankActivity.class);
+                    intent.putExtra("todo", "edit");
+                    startActivity(intent);
+                    bankListAdapter.notifyDataSetChanged();
+                    return true;
 
-			case R.id.bank_edit: // Editing Active Bank from myBanks to sdcard
-                db.setActiveBank(selectedBank.getId());
-                intent= new Intent(this, BankActivity.class);
-				intent.putExtra("todo", "edit");
-				startActivity(intent);
-				bankListAdapter.notifyDataSetChanged();
-				return true;
+                case R.id.bank_add: // Adding new Bank to myBanks manualy
+                    intent = new Intent(this, BankActivity.class);
+                    intent.putExtra("todo", "add");
+                    startActivity(intent);
+                    bankListAdapter.notifyDataSetChanged();
+                    return true;
 
-			case R.id.bank_add: // Adding new Bank to myBanks manualy
-				intent= new Intent(this, BankActivity.class);
-				intent.putExtra("todo", "add");
-				startActivity(intent);
-				bankListAdapter.notifyDataSetChanged();
-				return true;
+                case R.id.bank_delete: // Deleting selected Bank from myBanks
+                    if (selectedBank.isActive()) {
+                        db.deleteBank(selectedBank.getId());
+                        db.setActiveAnyBank();
+                    } else {
+                        db.deleteBank(selectedBank.getId());
+                    }
+                    bankList.clear();
+                    bankList.addAll(db.getMyBanks(country));
 
-            case R.id.bank_delete: // Deleting selected Bank from myBanks
-                if (selectedBank.isActive()) {
-                    db.deleteBank(selectedBank.getId());
-                    db.setActiveAnyBank();
-                }else{
-                    db.deleteBank(selectedBank.getId());
-                }
-                bankList.clear();
-                bankList.addAll(db.getMyBanks(country));
+                    bankListAdapter.notifyDataSetChanged();
+                    return true;
 
-                bankListAdapter.notifyDataSetChanged();
-                return true;
-
-             case R.id.bank_cloud_upload:
-                 bank2Share=selectedBank;
-                 if (mAuth.getCurrentUser()==null){
-                     Toast.makeText(this,R.string.login_first,Toast.LENGTH_SHORT).show();
-                     googleSignIn();
-                 }else {
-                     exportBankToCloud();
-                 }
-                 return true;
-		}
+                case R.id.bank_cloud_upload:
+                    bank2Share = selectedBank;
+                    if (mAuth.getCurrentUser() == null) {
+                        Toast.makeText(this, R.string.login_first, Toast.LENGTH_SHORT).show();
+                        googleSignIn();
+                    } else {
+                        exportBankToCloud();
+                    }
+                    return true;
+            }
+        }
 		return false;
 	}
 
@@ -337,8 +340,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                     String importPath;
                     importPath = file.getPath();
                     Log.d(LOG, "File picked " + importPath);
-                    Bank b = new Bank (Bank.importBank(importPath));
-                    if (b != null) {
+                    Bank importedBank = Bank.importBank(importPath);
+                    if (importedBank != null) {
+                        Bank b=new Bank (importedBank);
                         db.addOrEditBank(b,true,true);
                         db.setActiveBank(b.getId());
                        BankListActivity.this.finish();
@@ -423,8 +427,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             super(context, R.layout.activity_bank_list_row, bankList);
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView;
             if (rowView == null) {
                 LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -619,11 +624,11 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
     private String getUserName() {
         FirebaseUser user=mAuth.getCurrentUser();
-        for (UserInfo i : user.getProviderData()){
-            if (i.getDisplayName()!=null) {
-                return i.getDisplayName();
+            for (UserInfo i : user.getProviderData()) {
+                if (i.getDisplayName() != null) {
+                    return i.getDisplayName();
+                }
             }
-        }
         return "Anonymous";
     }
 }

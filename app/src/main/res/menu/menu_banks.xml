@@ -29,6 +29,4 @@
         android:icon="@drawable/ic_action_exit"
         app:showAsAction="never"/>
 
-
-
 </menu>

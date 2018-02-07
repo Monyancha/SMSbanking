@@ -60,9 +60,7 @@ public class SmsBankingWidget extends AppWidgetProvider {
             // Create an Intent to launch MainActivity
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra("bank_id", bankId);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, intent, 0);
 
             // attach an on-click listener to widget

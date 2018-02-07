@@ -31,7 +31,8 @@
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1"/>
+        tools:layout_constraintTop_creator="1"
+        android:drawableStart="@drawable/ic_transaction_unknown" />
 
     <ImageButton
         android:id="@+id/delete_rule_button"
@@ -47,7 +48,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="0dp"
         android:contentDescription="@string/image"
-        app:layout_constraintVertical_bias="0.55"/>
+        app:layout_constraintVertical_bias="0.55"
+        android:layout_marginEnd="0dp" />
 
     <ImageButton
         android:id="@+id/edit_rule_button"
@@ -61,7 +63,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:contentDescription="@string/image"
         android:layout_marginBottom="0dp"
-        />
+        android:layout_marginEnd="0dp" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -130,7 +130,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/sub_rule_negate"
         app:layout_constraintLeft_toRightOf="@+id/sub_rule_separator_label"
         app:layout_constraintTop_toBottomOf="@+id/sub_rule_constant_value"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginStart="8dp" />
 
     <CheckBox
         android:id="@+id/sub_rule_negate"

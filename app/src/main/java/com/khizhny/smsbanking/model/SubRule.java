@@ -81,32 +81,16 @@ public class SubRule implements java.io.Serializable {
 		this.id = id;
 	}
 
-    public int getDistanceToLeftPhrase() {
-		return distanceToLeftPhrase;
-	}
-
     public void setDistanceToLeftPhrase(int distanceToLeftPhrase) {
 		this.distanceToLeftPhrase = distanceToLeftPhrase;
-	}
-
-    public int getDistanceToRightPhrase() {
-		return distanceToRightPhrase;
 	}
 
     public void setDistanceToRightPhrase(int distanceToRightPhrase) {
 		this.distanceToRightPhrase = distanceToRightPhrase;
 	}
 
-    public String getLeftPhrase() {
-		return leftPhrase;
-	}
-
 	public void setLeftPhrase(String leftPhrase) {
 		this.leftPhrase = leftPhrase;
-	}
-
-    public String getRightPhrase() {
-		return rightPhrase;
 	}
 
     public  void setRightPhrase(String rightPhrase) {
@@ -181,53 +165,53 @@ public class SubRule implements java.io.Serializable {
 	 */
     public String applySubRule(String smsMsg, int returnedType) {
 		String msg = "<BEGIN> " + smsMsg + " <END>";
-		String temp = "";
+		StringBuilder temp = new StringBuilder();
 		try {
             String[] arr;
             int wordsCount;
 			switch (extractionMethod) {
 				case WORD_AFTER_PHRASE:
-					temp = msg.split(String.format("\\Q%s\\E", leftPhrase))[1].split(" ")[distanceToLeftPhrase];
+					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", leftPhrase))[1].split(" ")[distanceToLeftPhrase]);
 					break;
 				case WORD_BEFORE_PHRASE:
-					temp = msg.split(String.format("\\Q%s\\E", rightPhrase))[0].trim();
-					arr = temp.split(" ");
+					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", rightPhrase))[0].trim());
+					arr = temp.toString().split(" ");
 					wordsCount = arr.length;
-					temp = (arr[wordsCount - distanceToRightPhrase]);
+					temp = new StringBuilder((arr[wordsCount - distanceToRightPhrase]));
 					break;
 				case WORDS_BETWEEN_PHRASES:
 					// temp will store all words between phrases "leftPhrase" and "rightPhrase"
                     arr=msg.split(String.format("\\Q%s\\E", leftPhrase));
                     if (arr.length>1) {
-                        temp = arr[1];
-                        arr = temp.split(String.format("\\Q%s\\E", rightPhrase));
+                        temp = new StringBuilder(arr[1]);
+                        arr = temp.toString().split(String.format("\\Q%s\\E", rightPhrase));
                         if (arr.length>=1) {
-                            temp = arr[0].trim();
+                            temp = new StringBuilder(arr[0].trim());
                         }else{
-                            temp="";
+                            temp = new StringBuilder();
                         }
                     }else{
-                        temp="";
+                        temp = new StringBuilder();
                     }
                     // Now we will just keep phrase starting from N-th word from the left till M-th word wrom the right.
                     // where N - distanceToLeftPhrase
                     // M - distanceToRightPhrase
-                    arr = temp.split(" ");
-                    temp="";
+                    arr = temp.toString().split(" ");
+                    temp = new StringBuilder();
                     for (int j=distanceToLeftPhrase-1; j<arr.length-distanceToRightPhrase+1;j++) {
-                        if (j > distanceToLeftPhrase - 1) temp = temp + " ";
-                        temp = temp + arr[j];
+                        if (j > distanceToLeftPhrase - 1) temp.append(" ");
+                        temp.append(arr[j]);
                     }
                     break;
 				case USE_CONSTANT:
-					temp = constantValue;
+					temp = new StringBuilder(constantValue);
 					break;
 				case USE_REGEX:
                     Pattern pattern = Pattern.compile(rule.getMask());
                     Matcher matcher = pattern.matcher(smsMsg);
                     if (matcher.matches()) {
                         if (matcher.groupCount() > regexPhraseIndex) {
-                        	temp = matcher.group(regexPhraseIndex+1);
+                        	temp = new StringBuilder(matcher.group(regexPhraseIndex + 1));
 						}
                     }
 					break;
@@ -239,7 +223,7 @@ public class SubRule implements java.io.Serializable {
 		if (trimRight > 0 || trimLeft > 0) {
 			int temp_len = temp.length();
 			try {
-				temp = temp.substring(trimLeft, temp_len - trimRight);
+				temp = new StringBuilder(temp.substring(trimLeft, temp_len - trimRight));
 			} catch (Exception e) {
 				return "";
 			}
@@ -250,24 +234,24 @@ public class SubRule implements java.io.Serializable {
 				try {
 					// changing sign if needed
 					if (negate) {
-						if (!temp.contains("-")) {
-							temp = "-" + temp;
+						if (!temp.toString().contains("-")) {
+							temp.insert(0, "-");
 						} else {
-							temp = temp.replace("-", "");
+							temp = new StringBuilder(temp.toString().replace("-", ""));
 						}
 					}
-					temp=temp.replaceAll("[^0-9" + getDecimalSeparatorString(temp) + "-]", "");
+					temp = new StringBuilder(temp.toString().replaceAll("[^0-9" + getDecimalSeparatorString(temp.toString()) + "-]", ""));
 				} catch (Exception e) {
-                    temp="0";
+                    temp = new StringBuilder("0");
 				}
                 break;
 			case 1: // return only text
-                temp=temp.replaceAll("[^A-Za-z]", "");
+                temp = new StringBuilder(temp.toString().replaceAll("[^A-Za-z]", ""));
                 break;
 			default: // return as-is.
                 break;
 		}
-        return temp;
+        return temp.toString();
 	}
 
 	/**

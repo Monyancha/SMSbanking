@@ -61,7 +61,7 @@ public class DatabaseAccess {
         }
     }
 
-    /**
+      /**
      * Close the database connection.
      */
     public void close() {
@@ -328,7 +328,7 @@ public class DatabaseAccess {
      * @param ruleId Rule ID.
      * @return Rule object
      */
-    public synchronized Rule getRule(int ruleId){
+    synchronized Rule getRule(int ruleId){
         String selectQuery = "SELECT distinct bank_id FROM rules WHERE _id="+ruleId;
 
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -406,7 +406,7 @@ public class DatabaseAccess {
         return subRuleList;
     }
 
-    public synchronized void getWords(Rule rule){
+    private synchronized void getWords(Rule rule){
         rule.words.clear();
         String selectQuery = "SELECT \n"+
                 "first_letter_index, \n"+
@@ -432,9 +432,9 @@ public class DatabaseAccess {
 
     /**
      * Rewrites all Words for a Rule
-     * @param rule
+     * @param rule Rule object.
      */
-    public synchronized void addOrEditWords(Rule rule){
+    private synchronized void addOrEditWords(Rule rule){
         if (rule.getId()>0) {
             // deleting all existing word from db if they exist for this rule
             db.delete("words","rule_id=?", new String[]{rule.getId() + ""});
@@ -451,7 +451,7 @@ public class DatabaseAccess {
      * Otherwise corrresponding record record will be updated.
      * @param sr Subrule object
      */
-    public synchronized void addOrEditSubRule(SubRule sr){
+    synchronized void addOrEditSubRule(SubRule sr){
         if (sr.getId()<=0){// Adding new SubRule
             long rowId = db.insert("subrules",null,sr.getContentValues());
             if (rowId>=0) {
@@ -474,7 +474,7 @@ public class DatabaseAccess {
      * Deletes subrule from the database.
      * @param subRuleId Subreule id to delete.
      */
-    public synchronized void deleteSubRule (int subRuleId) {
+    synchronized void deleteSubRule (int subRuleId) {
         db.delete("subrules","_id=?", new String[]{subRuleId + ""});
     }
 

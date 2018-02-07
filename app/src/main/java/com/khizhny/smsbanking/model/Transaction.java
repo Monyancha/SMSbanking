@@ -49,7 +49,7 @@ public class Transaction implements Comparable<Transaction> {
     private String extraParam3;
     private String extraParam4;
 
-    private int selectedRuleId;        // id if transactions forced to be used by the user for this transaction.
+    private int selectedRuleId=-1;        // id if transactions forced to be used by the user for this transaction.
     public List <Rule> applicableRules;  // list of rules that can be used for this transaction
 
     public enum Parameters {
@@ -94,7 +94,6 @@ public class Transaction implements Comparable<Transaction> {
 
     public Transaction(String smsBody, String accountCurrency, Date transactionDate){
         this.icon= R.drawable.ic_transaction_unknown;
-        selectedRuleId=-1;
         this.smsBody =removeBadChars(smsBody);
         this.transactionDate=transactionDate;
         this.accountCurrency=accountCurrency;
@@ -128,6 +127,7 @@ public class Transaction implements Comparable<Transaction> {
     public String getAccountCurrency(){
         return accountCurrency;
     }
+
     public String getTransactionCurrency(){
         return transactionCurrency;
     }
@@ -149,14 +149,6 @@ public class Transaction implements Comparable<Transaction> {
             return currencyRate.multiply(stateDifference.subtract(commission), MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
         } else {
             return currencyRate.multiply(stateDifference, MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
-        }
-    }
-
-    public String getDifferenceInNativeCurrencyAsString(boolean withCommission){
-        if (hasStateDifference) {
-            return  getStateDifferenceInNativeCurrency(withCommission).toString();
-        }else{
-            return "N/A";
         }
     }
 
@@ -510,7 +502,7 @@ public class Transaction implements Comparable<Transaction> {
 
     /**
      * Function loads a list of transactions from SMS to a List
-     * @param activeBank BankV2 object with all extraction settings and rules.
+     * @param activeBank BankV object with all extraction settings and rules.
      * @param context Context
      * @return List of Transaction objects. (sorted)
      */
@@ -579,16 +571,16 @@ public class Transaction implements Comparable<Transaction> {
                             }
                             if (!hideMatchedMessages && transaction.applicableRules.size() == 1) {
                                 // adding to list only is user set "show matched"  option in parameters
-                                transaction.applicableRules.get(0).applyRule(transaction);
+                                transaction.applicableRules.get(0).applyToTransaction(transaction);
                                 transaction.calculateMissedData();
                                 transactionList.add(transaction);
                             }
                             if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
                                 transaction.selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
                                 if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
-                                    transaction.getSelectedRule().applyRule(transaction);
+                                    transaction.getSelectedRule().applyToTransaction(transaction);
                                 } else { // if user did not picked rule choose any first.
-                                    transaction.applicableRules.get(0).applyRule(transaction);
+                                    transaction.applicableRules.get(0).applyToTransaction(transaction);
                                 }
                                 transaction.calculateMissedData();
                                 transactionList.add(transaction);
@@ -627,9 +619,7 @@ public class Transaction implements Comparable<Transaction> {
      * Seves changes to db.
      */
     public void switchToNextRule(){
-        if (applicableRules.size()<2) {
-            return;
-        }else {
+        if (applicableRules.size()>=2) {
 
             if (selectedRuleId == -1) {
                 selectedRuleId = applicableRules.get(1).getId();
@@ -736,13 +726,13 @@ public class Transaction implements Comparable<Transaction> {
                 selectedRule=getRuleWitLongestMask(applicableRules);
             }
         }
-        if (selectedRule!=null) selectedRule.applyRule(this);
+        if (selectedRule!=null) selectedRule.applyToTransaction(this);
     }
 
     private Rule getRuleWitLongestMask(List <Rule> rules){
         Rule result=null;
         int maxLength=0;
-        int ruleLength=0;
+        int ruleLength;
         for (Rule r: rules) {
             ruleLength=r.getMask().length();
             if (ruleLength>maxLength) {

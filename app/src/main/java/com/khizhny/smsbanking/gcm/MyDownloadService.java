@@ -111,16 +111,21 @@ public class MyDownloadService extends MyBaseTaskService {
                         Log.d(TAG, "download:SUCCESS");
 
                         // Send success broadcast with number of bytes downloaded
-                        broadcastDownloadFinished(downloadPath, taskSnapshot.getTotalByteCount());
-
-                        showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
-
+                        if (broadcastDownloadFinished(downloadPath, taskSnapshot.getTotalByteCount())) {
+                            showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
+                        }
                         Bank bank;
                         // importing downloaded template to DB
-                        bank = new Bank(Bank.importBank(getCacheDir().getAbsolutePath() + "/loaded_bank.dat"));
-                        db.addOrEditBank(bank,true,true);
-                        db.setActiveBank(bank.getId());
-                        MyApplication.forceRefresh=true;
+                        Bank loadedBank=Bank.importBank(getCacheDir().getAbsolutePath() + "/loaded_bank.dat");
+                        if (loadedBank!=null) {
+                            bank = new Bank(loadedBank);
+                            db.addOrEditBank(bank, true, true);
+                            db.setActiveBank(bank.getId());
+                            MyApplication.forceRefresh = true;
+                        }else{
+                            // Send failure broadcast
+                            showImportFailedNotification();
+                        }
 
                         // Mark task completed
                         taskCompleted();
@@ -132,10 +137,9 @@ public class MyDownloadService extends MyBaseTaskService {
                         Log.w(TAG, "download:FAILURE", exception);
 
                         // Send failure broadcast
-                        broadcastDownloadFinished(downloadPath, -1);
-
-                        showDownloadFinishedNotification(downloadPath, -1);
-
+                        if (broadcastDownloadFinished(downloadPath, -1)) {
+                            showDownloadFinishedNotification(downloadPath, -1);
+                        }
                         // Mark task completed
                         taskCompleted();
                     }
@@ -173,6 +177,16 @@ public class MyDownloadService extends MyBaseTaskService {
         boolean success = bytesDownloaded != -1;
         String caption = success ? getString(R.string.download_success) : getString(R.string.download_failure);
         showFinishedNotification(caption, intent, success);
+    }
+
+    /**
+     * Show a notification for a failed import.
+     */
+    private void showImportFailedNotification() {
+        // Make Intent to MainActivity
+        Intent intent = new Intent(this, MainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        showFinishedNotification("Import failed.", intent, false);
     }
 
 

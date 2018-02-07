@@ -14,7 +14,6 @@
     <string name="action_rate_app">Оценить программу</string>
 
 	<string name="rule_message">Укажите изменяемые слова (Долгое нажатие для разбиения слов, swype-для объединения):</string>
-    <string name="rule_name">Имя правила(необязательно)</string>
 
     <string name="popup_create_rule">Создать новое правило</string>
 	<string name="popup_edit_rule">Редактировать правило</string>
@@ -103,8 +102,7 @@
 	<string name="phone_number_not_set">Номер телефона не указан</string>
     <string name="export_failed">Не получилось экспортировать</string>
     <string name="import_failed">Импорт не получился</string>
-    <string name="n_equal">n=</string>
-	<string name="add_widget">Добавить виджет</string>
+    <string name="add_widget">Добавить виджет</string>
 	<string name="appwidget_text">0.00</string>
     <string name="widget_default_name">Банк</string>
 	<string name="appwidget_currency">RUB</string>
@@ -174,9 +172,7 @@
     <string name="comments">Комментарии</string>
     <string name="your_country">Страна</string>
     <string name="about">О программе</string>
-    <string name="create_new_rule">Новое правило</string>
-    <string name="next">Далее</string>
-    <string name="relpace_private">Замените приватные данные в тексте если планируете делиться шаблоном.</string>
+    <string name="replace_private">Замените приватные данные в тексте если планируете делиться шаблоном.</string>
     <string name="pick_your_country">Выберите вашу страну</string>
     <string name="pref_lang">Language</string>
     <string name="about_text">автор: Хижный Андрей</string>
@@ -188,5 +184,6 @@
     <string name="advanced">Эксперт</string>
     <string name="regular_expression">Regular Expression</string>
     <string name="sd_card_msg">Нужен доступ к SD.</string>
+    <string name="message">сообщение</string>
 </resources>
 

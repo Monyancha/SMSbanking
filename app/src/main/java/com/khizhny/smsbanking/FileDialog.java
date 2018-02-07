@@ -31,12 +31,6 @@ public class FileDialog {
     private boolean selectDirectoryOption;
     private String fileEndsWith;
 
-    /**
-     * Loads file dialog
-     * @param activity
-     * @param path
-     * @param fileEndsWith
-     */
     public FileDialog(Activity activity, File path, String fileEndsWith) {
         this.activity = activity;
         this.fileEndsWith=fileEndsWith;
@@ -48,7 +42,6 @@ public class FileDialog {
      * @return file dialog
      */
     public Dialog createFileDialog() {
-        Dialog dialog = null;
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         builder.setTitle(currentPath.getPath());
@@ -73,9 +66,7 @@ public class FileDialog {
                 } else fireFileSelectedEvent(chosenFile);
             }
         });
-
-        dialog = builder.show();
-        return dialog;
+        return builder.show();
     }
 
 
@@ -134,6 +125,7 @@ public class FileDialog {
                     if (selectDirectoryOption) return sel.isDirectory();
                     else {
                         boolean endsWith;
+                        //noinspection SimplifiableIfStatement
                         if (fileEndsWith != null) {
                             endsWith = filename.toLowerCase().endsWith(fileEndsWith);
                         } else {
@@ -145,9 +137,7 @@ public class FileDialog {
             };
             String[] fileList1 = path.list(filter);
             if (!(fileList1==null)) {
-                for (String file : fileList1) {
-                    r.add(file);
-                }
+                Collections.addAll(r, fileList1);
             }
         }
         Collections.sort(r);

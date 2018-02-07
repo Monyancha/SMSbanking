@@ -300,7 +300,6 @@ public class StatisticsActivity extends AppCompatActivity{
         int year=cal.get(Calendar.YEAR);
         int week=cal.get(Calendar.WEEK_OF_YEAR); // 0-53
         int month=cal.get(Calendar.MONTH);  // 0-11
-        int day=cal.get(Calendar.DAY_OF_MONTH); // 1-365
         int quarter = month /3;  //0-3
         switch (step){
             case 1: //Year
@@ -312,7 +311,6 @@ public class StatisticsActivity extends AppCompatActivity{
             case 4: //Week
                 return "Y"+year+"W"+week;
             case 5: //Day
-                //
                 return String.format(Locale.getDefault(), "%1$td/%1$tm/%1$tY", cal);
             default:
                 return "";

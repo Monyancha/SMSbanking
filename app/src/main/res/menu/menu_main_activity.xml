@@ -13,7 +13,7 @@
         android:orderInCategory="104"
         android:icon="@drawable/ic_menu_statistics"
         android:title="@string/statistics"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_rule_list"
         android:orderInCategory="105"
@@ -29,20 +29,20 @@
 
     <item
         android:id="@+id/action_quit"
-        android:orderInCategory="107"
+        android:orderInCategory="199"
         android:title="@string/action_quit"
         android:icon="@drawable/ic_action_exit"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_preferences"
         android:orderInCategory="108"
         android:icon="@drawable/ic_menu_settings"
         android:title="@string/action_preferences"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_rate_app"
-        android:orderInCategory="109"
+        android:orderInCategory="198"
         android:title="@string/action_rate_app"
         android:icon="@drawable/ic_menu_rate_app"
         app:showAsAction="ifRoom"/>
@@ -53,6 +53,7 @@
         app:showAsAction="never"/>
     <item
         android:id="@+id/bank_clear_cache"
+        android:orderInCategory="110"
         android:title="@string/clear_cache"
         android:visible="true"/>
     <item

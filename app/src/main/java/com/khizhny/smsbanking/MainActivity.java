@@ -41,7 +41,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -83,8 +82,6 @@ import static com.khizhny.smsbanking.MyApplication.getExtraParameterNames;
 import static com.khizhny.smsbanking.MyApplication.hideMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.ignoreClones;
-import static com.khizhny.smsbanking.TransactionActivity.KEY_SMS_BODY;
-import static com.khizhny.smsbanking.TransactionActivity.KEY_TODO;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
         OnItemClickListener,
@@ -93,6 +90,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private static final String LIST_STATE = "listState";
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
+
+    public static final String  KEY_TODO = "todo";
+    public static final String  KEY_TODO_ADD = "add";
+    public static final String  KEY_TODO_EDIT = "edit";
+    public static final String  KEY_RULE_ID = "rule_id";
+    public static final String  KEY_SMS_BODY = "sms_body";
+
 
     private ListView listView;
     private List<Transaction> transactions;
@@ -204,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 showAboutDialog();
                 break;
             case R.id.action_cache:
-                if (activeBank!=null) {
+                if (activeBank!=null && transactions!=null) {
                     CacheTransactionsTask cacheTransactionsTask=new CacheTransactionsTask();
                     cacheTransactionsTask.execute(transactions);
                 }else{
@@ -250,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             case R.id.item_edit_rule :
                 if (selectedTransaction.applicableRules.size()==1) {
                     intent = new Intent(this, RuleActivity.class);
-                    intent.putExtra("rule_id", selectedTransaction.applicableRules.get(0).getId());
-                    intent.putExtra("todo", "edit");
+                    intent.putExtra(KEY_RULE_ID, selectedTransaction.applicableRules.get(0).getId());
+                    intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
                     startActivity(intent);
                 } else {
                     // Creating dialog for rule edition
@@ -513,14 +517,18 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         }
 
-        @SuppressLint("DefaultLocale")
         @NonNull
+        @SuppressLint("DefaultLocale")
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            View rowView = convertView;
-            if (rowView == null) {
+            View rowView= convertView;
+            if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                rowView = inflater.inflate(R.layout.activity_main_list_row, parent, false);
+                if (inflater != null) {
+                    rowView = inflater.inflate(R.layout.activity_main_list_row, parent, false);
+                }
+            }else{
+                rowView = convertView;
             }
             Transaction t = transactions.get(position);
 
@@ -528,6 +536,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Filling Massage text
             smsTextView = rowView.findViewById(R.id.smsBody);
+
             smsTextView.setText(t.getSmsBody());
 
             // Warning sign
@@ -535,16 +544,18 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             warnView.setTextColor(Color.DKGRAY);
             if (t.isCached) {
                 warnView.setText("(c)");
-            }else {
-                warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
-                if (t.ruleOptionsCount()!=1) warnView.setTextColor(Color.RED);
+            } else {
+                if (t.ruleOptionsCount() != 1) {
+                    warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
+                    warnView.setTextColor(Color.RED);
+                } else {
+                    warnView.setText("");
+                }
             }
-
-
 
             // Filling Before state
             TextView accountBeforeView = rowView.findViewById(R.id.stateBefore);
-            if (t.hasStateBefore){
+            if (t.hasStateBefore) {
                 accountBeforeView.setText(t.getStateBeforeAsString(hideCurrency));
             } else {
                 accountBeforeView.setText("");
@@ -555,25 +566,25 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             // Filling After state
             TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
-            if (t.hasStateAfter){
+            if (t.hasStateAfter) {
                 accountAfterView.setText(t.getStateAfterAsString(hideCurrency));
-            }else {
+            } else {
                 accountAfterView.setText("");
             }
             // Filling commission
-            TextView accountCommissionView = rowView.findViewById(R.id.transactionComission);
+            TextView accountCommissionView = rowView.findViewById(R.id.transactionCommission);
             if (t.getCommission().equals(new BigDecimal("0.00"))) {
                 accountCommissionView.setVisibility(View.GONE);
             } else {
                 accountCommissionView.setVisibility(View.VISIBLE);
-                accountCommissionView.setText(t.getCommissionAsString(hideCurrency,true));
+                accountCommissionView.setText(t.getCommissionAsString(hideCurrency, true));
                 accountCommissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
             }
             // Filling difference
             TextView accountDifferenceView = rowView.findViewById(R.id.stateDifference);
-            if (t.hasStateDifference){
+            if (t.hasStateDifference) {
                 accountDifferenceView.setVisibility(View.VISIBLE);
-                accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency,inverseRate,false));
+                accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency, inverseRate, false));
                 switch (t.getStateDifference().signum()) {
                     case -1:
                         accountDifferenceView.setTextColor(Color.RED);
@@ -582,7 +593,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                         accountDifferenceView.setTextColor(Color.GRAY);
                         break;
                     case 1:
-                        accountDifferenceView.setTextColor(Color.rgb(0,100,0)); // dark green
+                        accountDifferenceView.setTextColor(Color.rgb(0, 100, 0)); // dark green
                 }
             } else {
                 //accountDifferenceView.setVisibility(View.GONE);
@@ -593,7 +604,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             iconView.setImageResource(t.icon);
 
             // Filling Extra parameters
-            if (t.hasExtras()){
+            if (t.hasExtras()) {
                 ((TextView) rowView.findViewById(R.id.extra1)).setText(t.getExtraParam1());
                 ((TextView) rowView.findViewById(R.id.extra2)).setText(t.getExtraParam2());
                 ((TextView) rowView.findViewById(R.id.extra3)).setText(t.getExtraParam3());
@@ -608,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 rowView.findViewById(R.id.extra3).setVisibility(View.GONE);
                 rowView.findViewById(R.id.extra4).setVisibility(View.GONE);
             }
-
             return rowView;
         }
 
@@ -619,69 +629,77 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         private Rule selectedRule;
         private final Transaction selectedTransaction;
 
-        public RuleListAdapter(List<Rule> ruleList, Transaction t) {
+        RuleListAdapter(List<Rule> ruleList, Transaction t) {
             super(MainActivity.this,R.layout.activity_rule_list_row, ruleList);
             selectedTransaction=t;
         }
 
         //Handler for rule picker dialog
+        @NonNull
         @Override
-        public View getView(int position, View rowView , ViewGroup parent) {
+        public View getView(int position, View rowView , @NonNull ViewGroup parent) {
             if (rowView == null) {
                 LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                rowView = vi.inflate(R.layout.activity_rule_list_row, parent, false);
+                if (vi != null) {
+                    rowView = vi.inflate(R.layout.activity_rule_list_row, parent, false);
+                }
             }
 
-            TextView ruleNameView = rowView.findViewById(R.id.ruleName);
-            Rule r = ruleListAdapter.getItem(position);
-            ruleNameView.setText(r != null ? r.getName() : "---");
+            if (rowView != null) {
+                TextView ruleNameView = rowView.findViewById(R.id.ruleName);
+                Rule r = ruleListAdapter.getItem(position);
+                ruleNameView.setText("---");
+                if (r != null) {
+                    ruleNameView.setText(r.getName());
+                    Drawable icon = ResourcesCompat.getDrawable(getResources(), r.getRuleTypeDrawable(), null);
 
-            Drawable icon = ResourcesCompat.getDrawable(getResources(), r.getRuleTypeDrawable(), null);
-            if (icon != null) {
-                icon.setBounds(0, 0, icon.getMinimumWidth(), icon.getMinimumHeight());
-            }
-            ruleNameView.setCompoundDrawables(icon,null,null,null);
-            rowView.setTag(r);
+                    if (icon != null) {
+                        icon.setBounds(0, 0, icon.getMinimumWidth(), icon.getMinimumHeight());
+                    }
+                    ruleNameView.setCompoundDrawables(icon, null, null, null);
+                    rowView.setTag(r);
+                }
 
-            // switching rule
-            ruleNameView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (selectedTransaction!=null) {
-                        selectedRule=(Rule) ((View)v.getParent()).getTag();
-                        selectedTransaction.switchToRule(selectedRule);
+                // switching rule
+                ruleNameView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (selectedTransaction != null) {
+                            selectedRule = (Rule) ((View) v.getParent()).getTag();
+                            selectedTransaction.switchToRule(selectedRule);
+                            onRefresh();
+                            pickRuleDialog.dismiss();
+                        }
+                    }
+                });
+
+                ImageButton vDeleteRule = rowView.findViewById(R.id.delete_rule_button);
+                vDeleteRule.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        selectedRule = (Rule) ((View) v.getParent()).getTag();
+                        db.deleteRule(selectedRule.getId());
                         onRefresh();
                         pickRuleDialog.dismiss();
                     }
-                }
-            });
+                });
 
-            ImageButton vDeleteRule = rowView.findViewById(R.id.delete_rule_button);
-            vDeleteRule.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectedRule=(Rule) ((View)v.getParent()).getTag();
-                    db.deleteRule(selectedRule.getId());
-                    onRefresh();
-                    pickRuleDialog.dismiss();
-                }
-            });
-
-            ImageButton vEditRule = rowView.findViewById(R.id.edit_rule_button);
-            vEditRule.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectedRule=(Rule) ((View)v.getParent()).getTag();
-                    pickRuleDialog.dismiss();
-                    Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                    intent.putExtra("rule_id", selectedRule.getId());
-                    intent.putExtra("todo", "edit");
-                    startActivity(intent);
-                    forceRefresh = true;
-                    pickRuleDialog.dismiss();
-                }
-            });
-
+                ImageButton vEditRule = rowView.findViewById(R.id.edit_rule_button);
+                vEditRule.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        selectedRule = (Rule) ((View) v.getParent()).getTag();
+                        pickRuleDialog.dismiss();
+                        Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+                        intent.putExtra(KEY_RULE_ID, selectedRule.getId());
+                        intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
+                        startActivity(intent);
+                        forceRefresh = true;
+                        pickRuleDialog.dismiss();
+                    }
+                });
+            }
+            //noinspection ConstantConditions
             return rowView;
         }
 
@@ -831,13 +849,15 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     private void showAboutDialog() {
         Log.d(LOG, "MainActivity:showAboutDialog() started");
-        PackageInfo pInfo = null;
+        PackageInfo pInfo;
+        String version="unknown";
         try {
             pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            version = pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        String version = pInfo.versionName;
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);
@@ -852,7 +872,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         if (smsBody != null) {
             Intent intent = new Intent(MainActivity.this, RuleActivity.class);
             intent.putExtra(KEY_SMS_BODY, smsBody);
-            intent.putExtra(KEY_TODO, "add");
+            intent.putExtra(KEY_TODO, KEY_TODO_ADD);
             startActivity(intent);
         }
     }
@@ -914,10 +934,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      * Task loads a list of transactions from SMS using rules defined for BankV2
      * BankV2
      */
+    @SuppressLint("StaticFieldLeak")
     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
 
         private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in milliseconds
-        private int cacheSize;
         private long refreshTime;
 
         @Override
@@ -954,16 +974,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             Date lastCachedTransactionDate;
             transactionList = db.getTransactionCache(activeBank.getId());
             if (transactionList.size()>0) {
-                cacheSize=transactionList.size();
                 lastCachedTransactionDate = transactionList.get(0).getTransactionDate();
             }else{
                 lastCachedTransactionDate=new Date(0);
-                cacheSize=0;
             }
 
             // Loading transactions from SMS.
-            String smsBody = "";
-            String prevSmsBody = "";
+            String smsBody;
+            String prevSmsBody="";
             String phoneNumbers = activeBank.getPhone().replace(";", "','");
             Cursor c;
             if (MyApplication.hasReadSmsPermission) {
@@ -1082,6 +1100,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class CacheTransactionsTask extends AsyncTask<List <Transaction>, Integer, Void> {
 
         @Override

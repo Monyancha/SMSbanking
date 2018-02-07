@@ -17,6 +17,7 @@ package com.khizhny.smsbanking;
  * limitations under the License.
  */
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -27,7 +28,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,7 +39,7 @@ import android.view.View;
  *
  * @author Daniel Nilsson
  */
-@SuppressWarnings("SameParameterValue")
+@SuppressWarnings({"SameParameterValue", "JavaDoc"})
 public class ColorPickerView extends View {
 
     public interface OnColorChangedListener {
@@ -227,10 +227,7 @@ public class ColorPickerView extends View {
                     rect.bottom + BORDER_WIDTH_PX, mBorderPaint);
         }
 
-        // On Honeycomb+ we need to use software rendering to create the shader properly
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         // Get the overlaying gradients ready and create the ComposeShader
         if (mValShader == null) {
@@ -317,7 +314,7 @@ public class ColorPickerView extends View {
 
         canvas.drawRect(rect, mAlphaPaint);
 
-        if (mAlphaSliderText != null && mAlphaSliderText != "") {
+        if (mAlphaSliderText != null && mAlphaSliderText.equals("")) {
             canvas.drawText(mAlphaSliderText, rect.centerX(), rect.centerY() + 4 * mDensity,
                     mAlphaTextPaint);
         }
@@ -490,6 +487,7 @@ public class ColorPickerView extends View {
         return super.onTrackballEvent(event);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean update = false;
@@ -682,7 +680,7 @@ public class ColorPickerView extends View {
      * Set a OnColorChangedListener to get notified when the color selected by
      * the user has changed.
      *
-     * @param listener
+     * @param listener OnColorChangedListener
      */
     public void setOnColorChangedListener(OnColorChangedListener listener) {
         mListener = listener;
@@ -691,7 +689,7 @@ public class ColorPickerView extends View {
     /**
      * Set the color of the border surrounding all panels.
      *
-     * @param color
+     * @param color Color
      */
     public void setBorderColor(int color) {
         mBorderColor = color;
@@ -769,7 +767,7 @@ public class ColorPickerView extends View {
      * Set if the user is allowed to adjust the alpha panel. Default is false.
      * If it is set to false no alpha will be set.
      *
-     * @param visible
+     * @param visible true/false
      */
     public void setAlphaSliderVisible(boolean visible) {
         if (mShowAlphaPanel != visible) {

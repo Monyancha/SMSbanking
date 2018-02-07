@@ -50,7 +50,7 @@ public abstract class MyBaseTaskService extends Service {
             percentComplete = (int) (100 * completedUnits / totalUnits);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sms_banking_notification")
                 .setSmallIcon(R.drawable.ic_file_upload_white_24dp)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(caption)
@@ -61,7 +61,9 @@ public abstract class MyBaseTaskService extends Service {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        manager.notify(PROGRESS_NOTIFICATION_ID, builder.build());
+        if (manager != null) {
+            manager.notify(PROGRESS_NOTIFICATION_ID, builder.build());
+        }
     }
 
     /**
@@ -74,7 +76,7 @@ public abstract class MyBaseTaskService extends Service {
 
         int icon = success ? R.drawable.ic_check_white_24dp: R.drawable.ic_error_white_24dp;
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sms_banking_notification")
                 .setSmallIcon(icon)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(caption)
@@ -84,7 +86,9 @@ public abstract class MyBaseTaskService extends Service {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        manager.notify(FINISHED_NOTIFICATION_ID, builder.build());
+        if (manager != null) {
+            manager.notify(FINISHED_NOTIFICATION_ID, builder.build());
+        }
     }
 
     /**
@@ -94,6 +98,8 @@ public abstract class MyBaseTaskService extends Service {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        manager.cancel(PROGRESS_NOTIFICATION_ID);
+        if (manager != null) {
+            manager.cancel(PROGRESS_NOTIFICATION_ID);
+        }
     }
 }

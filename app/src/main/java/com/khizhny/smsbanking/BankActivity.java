@@ -20,10 +20,13 @@ import android.widget.Toast;
 
 import com.khizhny.smsbanking.model.Bank;
 
+import static com.khizhny.smsbanking.MainActivity.KEY_TODO;
+import static com.khizhny.smsbanking.MainActivity.KEY_TODO_EDIT;
 import static com.khizhny.smsbanking.MyApplication.db;
 
 public class BankActivity extends AppCompatActivity {
-	private Bank bank;
+
+    private Bank bank;
 	private TextView nameView;
     private AppCompatSpinner currencyView;
     private AppCompatSpinner countryView;
@@ -55,17 +58,20 @@ public class BankActivity extends AppCompatActivity {
             if (arr[i].equals(country)) countryView.setSelection(i);
         }
 
-		String todo = getIntent().getExtras().getString("todo");
-		if (todo != null) {
-			if (todo.equals("edit")) { // Form is used for editing active bank info. Filling bank info from DB
-				bank=db.getActiveBank();
-				nameView.setText(bank.getName());
-				phonesView.setText(bank.getPhone());
-				currencyView.setSelection(getIndex(currencyView, bank.getDefaultCurrency()));
-			}else{  // Form is used for adding new bank info.
-				bank=new Bank();
-			}
-		}
+        Bundle b=getIntent().getExtras();
+        if (b!=null){
+            String todo = b.getString(KEY_TODO);
+            if (todo != null) {
+                if (todo.equals(KEY_TODO_EDIT)) { // Form is used for editing active bank info. Filling bank info from DB
+                    bank=db.getActiveBank();
+                    nameView.setText(bank.getName());
+                    phonesView.setText(bank.getPhone());
+                    currencyView.setSelection(getIndex(currencyView, bank.getDefaultCurrency()));
+                }else{  // Form is used for adding new bank info.
+                    bank=new Bank();
+                }
+            }
+        }
 
 		// getting sms senders list if granted
         Cursor c=null;
