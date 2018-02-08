@@ -345,39 +345,35 @@ public class Transaction implements Comparable<Transaction> {
         this.commission = commission.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public int setStateBefore(String s){
+    public void setStateBefore(String s){
         try {
             setStateBefore(new BigDecimal(s.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
-            return 1;
         }catch (Exception e) {
-            return 0;
+            Log.d(LOG,"setStateBefore failed");
         }
     }
 
-    public int setStateAfter(String s){
+    public void setStateAfter(String s){
         try{
             setStateAfter(new BigDecimal(s.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
-            return 1;
         }catch (Exception e) {
-            return 0;
+            Log.d(LOG,"setStateAfter failed");
         }
     }
 
-    public int setDifference(String s){
+    public void setDifference(String s){
         try{
             setDifference(new BigDecimal(s.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
-            return 1;
         }catch (Exception e) {
-            return 0;
+            Log.d(LOG,"setDifference failed");
         }
     }
 
-    public int setComission(String comission) {
+    public void setComission(String comission) {
         try{
             this.setCommission(new BigDecimal(comission.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
-            return 1;
         }catch (Exception e) {
-            return 0;
+            Log.d(LOG,"setComission failed");
         }
     }
 

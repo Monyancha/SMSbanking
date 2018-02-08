@@ -57,7 +57,6 @@ import com.khizhny.smsbanking.gcm.MyDownloadService;
 import com.khizhny.smsbanking.gcm.MyUploadService;
 import com.khizhny.smsbanking.model.Bank;
 
-import java.io.File;
 import java.util.List;
 
 import static com.khizhny.smsbanking.MyApplication.LOG;
@@ -72,10 +71,10 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
     private static final int REQUEST_CODE_ASK_PERMISSIONS=111;
     private static final int RC_SIGN_IN = 9001;
 
-    private AlertDialog alertDialog;
+    //private AlertDialog alertDialog;
     private ListView listView;
 	private List<Bank> bankList;
-    private List<Bank> bankTemplates;
+    //private List<Bank> bankTemplates;
 	private BankListAdapter bankListAdapter;
     private static Bank bank2Share;
 	private int selected_row;
@@ -102,10 +101,11 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 String s = intent.getAction();
                 if (s != null) {
                     if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {
-
+                        Log.d(LOG, "DOWNLOAD_COMPLETED intent recieved");
                     } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {
-
+                        Log.d(LOG, "OWNLOAD_ERROR intent recieved");
                     } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
+                        Log.d(LOG, "UPLOAD_COMPLETED intent recieved");
                         onUploadResultIntent(intent);
                     }
                 }
@@ -177,7 +177,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
 		setTitle(getString(R.string.mybank_activity_title));
         bankList=db.getMyBanks(country);
-        bankTemplates = db.getBankTemplates(country);
+        //bankTemplates = db.getBankTemplates(country);
 
 		for (int i=0;i<bankList.size();i++) {
 			if (bankList.get(i).isActive()) {
@@ -192,9 +192,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
     @Override
     protected void onStop() {
-        if (alertDialog!=null) {
+        /*if (alertDialog!=null) {
             if (alertDialog.isShowing()) alertDialog.dismiss();
-        }
+        }*/
         super.onStop();
     }
 
@@ -230,10 +230,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				startActivity(intent);
 				bankListAdapter.notifyDataSetChanged();
 				return true;
-
-            case R.id.bank_template: // Copying bank settings from template to myBanks
-                showTemplatePickDialog();
-                return true;
 
             case R.id.bank_cloud_download:
                 if (mAuth.getCurrentUser()!=null) {
@@ -319,7 +315,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 		return false;
 	}
 
-	public void showBankImportDialog(String filter, String startingPath) {
+	/*public void showBankImportDialog(String filter, String startingPath) {
 		File mPath=null;
 		try {
 			mPath = new File(startingPath);
@@ -354,9 +350,9 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             });
 			fileDialog.showDialog();
 		}
-	}
+	}*/
 
-	private void showTemplatePickDialog(){
+	/*private void showTemplatePickDialog(){
         String templates[] = new String[bankTemplates.size()];
         for (int i=0; i<bankTemplates.size(); i++){
             templates[i]=bankTemplates.get(i).getName();
@@ -386,7 +382,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         });
         alertDialog = builder.create();
         alertDialog.show();
-    }
+    }*/
 
 
 
@@ -433,39 +429,44 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             View rowView = convertView;
             if (rowView == null) {
                 LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                rowView = vi.inflate(R.layout.activity_bank_list_row, parent, false);
+                if (vi != null) {
+                    rowView = vi.inflate(R.layout.activity_bank_list_row, parent, false);
+                }
             }
 
-            TextView bankNameView =  rowView.findViewById(R.id.label);
-            bankNameView.setText(bankList.get(position).getName());
+            if (rowView != null) {
+                TextView bankNameView = rowView.findViewById(R.id.label);
+                bankNameView.setText(bankList.get(position).getName());
 
-            TextView bankPhoneView =  rowView.findViewById(R.id.bankPhone);
-            bankPhoneView.setText(bankList.get(position).getPhone());
+                TextView bankPhoneView = rowView.findViewById(R.id.bankPhone);
+                bankPhoneView.setText(bankList.get(position).getPhone());
 
-            TextView bankCurrencyView = rowView.findViewById(R.id.bankCurrency);
-            bankCurrencyView.setText(bankList.get(position).getDefaultCurrency());
+                TextView bankCurrencyView = rowView.findViewById(R.id.bankCurrency);
+                bankCurrencyView.setText(bankList.get(position).getDefaultCurrency());
 
-            TextView bankValueView =  rowView.findViewById(R.id.bankValue);
-            bankValueView.setText(bankList.get(position).getCurrentAccountState());
+                TextView bankValueView = rowView.findViewById(R.id.bankValue);
+                bankValueView.setText(bankList.get(position).getCurrentAccountState());
 
-            if (!bankList.get(position).isEditable()) {
-                // IF activity used for showing templates
-                rowView.findViewById(R.id.active).setVisibility(View.GONE);
-                rowView.findViewById(R.id.bankValue).setVisibility(View.GONE);
-                rowView.findViewById(R.id.bankCurrency).setVisibility(View.GONE);
-            } else {
-                // IF activity used for showing My Banks
-                rowView.findViewById(R.id.active).setVisibility(View.VISIBLE);
-                rowView.findViewById(R.id.bankValue).setVisibility(View.VISIBLE);
-                rowView.findViewById(R.id.bankCurrency).setVisibility(View.VISIBLE);
+                if (!bankList.get(position).isEditable()) {
+                    // IF activity used for showing templates
+                    rowView.findViewById(R.id.active).setVisibility(View.GONE);
+                    rowView.findViewById(R.id.bankValue).setVisibility(View.GONE);
+                    rowView.findViewById(R.id.bankCurrency).setVisibility(View.GONE);
+                } else {
+                    // IF activity used for showing My Banks
+                    rowView.findViewById(R.id.active).setVisibility(View.VISIBLE);
+                    rowView.findViewById(R.id.bankValue).setVisibility(View.VISIBLE);
+                    rowView.findViewById(R.id.bankCurrency).setVisibility(View.VISIBLE);
+                }
+
+                RadioButton RadioButtonView = rowView.findViewById(R.id.active);
+                RadioButtonView.setChecked(bankList.get(position).isActive());
+                RadioButtonView.setFocusable(false);
+                RadioButtonView.setClickable(false);
+                RadioButtonView.setTag(position);
+                return rowView;
             }
-
-            RadioButton RadioButtonView =  rowView.findViewById(R.id.active);
-            RadioButtonView.setChecked(bankList.get(position).isActive());
-            RadioButtonView.setFocusable(false);
-            RadioButtonView.setClickable(false);
-            RadioButtonView.setTag(position);
-            return rowView;
+            return new View(BankListActivity.this);
         }
 
     }
@@ -522,13 +523,13 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
-
+                        Toast.makeText(BankListActivity.this,"Logged out.", Toast.LENGTH_LONG).show();
                     }
                 }
         );
     }
 
-    private void revokeAccess(){
+   /* private void revokeAccess(){
         //Firebase sign out
         mAuth.signOut();
         Auth.GoogleSignInApi.revokeAccess(googleApiClient).setResultCallback(new ResultCallback<Status>() {
@@ -537,7 +538,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
             }
         });
-    }
+    }*/
 
     /*
      * Google sign In callback
@@ -624,11 +625,13 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
     private String getUserName() {
         FirebaseUser user=mAuth.getCurrentUser();
+        if (user != null) {
             for (UserInfo i : user.getProviderData()) {
                 if (i.getDisplayName() != null) {
                     return i.getDisplayName();
                 }
             }
+        }
         return "Anonymous";
     }
 }

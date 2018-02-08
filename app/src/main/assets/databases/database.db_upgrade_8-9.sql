@@ -8,3 +8,4 @@ CREATE TABLE "words" (
 
 ALTER TABLE "subrules" ADD COLUMN regex_phrase_index INTEGER DEFAULT 0;
 ALTER TABLE "rules" ADD COLUMN advanced INTEGER DEFAULT 0;
+DELETE FROM "transactions";

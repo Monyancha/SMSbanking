@@ -27,8 +27,8 @@ public class Rule implements java.io.Serializable {
 	public List<SubRule> subRuleList=new ArrayList<SubRule>();
 	public final List<Word> words=new ArrayList<Word>();
 
-	public int wordsCount=0; // for old rules
-	public boolean[] wordIsSelected= null; // for old rules
+	private int wordsCount=0; // for old rules compatibility
+	private boolean[] wordIsSelected= null; // for old rules compatibility
 
 	/**
 	 * Transaction type icons array.
@@ -144,7 +144,7 @@ public class Rule implements java.io.Serializable {
 		this.name = name;
 	}
 
-	public String getSelectedWords() {
+	private String getSelectedWords() {
 		if (mask.startsWith("^")) return ""; // selected words is not used any more in new versions.
 		StringBuilder r= new StringBuilder();
 		String delimiter="";
@@ -224,7 +224,7 @@ public class Rule implements java.io.Serializable {
 		if (advanced) return; // Do not overwrite user defined custom mask if advanced flag is set.
 		StringBuilder s=new StringBuilder();
 		s.append("^"); // begining
-		nameSuggestion=""; // default rule name
+		StringBuilder ns=new StringBuilder(); // default rule name
 		String delimiter="";
 		String mask_delimiter;  // chars in between words
 		int prev_word_end_index=-1;
@@ -240,7 +240,7 @@ public class Rule implements java.io.Serializable {
 			switch (w.getWordType()) {
 				case WORD_CONST:
 					s.append("\\Q").append(w.getBody()).append("\\E"); // actual constant word
-					nameSuggestion+=delimiter+w.getBody();
+					ns.append(delimiter).append(w.getBody());
 					break;
 				case WORD_VARIABLE:
 					s.append("(.*)");
@@ -258,6 +258,7 @@ public class Rule implements java.io.Serializable {
 			mask_delimiter = "";
 		}
 		s.append(mask_delimiter).append("$"); // ending
+		nameSuggestion=ns.toString();
 		mask=s.toString();
 		mask=mask.replace("\\E \\Q"," "); // small optimization
 	}
@@ -320,10 +321,9 @@ public class Rule implements java.io.Serializable {
      * Apply Rule to Transaction.
      * @param transaction Transaction on which rule will be applied.
      */
-	public void applyToTransaction(@NonNull Transaction transaction ){
+	void applyToTransaction(@NonNull Transaction transaction ){
 		String sms_body = transaction.getSmsBody();
-		if (ruleType == Rule.transactionType.IGNORE || !sms_body.matches(mask)) {
-		} else {
+		if (ruleType!=Rule.transactionType.IGNORE && sms_body.matches(mask)) {
 			transaction.icon = getRuleTypeDrawable();
 			for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
 		}

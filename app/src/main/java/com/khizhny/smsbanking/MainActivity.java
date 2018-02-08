@@ -518,10 +518,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
 
         @NonNull
-        @SuppressLint("DefaultLocale")
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            View rowView= convertView;
+            View rowView=null;
             if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 if (inflater != null) {
@@ -532,94 +531,94 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             Transaction t = transactions.get(position);
 
-            TextView smsTextView;
+            if (rowView!=null) {
+                TextView smsTextView = rowView.findViewById(R.id.smsBody);
+                smsTextView.setText(t.getSmsBody());
 
-            // Filling Massage text
-            smsTextView = rowView.findViewById(R.id.smsBody);
-
-            smsTextView.setText(t.getSmsBody());
-
-            // Warning sign
-            TextView warnView = rowView.findViewById(R.id.warning_sign);
-            warnView.setTextColor(Color.DKGRAY);
-            if (t.isCached) {
-                warnView.setText("(c)");
-            } else {
-                if (t.ruleOptionsCount() != 1) {
-                    warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
-                    warnView.setTextColor(Color.RED);
+                // Warning sign
+                TextView warnView = rowView.findViewById(R.id.warning_sign);
+                warnView.setTextColor(Color.DKGRAY);
+                if (t.isCached) {
+                    warnView.setText("(c)");
                 } else {
-                    warnView.setText("");
+                    if (t.ruleOptionsCount() != 1) {
+                        warnView.setText(String.format("(%d)", t.ruleOptionsCount()));
+                        warnView.setTextColor(Color.RED);
+                    } else {
+                        warnView.setText("");
+                    }
                 }
-            }
 
-            // Filling Before state
-            TextView accountBeforeView = rowView.findViewById(R.id.stateBefore);
-            if (t.hasStateBefore) {
-                accountBeforeView.setText(t.getStateBeforeAsString(hideCurrency));
-            } else {
-                accountBeforeView.setText("");
-            }
-            // Filling Transaction Date
-            TextView dateView = rowView.findViewById(R.id.transaction_date);
-            dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
-
-            // Filling After state
-            TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
-            if (t.hasStateAfter) {
-                accountAfterView.setText(t.getStateAfterAsString(hideCurrency));
-            } else {
-                accountAfterView.setText("");
-            }
-            // Filling commission
-            TextView accountCommissionView = rowView.findViewById(R.id.transactionCommission);
-            if (t.getCommission().equals(new BigDecimal("0.00"))) {
-                accountCommissionView.setVisibility(View.GONE);
-            } else {
-                accountCommissionView.setVisibility(View.VISIBLE);
-                accountCommissionView.setText(t.getCommissionAsString(hideCurrency, true));
-                accountCommissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
-            }
-            // Filling difference
-            TextView accountDifferenceView = rowView.findViewById(R.id.stateDifference);
-            if (t.hasStateDifference) {
-                accountDifferenceView.setVisibility(View.VISIBLE);
-                accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency, inverseRate, false));
-                switch (t.getStateDifference().signum()) {
-                    case -1:
-                        accountDifferenceView.setTextColor(Color.RED);
-                        break;
-                    case 0:
-                        accountDifferenceView.setTextColor(Color.GRAY);
-                        break;
-                    case 1:
-                        accountDifferenceView.setTextColor(Color.rgb(0, 100, 0)); // dark green
+                // Filling Before state
+                TextView accountBeforeView = rowView.findViewById(R.id.stateBefore);
+                if (t.hasStateBefore) {
+                    accountBeforeView.setText(t.getStateBeforeAsString(hideCurrency));
+                } else {
+                    accountBeforeView.setText("");
                 }
-            } else {
-                //accountDifferenceView.setVisibility(View.GONE);
-                accountDifferenceView.setText("");
-            }
-            // Changing icon
-            ImageView iconView = rowView.findViewById(R.id.transactionIcon);
-            iconView.setImageResource(t.icon);
+                // Filling Transaction Date
+                TextView dateView = rowView.findViewById(R.id.transaction_date);
+                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
 
-            // Filling Extra parameters
-            if (t.hasExtras()) {
-                ((TextView) rowView.findViewById(R.id.extra1)).setText(t.getExtraParam1());
-                ((TextView) rowView.findViewById(R.id.extra2)).setText(t.getExtraParam2());
-                ((TextView) rowView.findViewById(R.id.extra3)).setText(t.getExtraParam3());
-                ((TextView) rowView.findViewById(R.id.extra4)).setText(t.getExtraParam4());
-                rowView.findViewById(R.id.extra1).setVisibility(View.VISIBLE);
-                rowView.findViewById(R.id.extra2).setVisibility(View.VISIBLE);
-                rowView.findViewById(R.id.extra3).setVisibility(View.VISIBLE);
-                rowView.findViewById(R.id.extra4).setVisibility(View.VISIBLE);
-            } else {
-                rowView.findViewById(R.id.extra1).setVisibility(View.GONE);
-                rowView.findViewById(R.id.extra2).setVisibility(View.GONE);
-                rowView.findViewById(R.id.extra3).setVisibility(View.GONE);
-                rowView.findViewById(R.id.extra4).setVisibility(View.GONE);
+                // Filling After state
+                TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
+                if (t.hasStateAfter) {
+                    accountAfterView.setText(t.getStateAfterAsString(hideCurrency));
+                } else {
+                    accountAfterView.setText("");
+                }
+                // Filling commission
+                TextView accountCommissionView = rowView.findViewById(R.id.transactionCommission);
+                if (t.getCommission().equals(new BigDecimal("0.00"))) {
+                    accountCommissionView.setVisibility(View.GONE);
+                } else {
+                    accountCommissionView.setVisibility(View.VISIBLE);
+                    accountCommissionView.setText(t.getCommissionAsString(hideCurrency, true));
+                    accountCommissionView.setTextColor(Color.rgb(218, 48, 192)); //pink
+                }
+                // Filling difference
+                TextView accountDifferenceView = rowView.findViewById(R.id.stateDifference);
+                if (t.hasStateDifference) {
+                    accountDifferenceView.setVisibility(View.VISIBLE);
+                    accountDifferenceView.setText(t.getDifferenceAsString(hideCurrency, inverseRate, false));
+                    switch (t.getStateDifference().signum()) {
+                        case -1:
+                            accountDifferenceView.setTextColor(Color.RED);
+                            break;
+                        case 0:
+                            accountDifferenceView.setTextColor(Color.GRAY);
+                            break;
+                        case 1:
+                            accountDifferenceView.setTextColor(Color.rgb(0, 100, 0)); // dark green
+                    }
+                } else {
+                    //accountDifferenceView.setVisibility(View.GONE);
+                    accountDifferenceView.setText("");
+                }
+                // Changing icon
+                ImageView iconView = rowView.findViewById(R.id.transactionIcon);
+                iconView.setImageResource(t.icon);
+
+                // Filling Extra parameters
+                if (t.hasExtras()) {
+                    ((TextView) rowView.findViewById(R.id.extra1)).setText(t.getExtraParam1());
+                    ((TextView) rowView.findViewById(R.id.extra2)).setText(t.getExtraParam2());
+                    ((TextView) rowView.findViewById(R.id.extra3)).setText(t.getExtraParam3());
+                    ((TextView) rowView.findViewById(R.id.extra4)).setText(t.getExtraParam4());
+                    rowView.findViewById(R.id.extra1).setVisibility(View.VISIBLE);
+                    rowView.findViewById(R.id.extra2).setVisibility(View.VISIBLE);
+                    rowView.findViewById(R.id.extra3).setVisibility(View.VISIBLE);
+                    rowView.findViewById(R.id.extra4).setVisibility(View.VISIBLE);
+                } else {
+                    rowView.findViewById(R.id.extra1).setVisibility(View.GONE);
+                    rowView.findViewById(R.id.extra2).setVisibility(View.GONE);
+                    rowView.findViewById(R.id.extra3).setVisibility(View.GONE);
+                    rowView.findViewById(R.id.extra4).setVisibility(View.GONE);
+                }
+                return rowView;
+            }else{
+                return new View(MainActivity.this);
             }
-            return rowView;
         }
 
     }
