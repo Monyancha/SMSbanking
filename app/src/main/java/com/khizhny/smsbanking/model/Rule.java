@@ -427,8 +427,11 @@ public class Rule implements java.io.Serializable {
 				r.append(delim).append(matcher.group(i));
 				delim="\n";
 			}
+			return r.toString();
+		}else{
+			return "incorrect mask";
 		}
-		return r.toString();
+
 	}
 
 	public void  setAdvanced(int advancedInt){

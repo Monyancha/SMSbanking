@@ -14,8 +14,8 @@ android {
         applicationId "com.khizhny.smsbanking"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 137
-        versionName '1.37'
+        versionCode 138
+        versionName '1.38'
         signingConfig signingConfigs.sign
     }
     repositories {

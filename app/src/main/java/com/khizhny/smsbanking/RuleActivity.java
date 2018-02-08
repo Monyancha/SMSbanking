@@ -143,6 +143,25 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
         etRegExp=findViewById(R.id.etRegex);
         etRegExp.setText(rule.getMask());
+        etRegExp.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
+                if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
+                    return false;
+                } else if (actionId == EditorInfo.IME_ACTION_DONE
+                        || event == null
+                        || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    // the user is done typing.
+                    rule.setMask(v.getText().toString());
+                    weNeedToDeleteAllSubrules=true;
+                    tvResults.setText(rule.getValues());
+                    return true;
+                }
+                return false; // pass on to other listeners.
+            }
+        });
+
         if (rule.isAdvanced()) {
             etRegExp.setVisibility(View.VISIBLE);
         }else{
@@ -160,7 +179,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
                 if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
                     return false;
-                } else if (actionId == EditorInfo.IME_ACTION_SEARCH
+                } else if (actionId == EditorInfo.IME_ACTION_DONE
                         || event == null
                         || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                     // the user is done typing.
