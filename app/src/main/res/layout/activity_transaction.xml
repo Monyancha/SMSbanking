@@ -73,15 +73,16 @@
             app:layout_constraintTop_toBottomOf="@+id/sms_body"
             app:layout_constraintHorizontal_bias="0.0"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/finish_rule"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
             android:layout_marginEnd="8dp"
             android:onClick="onClick"
-            android:text="@string/done"
             app:layout_constraintRight_toRightOf="parent"
+            android:contentDescription="@string/image"
+            app:srcCompat="@android:drawable/ic_menu_save"
             app:layout_constraintTop_toBottomOf="@+id/separator" />
 
         <TableLayout
