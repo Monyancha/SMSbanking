@@ -18,116 +18,122 @@ import java.util.Locale;
 
 public class MyApplication extends Application {
 
-    public static String defaultSmsApp;
-    public final static String LOG = "SMS_BANKING";
-    public static boolean hasReadSmsPermission=true;
+		public static final String KEY_LANGUAGE = "language";
+		public static final String KEY_EXTRA_1_NAME = "extra1_name";
+		public static final String KEY_EXTRA_2_NAME = "extra2_name";
+		public static final String KEY_EXTRA_3_NAME = "extra3_name";
+		public static final String KEY_EXTRA_4_NAME = "extra4_name";
+		public static final String KEY_HIDE_MATCHED_MESSAGES = "hide_matched_messages";
+		public static final String KEY_HIDE_NOT_MATCHED_MESSAGES = "hide_not_matched_messages";
+		public static final String KEY_IGNORE_CLONES = "ignore_clones";
+		public static String defaultSmsApp;
+		public final static String LOG = "SMS_BANKING";
+		public static boolean hasReadSmsPermission=true;
 
-    public static DatabaseAccess db;
+		public static DatabaseAccess db;
 
+		static boolean hideMatchedMessages ;
+		static boolean hideNotMatchedMessages;
+		static boolean ignoreClones;
+		public static boolean forceRefresh;
 
-    static boolean hideMatchedMessages ;
-    static boolean hideNotMatchedMessages;
-    static boolean ignoreClones;
-    public static boolean forceRefresh;
+		public static String language;
 
-    public static String language;
+		@Override
+		public void onCreate() {
+				super.onCreate();
+				Log.d(LOG,"MyApplication.onCreate() started");
+				db = DatabaseAccess.getInstance(this);
+				db.open();
+				Log.d(LOG,"New Application created...");
+				// remembering default SMS application to restore on exit. Needed for SMS deleting.
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+						defaultSmsApp = Telephony.Sms.getDefaultSmsPackage(this);
+				}
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.d(LOG,"MyApplication.onCreate() started");
-        db = DatabaseAccess.getInstance(this);
-        db.open();
-        Log.d(LOG,"New Application created...");
-        // remembering default SMS application to restore on exit. Needed for SMS deleting.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            defaultSmsApp = Telephony.Sms.getDefaultSmsPackage(this);
-        }
+				//check for permissions
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+						hasReadSmsPermission=(checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
+				}
 
-        //check for permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            hasReadSmsPermission=(checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED);
-        }
-
-        // Restoring preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
-        hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
-        ignoreClones = settings.getBoolean("ignore_clones", false);
-
-        // changing language
-        super.onCreate();
-        String lang;
-        Configuration config = getBaseContext().getResources().getConfiguration();
-        //String systemLocale = getSystemLocale(config).getLanguage();
-
-        if (settings.contains("language")){
-            language = settings.getString("language","(System language)");
-        }else{
-            language = "(System language)";
-            settings.edit().putString("language",language).apply();
-        }
-
-        if (!language.equals("(System language)")) {
-            lang="default";
-            if (language.equals("Bulgarian")) lang="bg";
-            if (language.equals("Russian")) lang="ru";
-            if (language.equals("Ukrainian")) lang="uk";
-            Locale locale = new Locale(lang);
-            Locale.setDefault(locale);
-            setSystemLocale(config, locale);
-            updateConfiguration(config);
-        }
-        Log.d(LOG,"MyApplication.onCreate() finished");
-    }
-
-    @Override
-    public void onTerminate() {
-        Log.d(LOG,"MyApplication.onTerminate() started");
-        db.close();
-        super.onTerminate();
-    }
+				// Restoring preferences
+				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+				hideMatchedMessages = settings.getBoolean(KEY_HIDE_MATCHED_MESSAGES, false);
+				hideNotMatchedMessages = settings.getBoolean(KEY_HIDE_NOT_MATCHED_MESSAGES, false);
+				ignoreClones = settings.getBoolean(KEY_IGNORE_CLONES, false);
 
 
-    @SuppressWarnings("deprecation")
-    private static void setSystemLocale(Configuration config, Locale locale) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            config.setLocale(locale);
-        } else {
-            config.locale = locale;
-        }
-    }
+
+				//LoadingDefault preferences
+				if (!settings.contains(KEY_LANGUAGE)) settings.edit().putString(KEY_LANGUAGE,getString(R.string.system_language)).apply();
+				if (!settings.contains(KEY_EXTRA_1_NAME)) settings.edit().putString(KEY_EXTRA_1_NAME,getString(R.string.define_extra_parameter1)).apply();
+				if (!settings.contains(KEY_EXTRA_2_NAME)) settings.edit().putString(KEY_EXTRA_2_NAME,getString(R.string.define_extra_parameter2)).apply();
+				if (!settings.contains(KEY_EXTRA_3_NAME)) settings.edit().putString(KEY_EXTRA_3_NAME,getString(R.string.define_extra_parameter3)).apply();
+				if (!settings.contains(KEY_EXTRA_4_NAME)) settings.edit().putString(KEY_EXTRA_4_NAME,getString(R.string.define_extra_parameter4)).apply();
+
+				language=settings.getString(KEY_LANGUAGE,getString(R.string.system_language));
+				if (!language.equals(getString(R.string.system_language))) {// changing language
+						String lang="default";
+						if (language.equals("Bulgarian")) lang="bg";
+						if (language.equals("Russian")) lang="ru";
+						if (language.equals("Ukrainian")) lang="uk";
+						Locale locale = new Locale(lang);
+						Locale.setDefault(locale);
+						Configuration config = getBaseContext().getResources().getConfiguration();
+						setSystemLocale(config, locale);
+						updateConfiguration(config);
+				}
+
+				Log.d(LOG,"MyApplication.onCreate() finished");
+		}
+
+		@Override
+		public void onTerminate() {
+				Log.d(LOG,"MyApplication.onTerminate() started");
+				db.close();
+				super.onTerminate();
+		}
 
 
-    private void updateConfiguration(Configuration config) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            getBaseContext().createConfigurationContext(config);
-        } else {
-            getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
-        }
-    }
+		@SuppressWarnings("deprecation")
+		private static void setSystemLocale(Configuration config, Locale locale) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+						config.setLocale(locale);
+				} else {
+						config.locale = locale;
+				}
+		}
 
-   public static void restart(Context context) {
-        Log.d(LOG, "MyApplication.restart() started");
-        Intent restartIntent = context.getPackageManager()
-                .getLaunchIntentForPackage(context.getPackageName() );
-        PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-       if (manager != null) {
-           manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, intent);
-           System.exit(2);
-           Log.d(LOG, "MyApplication.restart() finished");
-       }
-    }
 
-    public static  String[] getExtraParameterNames(Context ctx){
-        // Restoring preferences
-        String[] res=new String[4];
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
-        res[0] = settings.getString("extra1_name", "" );
-        res[1] = settings.getString("extra2_name", "");
-        res[2] = settings.getString("extra3_name", "");
-        res[3] = settings.getString("extra4_name", "");
-        return res;
-    }
+		private void updateConfiguration(Configuration config) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+						getBaseContext().createConfigurationContext(config);
+				} else {
+						getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+				}
+		}
+
+	 public static void restart(Context context) {
+				Log.d(LOG, "MyApplication.restart() started");
+				Intent restartIntent = context.getPackageManager()
+								.getLaunchIntentForPackage(context.getPackageName() );
+				PendingIntent intent = PendingIntent.getActivity(context, 0,restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+				AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+			 if (manager != null) {
+					 manager.set(AlarmManager.RTC, System.currentTimeMillis() + 1, intent);
+					 System.exit(2);
+					 Log.d(LOG, "MyApplication.restart() finished");
+			 }
+		}
+
+		public static  String[] getExtraParameterNames(Context ctx){
+				// Restoring preferences
+				String[] res=new String[4];
+				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+				res[0] = settings.getString(KEY_EXTRA_1_NAME, "" );
+				res[1] = settings.getString(KEY_EXTRA_2_NAME, "");
+				res[2] = settings.getString(KEY_EXTRA_3_NAME, "");
+				res[3] = settings.getString(KEY_EXTRA_4_NAME, "");
+				return res;
+		}
 }

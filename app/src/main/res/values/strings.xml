@@ -187,7 +187,7 @@
     <string name="replace_private">Replace you private data here if you wish to share template later.</string>
     <string name="pick_your_country">Pick your country</string>
     <string name="pref_lang">Language</string>
-    <string name="about_text">Created by Andrey Khizhny</string>
+    <string name="about_text">Автор Andrey Khizhny</string>
     <string name="split">Split</string>
     <string name="variable_size_fixed">variable(size fixed)</string>
     <string name="word_variable">variable</string>
@@ -198,6 +198,12 @@
     <string name="image" translatable="false">image</string>
     <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
     <string name="message">message</string>
+    <string name="extra_parameters">Extra parameters</string>
+    <string name="define_extra_parameter1">Card/Account</string>
+    <string name="define_extra_parameter2">Place</string>
+    <string name="define_extra_parameter3">Date</string>
+    <string name="define_extra_parameter4">Time</string>
+    <string name="system_language">System language</string>
 
 </resources>
 

@@ -187,4 +187,10 @@
     <string name="regular_expression">Regular Expression</string>
     <string name="sd_card_msg">Потрібен доступ до SD картки.</string>
     <string name="message">сообщение</string>
+    <string name="extra_parameters">Додаткові параметри</string>
+    <string name="define_extra_parameter1">Картка/рахунок</string>
+    <string name="define_extra_parameter3">Дата</string>
+    <string name="define_extra_parameter4">Час</string>
+    <string name="define_extra_parameter2">Місце</string>
+    <string name="system_language">Мова системи</string>
 </resources>

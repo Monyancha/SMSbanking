@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.khizhny.smsbanking.R;
 
@@ -16,11 +17,12 @@ import com.khizhny.smsbanking.R;
  */
 public abstract class MyBaseTaskService extends Service {
 
-    static final int PROGRESS_NOTIFICATION_ID = 0;
+		static final int PROGRESS_NOTIFICATION_ID = 0;
     static final int FINISHED_NOTIFICATION_ID = 1;
 
     private static final String TAG = "MyBaseTaskService";
-    private int mNumTasks = 0;
+		public static final String SMS_BANKING_NOTIFICATION = "sms_banking_notification";
+		private int mNumTasks = 0;
 
     public void taskStarted() {
         changeNumberOfTasks(1);
@@ -50,7 +52,7 @@ public abstract class MyBaseTaskService extends Service {
             percentComplete = (int) (100 * completedUnits / totalUnits);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sms_banking_notification")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, SMS_BANKING_NOTIFICATION)
                 .setSmallIcon(R.drawable.ic_file_upload_white_24dp)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(caption)
@@ -76,7 +78,7 @@ public abstract class MyBaseTaskService extends Service {
 
         int icon = success ? R.drawable.ic_check_white_24dp: R.drawable.ic_error_white_24dp;
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sms_banking_notification")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, SMS_BANKING_NOTIFICATION)
                 .setSmallIcon(icon)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(caption)
@@ -89,6 +91,7 @@ public abstract class MyBaseTaskService extends Service {
         if (manager != null) {
             manager.notify(FINISHED_NOTIFICATION_ID, builder.build());
         }
+				Toast.makeText(this,caption,Toast.LENGTH_LONG).show();
     }
 
     /**

@@ -5,114 +5,113 @@
     <string name="SMS_TEXT">Текст на SMS съобщението</string>
 
     <string name="action_rule_list">Правила</string>
-    <string name="action_sub_rule_list">Метод на распознаване</string>
+    <string name="action_sub_rule_list">Метод на разпознаване</string>
     <string name="action_preferences">Настройки</string>
 
-	<string name="action_quit">Изход</string>
+    <string name="action_quit">Изход</string>
     <string name="action_save">Запис</string>
     <string name="action_rule_text">Редактор на правила</string>
     <string name="action_rate_app">Оценка на програмата</string>
 
-	<string name="rule_message">Маркирайте не постоянните думи(Натиснете продължително, за да разделите думите, Swype-присъедини):</string>
+    <string name="rule_message">Маркирайте непостоянните думи (продължително натискане - разделяне на текста, съединете с плъзгане):</string>
 
     <string name="popup_create_rule">Създаване на ново правило</string>
-	<string name="popup_edit_rule">Редактиране на правилото</string>
-	<string name="popup_delete_rule">Изтриване на правилото</string>
+    <string name="popup_edit_rule">Редактиране на правилото</string>
+    <string name="popup_delete_rule">Изтриване на правилото</string>
 
     <string name="account_default_currency">Валута на сметката:</string>
-	<string name="bank_account_name">Име на банковата сметка:</string>
-	<string name="sms_bank_sender">Податели на SMS-и</string>
-	<string name="rule_type">Тип на операцията:</string>
+    <string name="bank_account_name">Име на банковата сметка:</string>
+    <string name="sms_bank_sender">Податели на SMS-и</string>
+    <string name="rule_type">Тип на операцията:</string>
     <string name="sub_rule_constant_value">Текст:</string>
     <string name="sub_rule_method">Метод:</string>
-	<string name="sub_rule_phrase">Маркер:</string>
-	<string name="sub_rule_result_value">Резултат:</string>
-	<string name="sub_rule_decimal_separator">разделител</string>
+    <string name="sub_rule_phrase">Маркер:</string>
+    <string name="sub_rule_result_value">Резултат:</string>
+    <string name="sub_rule_decimal_separator">разделител</string>
 
     <string name="tip_icon">символ</string>
     <string name="tip_type">тип на операцията</string>
-	<string name="tip_rule_name">Име на правилото</string>
-	<string name="tip_before">преди</string>
-	<string name="tip_after">след</string>
-	<string name="tip_difference">разлика</string>
-	<string name="tip_commission">такси</string>
-	<string name="tip_date">29.02.1981</string>
-	<string name="tip_bank_name">Име на банката</string>
-	<string name="tip_bank_phone">Номер</string>
-	<string name="pref_hide_title">Да не се показва валута</string>
-	<string name="pref_hide_currency_summary">Да не се показва валута, ако е основната.</string>
-	<string name="pref_inverse_rate">Обратен обменен курс</string>
-	<string name="pref_inverse_rate_summary">Вместо USD/EUR да се показва EUR/USD</string>
-	<string name="pref_hide_matched">Скриване на обработените SMS-и</string>
-	<string name="pref_hide_matched_summary">Използвайте за настройка на правилата.</string>
-	<string name="pref_hide_non_matched">Скриване на необработените SMS-и</string>
-	<string name="pref_hide_non_matched_summary">Включете, за да премахнете неинформативните SMS-и.</string>
-	<string name="tip_bank_1">Привет!\n
-        Первым делом нужно настроить ваш банковский счет. Для этого:\n
-		1. Зайдите в меню банков и попробуйте найти готовый шаблон.\n
-		2. Если не нашли, то добавьте свой банк.\n
-		3. Вернитесь в главное меню.\n
+    <string name="tip_rule_name">Име на правилото</string>
+    <string name="tip_before">преди</string>
+    <string name="tip_after">след</string>
+    <string name="tip_difference">разлика</string>
+    <string name="tip_commission">такси</string>
+    <string name="tip_date">29.02.1981</string>
+    <string name="tip_bank_name">Име на банката</string>
+    <string name="tip_bank_phone">Номер</string>
+    <string name="pref_hide_title">Да не се показва валута</string>
+    <string name="pref_hide_currency_summary">Да не се показва валута, ако е основната.</string>
+    <string name="pref_inverse_rate">Обратен обменен курс</string>
+    <string name="pref_inverse_rate_summary">Вместо USD/EUR да се показва EUR/USD</string>
+    <string name="pref_hide_matched">Скриване на обработените SMS-и</string>
+    <string name="pref_hide_matched_summary">Използвайте за настройка на правилата.</string>
+    <string name="pref_hide_non_matched">Скриване на необработените SMS-и</string>
+    <string name="pref_hide_non_matched_summary">Включете, за да премахнете неинформативните SMS-и.</string>
+    <string name="tip_bank_1">Привет!\n
+		Първо трябва да настроите банковата си сметка. За тази цел:\n
+		1. Влезте в меню Банки и потърсете готов шаблон.\n
+		2. Ако не намерите, добавете своята банка.\n
+		3. Върнете се в главното меню.\n
 		\n
-		Если все сделано верно вы увидите список сообщений от вашего банка. Далее нужно будет настроить правила обработки этих сообщений нажимая на них в списке.</string>
-
-	<string name="tip_rules_1">
-		Очень важно правильно настроить правила. Для этого:\n
+		Ако всичко е направено правилно ще видите списък със съобщения от Вашата банка. Ще трябва да настроите правила за обработка на съобщенията чрез натискане върху тях.</string>
+    <string name="tip_rules_1">
+		Важно е да настроите коректно правилата. За тази цел:\n
 		\n
-		1. Перейдите к списку SMS сообщений в главном окне.\n
-		2. В меню \"Общие настройки\" поставте флажок \"Спрятать обработанные SMS\" и уберите флажок \"Спрятать не обработанные SMS\".\n
-		3. Нажмите на SMS сообщении и выберите \"Создать новое правило\".\n
-		4. Укажите любое название правила и выберите тип транзакции.\n
-		5. Выделите слова которые не изменяются.\n
-		6. Нижмите кнопку \"Дальше\" и настройте правила обработки SMS.\n
-		7. Повторите операцию для всех информативных SMS.\n
-		8. В меню \"Общие настройки\" уберите флажок \"Спрятать обработанные SMS\" и поставте флажок \"Спрятать не обработанные SMS\".\n
+		1. Отворете списъка със съобщения.\n
+		2. В меню \"Общи настройки\" отметнете \"Скриване на обработените SMS-и\" и махнете отметката на \"Скриване на необработените SMS-и\".\n
+		3. Натиснете върху SMS и изберете \"Създаване на ново правило\".\n
+		4. Задайте име на правилото и изберете тип на транзакцията.\n
+		5. Определете думите, които не се променят.\n
+		6. Натиснете бутон \"Запис\" и настройте правила за обработка на SMS-а.\n
+		7. Повторете настройките за всички типове SMS-и.\n
+		8. В меню \"Общи настройки\" махнете отметката от \"Скриване на обработените SMS-и\" и отметнете \"Скриване на необработените SMS-и\".\n
 		\n
-		Совет: Если у вас два счёта в одном банке то в качестве неизменного слова можно выбрать номер счёта или карты. Тогда можно будет настроить программу для каждой карты в отдельности.
+		Съвет: Ако имате две сметки в една банка, изберете в качеството на неизменна дума номера на сметката или картата. Така програмата може да се настрои поотделно за всяка карта.
 	</string>
 
-	<string name="tip_subrules_1">
-		Для каждого правила нужно настоить методы обработки для извлечения следующих 5 параметров:\n
+    <string name="tip_subrules_1">
+		За всяко правило трябва да настроите обработка за извличане на следните 5 параметъра:\n
 		\n
-		1. \"Балланс до операции\"\n
-		2. \"Балланс после операции\"\n
-		3. \"Изменение балланса\"\n
-		4. \"Комиссия\" (не обязательно)\n
-		5. \"Валюта операции\" (не обязательно)\n
+		1. \"Баланс преди операцията\"\n
+		2. \"Баланс след операцията\"\n
+		3. \"Изменение на баланса\"\n
+		4. \"Такса\" (незадължително)\n
+		5. \"Валута на операцията\" (незадължително)\n
 		\n
-		Совет 1: Необходимо лишь два из первых трех параметров. Третий будет высчитан автоматически.\n
-		Совет 2: Если в сообщении есть только 1 из первых трех параметров программа восстановит недостающие данные из ближайших по времени сообщений. Иногда это приводит к неверным вычислениям если нарушена последовательность сообщений или такие сообщения отсутствуют.\n
-		Совет 3: Если  \"Валюта операции\" не совпадает с валютой вашего счёта будет посчитан обменный курс. Иногда курс может быть посчитан неправильно если в сообщении нет всех данных или данные были восстановлены неверно.\n
+		Съвет 1: Необходими са само два от първите три параметъра. Третият ще се изчисли автоматично.\n
+		Съвет 2: Ако в съобщението има само 1 от първите три параметъра, програмата ще възстанови недостигащите данни от най-близките по време съобщения. Понякога това води до неверни изчисления, ако е нарушена последователността на съобщенията или някой съобщения липсват.\n
+		Съвет 3: Ако  \"Валута на операцията\" не съвпада с валутата на сметката ще се използва обменен курс. Курсът може да бъде изчислен неправилно ако в съобщението няма всички данни или данните са възстановени неверно.\n
 
 	</string>
-	<string name="saving_changes">Запис…</string>
-	<string name="pref_title">Общи настройки</string>
-	<string name="popup_delete_sms">Изтриване на съобщението</string>
-	<string name="activity_title_bank_list">Списък на банките</string>
-	<string name="activity_title_bank">Настройки на банка</string>
-	<string name="negate">минус</string>
-	<string name="bank_activate">Активиране</string>
-	<string name="mybank_activity_title">Банки</string>
-	<string name="bank_templates_title">Шаблони на банките</string>
-	<string name="bank_add">Добавяне</string>
-	<string name="bank_edit">Редактиране</string>
-	<string name="bank_delete">Изтриване</string>
-	<string name="bank_activate_tip">е активирана.</string>
-	<string name="add_phone_button_description">плюс</string>
-	<string name="phone_number_not_set">Не е зададен номер на телефона</string>
-	<string name="export_failed">Експортът е неуспешен</string>
-	<string name="import_failed">Импортът е неуспешен</string>
+    <string name="saving_changes">Запис…</string>
+    <string name="pref_title">Общи настройки</string>
+    <string name="popup_delete_sms">Изтриване на съобщението</string>
+    <string name="activity_title_bank_list">Списък на банките</string>
+    <string name="activity_title_bank">Настройки на банка</string>
+    <string name="negate">минус</string>
+    <string name="bank_activate">Активиране</string>
+    <string name="mybank_activity_title">Банки</string>
+    <string name="bank_templates_title">Шаблони на банките</string>
+    <string name="bank_add">Добавяне</string>
+    <string name="bank_edit">Редактиране</string>
+    <string name="bank_delete">Изтриване</string>
+    <string name="bank_activate_tip">е активирана.</string>
+    <string name="add_phone_button_description">плюс</string>
+    <string name="phone_number_not_set">Не е зададен номер на телефона</string>
+    <string name="export_failed">Експортът е неуспешен</string>
+    <string name="import_failed">Импортът е неуспешен</string>
     <string name="add_widget">Добавяне на widged</string>
-	<string name="appwidget_text">0.00</string>
-	<string name="widget_default_name">Банка</string>
-	<string name="appwidget_currency">BGN</string>
-	<string name="bank_share">Споделяне</string>
-	<string name="popup_switch_rule">Прилагане на друго правило</string>
-    <string name="extra_parameter">Потребителски1</string>
+    <string name="appwidget_text">0.00</string>
+    <string name="widget_default_name">Банка</string>
+    <string name="appwidget_currency">BGN</string>
+    <string name="bank_share">Споделяне</string>
+    <string name="popup_switch_rule">Прилагане на друго правило</string>
+    <string name="extra_parameter">Потребителски 1</string>
     <string name="text_color">Цвят на текста:</string>
     <string name="background_color">Фон:</string>
     <string name="bank_name">Име на банката</string>
     <string name="font_size">Размер на шрифта</string>
-    <string name="widget_sample_label">Моята банка\n123.56 RUB</string>
+    <string name="widget_sample_label">Моята банка\n123.56 BGN</string>
     <string name="background">Фон</string>
     <string name="statistics">Статистика</string>
     <string name="quot_interval_quot">Период:</string>
@@ -174,14 +173,20 @@
     <string name="replace_private">Заменете личните данни в текста, ако планирате да споделите шаблона.</string>
     <string name="pick_your_country">Изберете Вашата страна</string>
     <string name="pref_lang">Language</string>
-    <string name="about_text">created: Andrey Khizhny \ntranslated: Sergey Hristov</string>
-    <string name="split">Split</string>
+    <string name="about_text">Автор: Andrey Khizhny  Преведено: Sergey Hristov</string>
+    <string name="split">Разделяне</string>
     <string name="variable_size_fixed">Променлив(size fixed)</string>
     <string name="word_variable">Променлив</string>
-    <string name="word_fixed">Ппределен</string>
-    <string name="delete_sub_rule">Delete sub rule</string>
+    <string name="word_fixed">Пределен</string>
+    <string name="delete_sub_rule">Изтриване на подправило</string>
     <string name="advanced">Експерт</string>
     <string name="regular_expression">Regular Expression</string>
-    <string name="sd_card_msg">Starting from Android 6.0 you need to allow access to SD</string>
-    <string name="message">message</string>
+    <string name="sd_card_msg">Трябва да разрешите достъпа до SD</string>
+    <string name="message">съобщение</string>
+    <string name="define_extra_parameter1">Карта/Сметка</string>
+    <string name="define_extra_parameter3">Дата</string>
+    <string name="define_extra_parameter4">Време</string>
+    <string name="system_language">Език на системата</string>
+    <string name="define_extra_parameter2">Място</string>
+    <string name="extra_parameters">Допълнителни параметри</string>
 </resources>

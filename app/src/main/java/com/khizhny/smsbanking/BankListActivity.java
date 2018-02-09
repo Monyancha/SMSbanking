@@ -230,12 +230,12 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 				startActivity(intent);
 				bankListAdapter.notifyDataSetChanged();
 				return true;
-
             case R.id.bank_cloud_download:
                 if (mAuth.getCurrentUser()!=null) {
-                    importBankFromCloud();
+                    goToPostsActivity();
                 }else{
                     Toast.makeText(this, R.string.login_first,Toast.LENGTH_SHORT).show();
+                    googleSignIn();
                 }
 				return true;
 
@@ -471,7 +471,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
     }
 
-    private void importBankFromCloud(){
+    private void goToPostsActivity(){
         //showBankImportDialog(EXPORT_FILE_EXTENSION, Environment.getExternalStorageDirectory().getPath());
 
         requestPermissions();
@@ -599,7 +599,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                             // if sign in successful then auth state listener will handle it.
                                         Toast.makeText(BankListActivity.this,"Welcome "+getUserName(),Toast.LENGTH_LONG).show();
                             Log.d(LOG, "signInWithCredential:success");
-                            importBankFromCloud();
+                            goToPostsActivity();
                         }else{
                             // if sign in fails show message to user.
                             Log.d(LOG, "signInWithCredential:failed");

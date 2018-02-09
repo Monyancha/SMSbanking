@@ -75,6 +75,9 @@ import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 import xml.SmsBankingWidget;
 
+import static com.khizhny.smsbanking.MyApplication.KEY_HIDE_MATCHED_MESSAGES;
+import static com.khizhny.smsbanking.MyApplication.KEY_HIDE_NOT_MATCHED_MESSAGES;
+import static com.khizhny.smsbanking.MyApplication.KEY_IGNORE_CLONES;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import static com.khizhny.smsbanking.MyApplication.db;
 import static com.khizhny.smsbanking.MyApplication.forceRefresh;
@@ -87,18 +90,25 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         OnItemClickListener,
         SwipeRefreshLayout.OnRefreshListener{
 
-    private static final String LIST_STATE = "listState";
+		private static final String LIST_STATE = "listState";
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
     private static final String EXPORT_FOLDER = "SMS banking";
 
-    public static final String  KEY_TODO = "todo";
-    public static final String  KEY_TODO_ADD = "add";
-    public static final String  KEY_TODO_EDIT = "edit";
-    public static final String  KEY_RULE_ID = "rule_id";
-    public static final String  KEY_SMS_BODY = "sms_body";
+    public static final String KEY_TODO = "todo";
+    public static final String KEY_TODO_ADD = "add";
+    public static final String KEY_TODO_EDIT = "edit";
+    public static final String KEY_RULE_ID = "rule_id";
+    public static final String KEY_SMS_BODY = "sms_body";
+		public static final String KEY_HIDE_CURRENCY = "hide_currency";
+		public static final String KEY_UPDATE_AVAILABLE = "update_available";
+		public static final String KEY_BANK_ID = "bank_id";
+		public static final String URL_4PDA_PRIVACY = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
+		public static final String KEY_COUNTRY_PREFERENCE = "country_preference";
+		public static final String KEY_INVERSE_RATE = "inverse_rate";
+		public static final String KEY_HIDE_ADS = "hide_ads";
 
 
-    private ListView listView;
+		private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressDialog pDialog;
@@ -123,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         Log.d(LOG, "MainActivity:onCreate()");
 
-        if (getIntent().getBooleanExtra("update_available", false)) {
+        if (getIntent().getBooleanExtra(KEY_UPDATE_AVAILABLE, false)) {
             goToMarket();
         }
 
@@ -149,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         // Checking if Activity was called by widget clicking.
         // If so, changing active bank to the bank linked with this widget.
         this.getIntent().getComponent();
-        int widget_bank_id = this.getIntent().getIntExtra("bank_id", 0);
+        int widget_bank_id = this.getIntent().getIntExtra(KEY_BANK_ID, 0);
         if (widget_bank_id > 0) {
             Log.d(MyApplication.LOG, "Main Activity launched from widget click and bank_id=" + widget_bank_id);
             db.setActiveBank(widget_bank_id);
@@ -199,9 +209,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 goToMarket();
                 break;
             case R.id.action_privacy:
-                String url = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
+                i.setData(Uri.parse(URL_4PDA_PRIVACY));
                 startActivity(i);
                 break;
             case R.id.action_about:
@@ -331,10 +340,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         // Restoring preferences
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        hideCurrency = settings.getBoolean("hide_currency", false);
-        inverseRate = settings.getBoolean("inverse_rate", false);
-        hideAds = settings.getBoolean("hide_ads", false);
-        country = settings.getString("country_preference",null);
+        hideCurrency = settings.getBoolean(KEY_HIDE_CURRENCY, false);
+        inverseRate = settings.getBoolean(KEY_INVERSE_RATE, false);
+        hideAds = settings.getBoolean(KEY_HIDE_ADS, false);
+        country = settings.getString(KEY_COUNTRY_PREFERENCE,null);
 
 
         if (country!=null) {
@@ -517,7 +526,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         }
 
-        @NonNull
+        @SuppressLint("DefaultLocale")
+				@NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView=null;
@@ -895,7 +905,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     Log.d(LOG, "MainActivity:showCountryPickDialog().onClick");
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     country = getResources().getStringArray(R.array.countries_array)[which];
-                    settings.edit().putString("country_preference", country).apply();
+                    settings.edit().putString(KEY_COUNTRY_PREFERENCE, country).apply();
                     db.open();
                     db.setDefaultCountry(country);  // update db with selected country
                     loadMyBanks();
@@ -937,7 +947,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
 
         private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in milliseconds
-        private long refreshTime;
+
+				private long refreshTime;
 
         @Override
         protected void onPreExecute() {
@@ -954,12 +965,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             pDialog.show();
             // Restoring preferences
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-            hideCurrency = settings.getBoolean("hide_currency", false);
-            inverseRate = settings.getBoolean("inverse_rate", false);
-            hideAds = settings.getBoolean("hide_ads", false);
-            hideMatchedMessages = settings.getBoolean("hide_matched_messages", false);
-            hideNotMatchedMessages = settings.getBoolean("hide_not_matched_messages", false);
-            ignoreClones = settings.getBoolean("ignore_clones", false);
+            hideCurrency = settings.getBoolean(KEY_HIDE_CURRENCY, false);
+            inverseRate = settings.getBoolean(KEY_INVERSE_RATE, false);
+            hideAds = settings.getBoolean(KEY_HIDE_ADS, false);
+            hideMatchedMessages = settings.getBoolean(KEY_HIDE_MATCHED_MESSAGES, false);
+            hideNotMatchedMessages = settings.getBoolean(KEY_HIDE_NOT_MATCHED_MESSAGES, false);
+            ignoreClones = settings.getBoolean(KEY_IGNORE_CLONES, false);
         }
 
         @Override
@@ -1117,9 +1128,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             pDialog.show();
             // Restoring preferences
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-            hideCurrency = settings.getBoolean("hide_currency", false);
-            inverseRate = settings.getBoolean("inverse_rate", false);
-            hideAds = settings.getBoolean("hide_ads", false);
+            hideCurrency = settings.getBoolean(KEY_HIDE_CURRENCY, false);
+            inverseRate = settings.getBoolean(KEY_INVERSE_RATE, false);
+            hideAds = settings.getBoolean(KEY_HIDE_ADS, false);
         }
 
         @Override
@@ -1129,7 +1140,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             int progress=0;
             for (Transaction t:transactions) {
                 ContentValues cv = t.getContentValues();
-                cv.put("bank_id",activeBank.getId());
+                cv.put(KEY_BANK_ID,activeBank.getId());
                 db.cacheTransaction(cv);
                 publishProgress(progress++);
             }

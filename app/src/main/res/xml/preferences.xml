@@ -43,37 +43,32 @@
             android:title="@string/pref_ignore_clones"
             android:summary="@string/pref_ignore_clones_summary">
         </CheckBoxPreference>
-        <!--CheckBoxPreference
-            android:key="hide_ads"
-            android:title="@string/pref_hide_ads"
-            android:summary="@string/pref_hide_ads_summary">
-        </CheckBoxPreference>-->
 		</PreferenceCategory>
-	<PreferenceCategory android:title="Extra parameters">
-		<EditTextPreference
-			android:defaultValue="Card/Account"
-			android:key="extra1_name"
-			android:selectAllOnFocus="true"
-			android:singleLine="true"
-			android:title="Define name of extra1 parameter." />
-		<EditTextPreference
-			android:defaultValue="Place"
-			android:key="extra2_name"
-			android:selectAllOnFocus="true"
-			android:singleLine="true"
-			android:title="Define name of extra2 parameter." />
-		<EditTextPreference
-			android:defaultValue="Date"
-			android:key="extra3_name"
-			android:selectAllOnFocus="true"
-			android:singleLine="true"
-			android:title="Define name of extra3 parameter." />
-		<EditTextPreference
-			android:defaultValue="Time"
-			android:key="extra4_name"
-			android:selectAllOnFocus="true"
-			android:singleLine="true"
-			android:title="Define name of extra4 parameter." />
-	</PreferenceCategory>
+    <PreferenceCategory android:title="@string/extra_parameters">
+        <EditTextPreference
+            android:key="extra1_name"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="%s"
+            android:title="@string/extra1" />
+        <EditTextPreference
+            android:key="extra2_name"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="%s"
+            android:title="@string/extra2" />
+        <EditTextPreference
+            android:key="extra3_name"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="%s"
+            android:title="@string/extra3" />
+        <EditTextPreference
+            android:key="extra4_name"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="%s"
+            android:title="@string/extra4" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

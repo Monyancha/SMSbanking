@@ -185,5 +185,11 @@
     <string name="regular_expression">Regular Expression</string>
     <string name="sd_card_msg">Нужен доступ к SD.</string>
     <string name="message">сообщение</string>
+    <string name="extra_parameters">Доп. параметры</string>
+    <string name="define_extra_parameter1">Карта/Счет</string>
+    <string name="define_extra_parameter3">Дата</string>
+    <string name="define_extra_parameter4">Время</string>
+    <string name="define_extra_parameter2">Место</string>
+    <string name="system_language">Язык системы</string>
 </resources>
 
