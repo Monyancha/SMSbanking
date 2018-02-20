@@ -2,8 +2,11 @@ package com.khizhny.smsbanking;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -24,6 +27,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.provider.Telephony;
 import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
@@ -41,10 +45,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -87,11 +93,14 @@ import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.ignoreClones;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
-        OnItemClickListener,
+        OnItemClickListener, TimePickerDialog.OnTimeSetListener,
         SwipeRefreshLayout.OnRefreshListener{
 
 		private static final String LIST_STATE = "listState";
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
+		private static final int DEF_SMS_REQ_FOR_DEL = 888; // asking to be set as default app for msg delete.
+		private static final int DEF_SMS_REQ_FOR_EDIT = 889; // asking to be set as default app for msg edit.
+
     private static final String EXPORT_FOLDER = "SMS banking";
 
     public static final String KEY_TODO = "todo";
@@ -246,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     public boolean onMenuItemClick(MenuItem item) {
         Log.d(LOG, "MainActivity:OnMenuItemClick()");
         Intent intent;
+				String defaultSmsApp;
         switch (item.getItemId()) {
 
             // delete rule option
@@ -283,41 +293,51 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 return true;
 
             // create new rule option
-            case R.id.item_new_rule:
-                showCreateNewRuleDialog(selectedTransaction.getSmsBody());
-                return true;
+						case R.id.item_new_rule:
+								showCreateNewRuleDialog(selectedTransaction.getSmsBody());
+								return true;
 
-            //deleting SMS option
-            case R.id.item_delete_sms:
-                String defaultSmsApp;
+						//editing SMS option
+						case R.id.item_edit_sms:
+
+								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+										defaultSmsApp = Sms.getDefaultSmsPackage(this);
+										if (defaultSmsApp == null) {
+												intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
+												intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+												startActivityForResult(intent, DEF_SMS_REQ_FOR_EDIT);
+										} else {
+												if (!defaultSmsApp.equals(getPackageName())) {
+														intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
+														intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+														startActivityForResult(intent, DEF_SMS_REQ_FOR_EDIT);
+												} else {
+														new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(), selectedTransaction.getTransactionDate().getMinutes(), true).show();
+												}
+										}
+								}else{
+										new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(),selectedTransaction.getTransactionDate().getMinutes(), true).show();
+
+								}
+
+								return true;
+
+						//deleting SMS option
+						case R.id.item_delete_sms:
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     defaultSmsApp = Sms.getDefaultSmsPackage(this);
                     if (!defaultSmsApp.equals(getPackageName())) {
                         intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
                         intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
-                        startActivity(intent);
-                    }
-                }
-                try {
-                    Uri uriSms = Uri.parse("content://sms/inbox");
-                    Cursor c = getContentResolver().query(uriSms, new String[]{"_id", "thread_id", "address", "person", "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
-                    if (c != null) {
-                        if (c.moveToFirst()) {
-                            ContentValues values = new ContentValues();
-                            values.put("read", true);
-                            getContentResolver().update(Uri.parse("content://sms/"), values, "_id=" + c.getLong(0), null);
-                            getContentResolver().delete(Uri.parse("content://sms/" + c.getLong(0)), "date=?",new String[]{c.getString(4)});
-                        }
-                        c.close();
-                        // refreshing.
-                        transactions.remove(selectedTransaction);
-                        transactionListAdapter.notifyDataSetChanged();
-                    }
-                } catch (Exception e) {
-                    Log.e("log>>>", e.toString());
-                }
+												startActivityForResult(intent, DEF_SMS_REQ_FOR_DEL);
+                    }else{
+												showDeleteSmsDialog();
+										}
+                }else{
+                		showDeleteSmsDialog();
+								}
                 return true;
-
         }
         return false;
     }
@@ -332,6 +352,24 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         Log.d(LOG, "MainActivity:OnStop() finished");
         super.onStop();
     }
+
+		@Override
+		protected void onActivityResult(int requestCode, int resultCode, Intent data)
+		{
+				switch (requestCode)
+				{
+						case DEF_SMS_REQ_FOR_DEL:
+								if (resultCode == Activity.RESULT_OK){
+									showDeleteSmsDialog();
+								}
+								return;
+						case DEF_SMS_REQ_FOR_EDIT:
+								if (resultCode == Activity.RESULT_OK){
+										new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(),selectedTransaction.getTransactionDate().getMinutes(), true).show();
+								}
+								return;
+				}
+		}
 
     @Override
     protected void onResume() {
@@ -519,7 +557,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         Log.d(LOG, "MainActivity:onRefresh() ended");
     }
 
-    private class TransactionListAdapter extends ArrayAdapter<Transaction> {
+
+
+		private class TransactionListAdapter extends ArrayAdapter<Transaction> {
 
         TransactionListAdapter(List<Transaction> transactions) {
             super(MainActivity.this, R.layout.activity_main_list_row, transactions);
@@ -568,7 +608,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
                 // Filling Transaction Date
                 TextView dateView = rowView.findViewById(R.id.transaction_date);
-                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy"));
+                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy hh:mm"));
 
                 // Filling After state
                 TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
@@ -856,7 +896,54 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
-    private void showAboutDialog() {
+		private void showDeleteSmsDialog(){
+				try {
+						Uri uriSms = Uri.parse("content://sms/inbox");
+						Cursor c = getContentResolver().query(uriSms, new String[]{"_id", "thread_id", "address", "person", "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
+						if (c != null) {
+								if (c.moveToFirst()) {
+										ContentValues values = new ContentValues();
+										values.put("read", true);
+										getContentResolver().update(Uri.parse("content://sms/"), values, "_id=" + c.getLong(0), null);
+										getContentResolver().delete(Uri.parse("content://sms/" + c.getLong(0)), "date=?",new String[]{c.getString(4)});
+								}
+								c.close();
+								// refreshing.
+								transactions.remove(selectedTransaction);
+								transactionListAdapter.notifyDataSetChanged();
+						}
+				} catch (Exception e) {
+						Log.e("log>>>", e.toString());
+				}
+		}
+
+
+		@Override
+		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+				try {
+						Uri uriSms = Uri.parse("content://sms/inbox");
+						Cursor c = getContentResolver().query(uriSms, new String[]{"_id", "thread_id", "address", "person", "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
+						if (c != null) {
+								if (c.moveToFirst()) {
+										long smsId=c.getLong(0);
+										ContentValues values = new ContentValues();
+										values.put("read", true);
+										long prevDate=selectedTransaction.getTransactionDate().getTime();
+										long prevHour=selectedTransaction.getTransactionDate().getHours();
+										long prevMin=selectedTransaction.getTransactionDate().getMinutes();
+										long newDate = prevDate + (minute-prevMin)*60000+ (hourOfDay-prevHour)*24*60000;
+										values.put("date", String.valueOf(newDate));
+										getContentResolver().update(uriSms, values, "_id=" + smsId, null);
+								}
+								c.close();
+								onRefresh();
+						}
+				} catch (Exception e) {
+						Log.e("log>>>", e.toString());
+				}
+		}
+
+		private void showAboutDialog() {
         Log.d(LOG, "MainActivity:showAboutDialog() started");
         PackageInfo pInfo;
         String version="unknown";

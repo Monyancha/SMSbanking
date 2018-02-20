@@ -152,6 +152,10 @@ public class Transaction implements Comparable<Transaction> {
         }
     }
 
+    public void setDate(long milis){
+    		this.transactionDate=new Date(milis);
+		}
+
     public BigDecimal getCommission() {
         return commission;
     }
