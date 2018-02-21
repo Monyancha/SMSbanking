@@ -442,5 +442,30 @@ public class Rule implements java.io.Serializable {
 		return advanced;
 	}
 
+		/**
+		 * Removes personal data from rule
+		 * Works just in regular mode.
+		 */
+	public void impersonalize(){
+			if (!advanced) {
+					for (Word w : words) {
+							switch (w.getWordType()) {
+									case WORD_CONST:
+											break;
+									case WORD_VARIABLE:
+									case WORD_VARIABLE_FIXED_SIZE:
+											try {
+													String body1 = w.getFirstLetterIndex() == 0 ? "" : smsBody.substring(0, w.getFirstLetterIndex());
+													String body2 = w.getLastLetterIndex() == (smsBody.length() - 1) ? "" : smsBody.substring(w.getLastLetterIndex() + 1);
+													w.setBody(w.getImpersonalizedBody());
+													smsBody = (body1 + w.getBody() + body2);
+											} catch (Exception e) {
+
+											}
+											break;
+							}
+					}
+			}
+	}
 }
 

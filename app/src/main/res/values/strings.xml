@@ -205,6 +205,7 @@
     <string name="define_extra_parameter4">Time</string>
     <string name="system_language">System language</string>
     <string name="edit_message">Fix Time</string>
+    <string name="impersonalize">Impersonalize</string>
 
 </resources>
 

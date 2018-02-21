@@ -30,7 +30,6 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     private Transaction transaction; // sample transaction with sample message
     private AlertDialog alertDialog;
 
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction);
@@ -76,48 +75,55 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         if (rule==null) Log.e(MyApplication.LOG, "Rule for Transaction Activity not found.");
 
         Log.d(LOG, "Transaction Activity resuming");
-
-        TextView smsTextView = findViewById(R.id.sms_body);
-        TextView stateAfterView = findViewById(R.id.state_after_value);
-        TextView stateBeforeView = findViewById(R.id.state_before_value);
-        TextView stateChangeView = findViewById(R.id.state_change_value);
-        TextView commissionView =  findViewById(R.id.commision_value);
-        TextView currencyView =  findViewById(R.id.currency_value);
-        TextView extra1View = findViewById(R.id.extra1_value);
-        TextView extra2View =  findViewById(R.id.extra2_value);
-        TextView extra3View =  findViewById(R.id.extra3_value);
-        TextView extra4View =  findViewById(R.id.extra4_value);
-
-        String extranames[]= getExtraParameterNames(this);
-        if (!extranames[0].equals("")) ((Button)findViewById(R.id.extra1_label)).setText(extranames[0]);
-        if (!extranames[1].equals("")) ((Button)findViewById(R.id.extra2_label)).setText(extranames[1]);
-        if (!extranames[2].equals("")) ((Button)findViewById(R.id.extra3_label)).setText(extranames[2]);
-        if (!extranames[3].equals("")) ((Button)findViewById(R.id.extra4_label)).setText(extranames[3]);
-
-
-        if (smsTextView != null) smsTextView.setText(String.format("%s%s%s", getString(R.string.begin), rule.getSmsBody(), getString(R.string.end)));
-        stateAfterView.setText(transaction.getStateAfterAsString(false));
-        stateBeforeView.setText(transaction.getStateBeforeAsString(false));
-        stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
-        commissionView.setText(transaction.getCommissionAsString(false, false));
-        currencyView.setText(transaction.getTransactionCurrency());
-        extra1View.setText(transaction.getExtraParam1());
-        extra2View.setText(transaction.getExtraParam2());
-        extra3View.setText(transaction.getExtraParam3());
-        extra4View.setText(transaction.getExtraParam4());
-
-
-        stateAfterView.setTextColor(transaction.hasCalculatedAccountStateAfter?Color.BLACK:Color.BLUE);
-        stateBeforeView.setTextColor(transaction.hasCalculatedAccountStateBefore?Color.BLACK:Color.BLUE);
-        stateChangeView.setTextColor(transaction.hasCalculatedAccountDifference?Color.BLACK:Color.BLUE);
-        currencyView.setTextColor(!transaction.hasTransactionCurrency?Color.BLACK:Color.BLUE);
-        extra1View.setTextColor(Color.BLUE);
-        extra2View.setTextColor(Color.BLUE);
-        extra3View.setTextColor(Color.BLUE);
-        extra4View.setTextColor(Color.BLUE);
-        commissionView.setTextColor(transaction.getCommission().signum()==0?Color.BLACK:Color.BLUE);
-
+				refreshUiElements();
     }
+
+    private void refreshUiElements(){
+    		if (rule.isAdvanced()) {
+    				findViewById(R.id.impersonalize).setVisibility(View.GONE);
+				}else{
+						findViewById(R.id.impersonalize).setVisibility(View.VISIBLE);
+				}
+				TextView smsTextView = findViewById(R.id.sms_body);
+				TextView stateAfterView = findViewById(R.id.state_after_value);
+				TextView stateBeforeView = findViewById(R.id.state_before_value);
+				TextView stateChangeView = findViewById(R.id.state_change_value);
+				TextView commissionView =  findViewById(R.id.commision_value);
+				TextView currencyView =  findViewById(R.id.currency_value);
+				TextView extra1View = findViewById(R.id.extra1_value);
+				TextView extra2View =  findViewById(R.id.extra2_value);
+				TextView extra3View =  findViewById(R.id.extra3_value);
+				TextView extra4View =  findViewById(R.id.extra4_value);
+
+				String extranames[]= getExtraParameterNames(this);
+				if (!extranames[0].equals("")) ((Button)findViewById(R.id.extra1_label)).setText(extranames[0]);
+				if (!extranames[1].equals("")) ((Button)findViewById(R.id.extra2_label)).setText(extranames[1]);
+				if (!extranames[2].equals("")) ((Button)findViewById(R.id.extra3_label)).setText(extranames[2]);
+				if (!extranames[3].equals("")) ((Button)findViewById(R.id.extra4_label)).setText(extranames[3]);
+
+
+				if (smsTextView != null) smsTextView.setText(String.format("%s%s%s", getString(R.string.begin), rule.getSmsBody(), getString(R.string.end)));
+				stateAfterView.setText(transaction.getStateAfterAsString(false));
+				stateBeforeView.setText(transaction.getStateBeforeAsString(false));
+				stateChangeView.setText(transaction.getDifferenceAsString(false, false,false));
+				commissionView.setText(transaction.getCommissionAsString(false, false));
+				currencyView.setText(transaction.getTransactionCurrency());
+				extra1View.setText(transaction.getExtraParam1());
+				extra2View.setText(transaction.getExtraParam2());
+				extra3View.setText(transaction.getExtraParam3());
+				extra4View.setText(transaction.getExtraParam4());
+
+
+				stateAfterView.setTextColor(transaction.hasCalculatedAccountStateAfter?Color.BLACK:Color.BLUE);
+				stateBeforeView.setTextColor(transaction.hasCalculatedAccountStateBefore?Color.BLACK:Color.BLUE);
+				stateChangeView.setTextColor(transaction.hasCalculatedAccountDifference?Color.BLACK:Color.BLUE);
+				currencyView.setTextColor(!transaction.hasTransactionCurrency?Color.BLACK:Color.BLUE);
+				extra1View.setTextColor(Color.BLUE);
+				extra2View.setTextColor(Color.BLUE);
+				extra3View.setTextColor(Color.BLUE);
+				extra4View.setTextColor(Color.BLUE);
+				commissionView.setTextColor(transaction.getCommission().signum()==0?Color.BLACK:Color.BLUE);
+		}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -172,6 +178,11 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
             case R.id.extra4_label:
                 selectedParameter = Transaction.Parameters.EXTRA_4;
                 break;
+						case R.id.impersonalize:
+								rule.impersonalize();
+								transaction = rule.getSampleTransaction();
+								refreshUiElements();
+								return;
             case R.id.finish_rule:
                 // closing activity and going back to MainActivity
                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
@@ -193,8 +204,6 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         intent.putExtra("ruleId", rule.getId());
         intent.putExtra("caption", ((Button)v).getText().toString());
         startActivity(intent);
-
-
     }
 
 }

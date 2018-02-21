@@ -3,6 +3,7 @@ package com.khizhny.smsbanking;
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
 import com.khizhny.smsbanking.model.SubRule;
+import com.khizhny.smsbanking.model.Word;
 
 import org.junit.Test;
 
@@ -117,6 +118,25 @@ public class UnitTests {
         assertEquals("left",r.words.get(11).getBody());
 
     }
+
+		@Test
+		public void impersonalizationTest() throws Exception {
+				//              0    1   2    3         4       5    6    7    8    9       10
+				String msg="  This  is test message. Withdraw 50.34  UAH. You have 50.65UAH left  ";
+
+				// defining BankV2
+				Bank b = new Bank();
+				b.setDefaultCurrency("UAH");
+
+				// defining Rule
+				Rule r = new Rule(b,"test rule");
+				r.setSmsBody(msg);
+				Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
+				r.setRuleType(trans_type.ordinal());
+				r.makeInitialWordSplitting();
+				Word w= r.words.get(9);
+				assertEquals("00.00AAA", w.getImpersonalizedBody());
+		}
 
     @Test
     public void MaskCreation() throws Exception {

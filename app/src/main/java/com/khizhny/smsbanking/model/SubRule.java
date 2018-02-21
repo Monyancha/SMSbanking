@@ -11,20 +11,20 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 public class SubRule implements java.io.Serializable {
 
 	private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
-	private int id;
+	private int id=-1;
 	private Rule rule; // back reference to rule
-	private int distanceToLeftPhrase;
-	private int distanceToRightPhrase;
-	private String leftPhrase;
-	private String rightPhrase;
-	private String constantValue;
+	private int distanceToLeftPhrase=1;
+	private int distanceToRightPhrase=1;
+	private String leftPhrase="";
+	private String rightPhrase="";
+	private String constantValue="";
 	private Transaction.Parameters extractedParameter;
-	private Method extractionMethod;
-	private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_DOT;  // 0 - dot,  1-coma, 2 - auto
-	public int trimLeft;
-	public int trimRight;
-	public int regexPhraseIndex;
-	public boolean negate;
+	private Method extractionMethod = Method.USE_REGEX;
+	private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_AUTO;  // 0 - dot,  1-coma, 2 - auto
+	public int trimLeft=0;
+	public int trimRight=0;
+	public int regexPhraseIndex=0;
+	public boolean negate=false;
 
     public enum Method {
 		WORD_AFTER_PHRASE,
@@ -41,23 +41,11 @@ public class SubRule implements java.io.Serializable {
 	}
 
     public SubRule(Rule rule, Transaction.Parameters extractedParameter) {
-		this.id = -1;
 		this.rule = rule;
-		this.distanceToLeftPhrase = 1;
-		this.distanceToRightPhrase = 1;
-		this.leftPhrase="";
-		this.rightPhrase="";
-		this.constantValue="";
 		this.extractedParameter = extractedParameter;
-		this.extractionMethod = Method.USE_REGEX;
-		this.trimLeft = 0;
-		this.trimRight = 0;
-		this.regexPhraseIndex=0;
-		this.negate = false;
 	}
 
     public SubRule(SubRule origin, Rule rule) {
-		this.id = -1;
 		this.rule = rule;
 		this.distanceToLeftPhrase = origin.distanceToLeftPhrase;
 		this.distanceToRightPhrase = origin.distanceToRightPhrase;

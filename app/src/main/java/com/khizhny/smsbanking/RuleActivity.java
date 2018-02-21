@@ -50,10 +50,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     private Rule rule;
 
     private TextView tvMessageBody;
-	private TextView tvResults;
-	private ImageView ivIcon;
+	  private TextView tvResults;
+  	private ImageView ivIcon;
     private AlertDialog alertDialog;
     private CheckBox cbAdvanced;
+		private CheckBox cbImpersonalize;
     private EditText etRegExp;
     private boolean weNeedToDeleteAllSubrules=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
     private OnSwipeTouchListener onSwipeTouchListener=new OnSwipeTouchListener();
@@ -125,6 +126,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         changeColor(findViewById(R.id.btn_fixed), Word.WORD_TYPES.WORD_CONST);
         changeColor(findViewById(R.id.btn_variable_fixed_size), Word.WORD_TYPES.WORD_VARIABLE_FIXED_SIZE);
 
+        cbImpersonalize=findViewById(R.id.cbImpersonalize);
+
         cbAdvanced=findViewById(R.id.cbAdvanced);
         cbAdvanced.setChecked(rule.isAdvanced());
         cbAdvanced.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -132,9 +135,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 rule.setAdvanced(isChecked?1:0);
                 if (isChecked) {
+										cbImpersonalize.setVisibility(View.GONE);
                     etRegExp.setVisibility(View.VISIBLE);
                 }else{
                     rule.updateMask();
+										cbImpersonalize.setVisibility(View.VISIBLE);
                     etRegExp.setText(rule.getMask());
                     etRegExp.setVisibility(View.GONE);
                 }
@@ -296,6 +301,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void onNextBtnClick(){
         // Saving all changes to Rule object and saves them to db
+				if (cbImpersonalize.isChecked()) rule.impersonalize();
+
         if (rule.isAdvanced()) {
             rule.setMask(etRegExp.getText().toString());
         }else {
@@ -423,7 +430,12 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             for (int i=1;i<=rule.words.size();i++){
                 wordButton=new Button(this);
                 word=rule.words.get(i-1);
-                wordButton.setText(String.format("\"%s\"", word.getBody()));
+								if (cbImpersonalize.isChecked()) {
+										wordButton.setText(String.format("\"%s\"", word.getImpersonalizedBody()));
+								}else{
+										wordButton.setText(String.format("\"%s\"", word.getBody()));
+								}
+
                 changeColor(wordButton,word.getWordType());
                 wordButton.setMinHeight(0);
                 wordButton.setMinWidth(0);
@@ -437,6 +449,11 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                         Word word = (Word) v.getTag();
                         word.changeWordType();
                         changeColor(v, word.getWordType());
+												if (cbImpersonalize.isChecked()) {
+														((Button) v).setText(String.format("\"%s\"", word.getImpersonalizedBody()));
+												}else{
+														((Button) v).setText(String.format("\"%s\"", word.getBody()));
+												}
                         weNeedToDeleteAllSubrules = true;
                         refreshResults();
                     }
@@ -447,8 +464,8 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                         rule.setAdvanced(0);
                         cbAdvanced.setChecked(false);
                         showDialogToChangeWord((Word) v.getTag());
-                        return false;
-                    }
+												return false;
+										}
                 });
                 wordButton.setOnTouchListener(onSwipeTouchListener);
 

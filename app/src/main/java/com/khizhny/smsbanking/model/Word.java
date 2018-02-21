@@ -25,7 +25,11 @@ public class Word implements java.io.Serializable {
         this.word_type=word_type;
         this.firstLetterIndex=firstLetterIndex;
         this.lastLetterIndex=lastLetterIndex;
-        this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
+        try {
+        		this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
+				}catch (Exception e) {
+						this.body="";
+				}
     }
 
     /**
@@ -57,11 +61,15 @@ public class Word implements java.io.Serializable {
         return lastLetterIndex;
     }
 
-    public String getBody(){
-        return body;
-    }
+		public String getBody(){
+				return body;
+		}
 
-    public void changeWordType(){
+			public void setBody(String body){
+				this.body=body;
+		}
+
+		public void changeWordType(){
         word_type=WORD_TYPES.values()[(word_type.ordinal()+1) % WORD_TYPES.values().length ];
     }
 
@@ -74,4 +82,18 @@ public class Word implements java.io.Serializable {
         this.lastLetterIndex=lastLetterIndex;
         this.body=rule.getSmsBody().substring(firstLetterIndex,lastLetterIndex+1);
     }
+
+    public String getImpersonalizedBody(){
+				if (word_type!= Word.WORD_TYPES.WORD_CONST) {
+						String res = body;
+						res = res.replaceAll("[0-9]", "0");
+						res = res.replaceAll("[A-Z]", "A");
+						res = res.replaceAll("[a-z]", "a");
+						res = res.replaceAll("[а-я]", "А");
+						res = res.replaceAll("[А-Я]", "Я");
+						return res;
+				} else{
+						return body;
+				}
+		}
 }

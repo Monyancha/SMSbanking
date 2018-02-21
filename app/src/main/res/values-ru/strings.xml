@@ -192,5 +192,6 @@
     <string name="define_extra_parameter2">Место</string>
     <string name="system_language">Язык системы</string>
     <string name="edit_message">Редактировать время</string>
+    <string name="impersonalize">Деперсонализировать</string>
 </resources>
 
