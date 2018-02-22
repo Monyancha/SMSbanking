@@ -14,9 +14,14 @@
 
      <string-array name="method_entries"> 
          <item>Този текст</item>
-         <item>Regex</item>
-     </string-array> 
- 
+         <item>Регулярен израз</item>
+     </string-array>
+
+    <string-array name="decimal_separator">
+        <item>.</item>
+        <item>,</item>
+        <item>авто</item>
+    </string-array>
 
      <string-array name="transaction_types"> 
          <item>Недефиниран</item> 

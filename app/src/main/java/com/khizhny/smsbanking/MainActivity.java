@@ -45,6 +45,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -63,9 +64,12 @@ import com.khizhny.smsbanking.model.Transaction;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import jxl.Cell;
 import jxl.CellView;
@@ -93,7 +97,7 @@ import static com.khizhny.smsbanking.MyApplication.hideNotMatchedMessages;
 import static com.khizhny.smsbanking.MyApplication.ignoreClones;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener,
-        OnItemClickListener, TimePickerDialog.OnTimeSetListener,
+        OnItemClickListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener,
         SwipeRefreshLayout.OnRefreshListener{
 
 		private static final String LIST_STATE = "listState";
@@ -136,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private AlertDialog firstRunDialog;
     private AlertDialog pickRuleDialog;
     private AlertDialog pickCountryDialog;
+
+    private static Calendar calendar = new GregorianCalendar();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -199,8 +205,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 startActivity(intent);
                 break;
             case R.id.action_rule_list:
-                //intent = new Intent(this, RuleListActivity.class);
-                //startActivity(intent);
                 if (activeBank!=null){
                     if (activeBank.ruleList!=null) {
                         showRulePickerDialog(activeBank.ruleList, null);
@@ -297,9 +301,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 								showCreateNewRuleDialog(selectedTransaction.getSmsBody());
 								return true;
 
-						//editing SMS option
+						//editing date/Time option
 						case R.id.item_edit_sms:
-
 								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 										defaultSmsApp = Sms.getDefaultSmsPackage(this);
 										if (defaultSmsApp == null) {
@@ -312,14 +315,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 														intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
 														startActivityForResult(intent, DEF_SMS_REQ_FOR_EDIT);
 												} else {
-														new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(), selectedTransaction.getTransactionDate().getMinutes(), true).show();
+														showDatePickerDialog();
 												}
 										}
 								}else{
-										new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(),selectedTransaction.getTransactionDate().getMinutes(), true).show();
-
+										showDatePickerDialog();
 								}
-
 								return true;
 
 						//deleting SMS option
@@ -360,15 +361,23 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 				{
 						case DEF_SMS_REQ_FOR_DEL:
 								if (resultCode == Activity.RESULT_OK){
-									showDeleteSmsDialog();
+										showDeleteSmsDialog();
 								}
 								return;
 						case DEF_SMS_REQ_FOR_EDIT:
 								if (resultCode == Activity.RESULT_OK){
-										new TimePickerDialog(this, this, selectedTransaction.getTransactionDate().getHours(),selectedTransaction.getTransactionDate().getMinutes(), true).show();
+										showDatePickerDialog();
 								}
 								return;
 				}
+		}
+
+		private void showDatePickerDialog(){
+				calendar.setTime(selectedTransaction.getTransactionDate());
+				int year = calendar.get(Calendar.YEAR);
+				int month = calendar.get(Calendar.MONTH);  // Beware: months are zero-based and no out of range errors are reported
+				int day = calendar.get(Calendar.DAY_OF_MONTH);
+				new DatePickerDialog(this, this,year,month,day).show();
 		}
 
     @Override
@@ -437,8 +446,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         super.onRestoreInstanceState(state);
         if (!forceRefresh) {
             listState = state.getParcelable(LIST_STATE);
-            //onRefresh();
-            //transactions = (List<Transaction>) state.getSerializable(LIST_TRANSACTIONS);
             Log.d(LOG, "MainActivity instance restored...");
         }
         Log.d(LOG, "MainActivity:onRestoreInstanceState() finished");
@@ -559,6 +566,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 
 
+
 		private class TransactionListAdapter extends ArrayAdapter<Transaction> {
 
         TransactionListAdapter(List<Transaction> transactions) {
@@ -608,7 +616,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
                 // Filling Transaction Date
                 TextView dateView = rowView.findViewById(R.id.transaction_date);
-                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy hh:mm"));
+                dateView.setText(t.getTransactionDateAsString("dd.MM.yyyy HH:mm"));
 
                 // Filling After state
                 TextView accountAfterView = rowView.findViewById(R.id.stateAfter);
@@ -718,7 +726,16 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                             selectedTransaction.switchToRule(selectedRule);
                             onRefresh();
                             pickRuleDialog.dismiss();
-                        }
+                        }else{
+														selectedRule = (Rule) ((View) v.getParent()).getTag();
+														pickRuleDialog.dismiss();
+														Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+														intent.putExtra(KEY_RULE_ID, selectedRule.getId());
+														intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
+														startActivity(intent);
+														forceRefresh = true;
+														pickRuleDialog.dismiss();
+												}
                     }
                 });
 
@@ -733,20 +750,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     }
                 });
 
-                ImageButton vEditRule = rowView.findViewById(R.id.edit_rule_button);
-                vEditRule.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        selectedRule = (Rule) ((View) v.getParent()).getTag();
-                        pickRuleDialog.dismiss();
-                        Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-                        intent.putExtra(KEY_RULE_ID, selectedRule.getId());
-                        intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
-                        startActivity(intent);
-                        forceRefresh = true;
-                        pickRuleDialog.dismiss();
-                    }
-                });
             }
             //noinspection ConstantConditions
             return rowView;
@@ -917,9 +920,22 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 				}
 		}
 
+		@Override
+		public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+				calendar.set(year,month,dayOfMonth);
+				Calendar tr_calendar=new GregorianCalendar();
+				tr_calendar.setTime(selectedTransaction.getTransactionDate());
+				int hours=tr_calendar.get(Calendar.HOUR_OF_DAY);
+				int minutes =tr_calendar.get(Calendar.MINUTE);
+				new TimePickerDialog(this, this, hours, minutes, true).show();
+		}
 
 		@Override
 		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+				int year=calendar.get(Calendar.YEAR);
+				int month=calendar.get(Calendar.MONTH);
+				int day=calendar.get(Calendar.DAY_OF_MONTH);
+				calendar.set(year,month,day,hourOfDay,minute);
 				try {
 						Uri uriSms = Uri.parse("content://sms/inbox");
 						Cursor c = getContentResolver().query(uriSms, new String[]{"_id", "thread_id", "address", "person", "date", "body"}, "_id=" + selectedTransaction.smsId, null, null);
@@ -928,10 +944,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 										long smsId=c.getLong(0);
 										ContentValues values = new ContentValues();
 										values.put("read", true);
-										long prevDate=selectedTransaction.getTransactionDate().getTime();
-										long prevHour=selectedTransaction.getTransactionDate().getHours();
-										long prevMin=selectedTransaction.getTransactionDate().getMinutes();
-										long newDate = prevDate + (minute-prevMin)*60000+ (hourOfDay-prevHour)*24*60000;
+										long newDate = calendar.getTimeInMillis();
 										values.put("date", String.valueOf(newDate));
 										getContentResolver().update(uriSms, values, "_id=" + smsId, null);
 								}

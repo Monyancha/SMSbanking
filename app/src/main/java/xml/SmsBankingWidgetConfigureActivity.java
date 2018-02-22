@@ -138,7 +138,7 @@ public class SmsBankingWidgetConfigureActivity extends AppCompatActivity impleme
         // Filling Spinner vith myBanks options
         List <Bank> banks = db.getMyBanks(getCountry());
         ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter <Bank>(this,
-                android.R.layout.simple_spinner_item, banks);
+                android.R.layout.simple_spinner_dropdown_item, banks);
         myBank = findViewById(R.id.my_bank);
         myBank.setAdapter(myBankAdapter);
 

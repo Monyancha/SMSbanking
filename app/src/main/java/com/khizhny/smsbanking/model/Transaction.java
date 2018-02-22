@@ -115,11 +115,11 @@ public class Transaction implements Comparable<Transaction> {
         return smsBody;
     }
 
-    public Date getTransactionDate() {
-        return transactionDate;
-    }
+		public Date getTransactionDate() {
+				return transactionDate;
+		}
 
-    public String getTransactionDateAsString(String transactionDateFormat) {
+		public String getTransactionDateAsString(String transactionDateFormat) {
         DateFormat f = new SimpleDateFormat(transactionDateFormat, Locale.ENGLISH);
         return f.format(transactionDate);
     }
@@ -622,7 +622,7 @@ public class Transaction implements Comparable<Transaction> {
         if (applicableRules.size()>=2) {
 
             if (selectedRuleId == -1) {
-                selectedRuleId = applicableRules.get(1).getId();
+                selectedRuleId = applicableRules.get(0).getId();
             }
 
             for (int i = 0; i < applicableRules.size(); i++) {

@@ -53,7 +53,7 @@ public abstract class MyBaseTaskService extends Service {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, SMS_BANKING_NOTIFICATION)
-                .setSmallIcon(R.drawable.ic_file_upload_white_24dp)
+                .setSmallIcon(R.drawable.ic_notification_icon_upload)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(caption)
                 .setProgress(100, percentComplete, false)

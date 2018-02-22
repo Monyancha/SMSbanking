@@ -22,7 +22,7 @@
         <item>10</item>
     </string-array>
 
-    <string-array name="decimal_separator" translatable="false">
+    <string-array name="decimal_separator">
         <item>.</item>
         <item>,</item>
         <item>auto</item>
@@ -447,7 +447,7 @@
     </string-array>
 
     <string-array name="method_entries">
-        <item>Constant value</item>
+        <item>Constant</item>
         <item>Regular expression</item>
     </string-array>
 

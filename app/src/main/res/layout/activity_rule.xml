@@ -130,7 +130,7 @@
             android:onClick="onClick"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btn_variable"
-            app:srcCompat="@drawable/ic_menu_save"
+            app:srcCompat="@drawable/ic_icon_save"
             tools:layout_constraintRight_creator="1"
             tools:layout_constraintTop_creator="1" />
 

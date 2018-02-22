@@ -193,6 +193,6 @@
     <string name="define_extra_parameter4">Час</string>
     <string name="define_extra_parameter2">Місце</string>
     <string name="system_language">Мова системи</string>
-    <string name="edit_message">Редагувати час</string>
+    <string name="edit_message">Виправити час</string>
     <string name="impersonalize">Деперсоналізувати</string>
 </resources>

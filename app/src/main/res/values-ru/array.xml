@@ -11,8 +11,14 @@
     </string-array>
 
     <string-array name="method_entries">
-        <item>использовать константу</item>
-        <item>Regex</item>
+        <item>Константа</item>
+        <item>Регулярное выражение</item>
+    </string-array>
+
+    <string-array name="decimal_separator">
+        <item>.</item>
+        <item>,</item>
+        <item>авто</item>
     </string-array>
 
     <string-array name="transaction_types">

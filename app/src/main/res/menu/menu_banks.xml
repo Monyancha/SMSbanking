@@ -6,7 +6,7 @@
         android:id="@+id/bank_add"
         android:orderInCategory="99"
         android:title="@string/bank_add"
-        android:icon="@drawable/ic_action_add"
+        android:icon="@drawable/ic_icon_plus"
         app:showAsAction="always"/>
     <item
         android:id="@+id/bank_cloud_download"
