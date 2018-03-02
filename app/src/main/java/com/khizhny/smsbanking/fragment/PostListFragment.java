@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,7 +36,7 @@ public abstract class PostListFragment extends Fragment {
     private static final String TAG = "PostListFragment";
     private static final int POST_DELETE_THRESHOLD=-10;
 
-    public String country;
+    String country;
     private DatabaseReference mDatabase;
 
     private FirebaseRecyclerAdapter<Post, PostViewHolder> mAdapter;
@@ -71,7 +70,8 @@ public abstract class PostListFragment extends Fragment {
         mRecycler.setLayoutManager(mManager);
 
         //Reading country
-         country=getArguments().get("country").toString();
+				Bundle args = getArguments();
+				if (args!=null) country=args.getString("country");
 
         // Set up FirebaseRecyclerAdapter with the Query
         Query postsQuery = getQuery(mDatabase);
@@ -116,7 +116,7 @@ public abstract class PostListFragment extends Fragment {
          Intent intent = new Intent(getActivity(), MyDownloadService.class)
                  .putExtra(MyDownloadService.EXTRA_DOWNLOAD_PATH, path)
                  .setAction(MyDownloadService.ACTION_DOWNLOAD);
-         getActivity().startService(intent);
+         if (getActivity()!=null) getActivity().startService(intent);
      }
 
      private void onDislikeClicked(DatabaseReference postRef) {
@@ -160,7 +160,7 @@ public abstract class PostListFragment extends Fragment {
         }
     }
 
-    public String getUid() {
+    String getUid() {
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
         if (user!=null) {
             return user.getUid();
@@ -170,22 +170,26 @@ public abstract class PostListFragment extends Fragment {
 
     }
 
-    public abstract Query getQuery(DatabaseReference databaseReference);
+    abstract Query getQuery(DatabaseReference databaseReference);
 
     private class MyFirebaseRecyclerAdapter extends FirebaseRecyclerAdapter<Post, PostViewHolder> {
 
-        public MyFirebaseRecyclerAdapter(Class<Post> modelClass, int modelLayout, Class<PostViewHolder> viewHolderClass, Query ref) {
+        MyFirebaseRecyclerAdapter(Class<Post> modelClass, @SuppressWarnings("SameParameterValue") int modelLayout, Class<PostViewHolder> viewHolderClass, Query ref) {
             super(modelClass, modelLayout, viewHolderClass, ref);
-            ((PostsActivity)getActivity()).showProgress(true);
-        }
+						if ((getActivity()) != null) {
+								((PostsActivity)getActivity()).showProgress(true);
+						}
+				}
 
 
         @Override
         protected void populateViewHolder(final PostViewHolder viewHolder, final Post post, final int position) {
             final DatabaseReference postRef = getRef(position);
-            ((PostsActivity)getActivity()).showProgress(false);
+						if ((getActivity()) != null) {
+								((PostsActivity)getActivity()).showProgress(false);
+						}
 
-            // Set click listener for the whole post view
+						// Set click listener for the whole post view
             final String postKey = postRef.getKey();
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -274,17 +278,4 @@ public abstract class PostListFragment extends Fragment {
 
         }
     }
-
-    public String getUserName() {
-        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            for (UserInfo i : user.getProviderData()){
-                if (i.getDisplayName()!=null) {
-                    return i.getDisplayName();
-                }
-            }
-        }
-        return getString(R.string.anonymous);
-    }
-
 }

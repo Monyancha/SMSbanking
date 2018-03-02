@@ -6,7 +6,7 @@ import android.util.Log;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
-public class DbOpenHelper  extends SQLiteAssetHelper {
+class DbOpenHelper  extends SQLiteAssetHelper {
 
         private static final String DATABASE_NAME = "database.db";
         private static final int DATABASE_VERSION = 9;

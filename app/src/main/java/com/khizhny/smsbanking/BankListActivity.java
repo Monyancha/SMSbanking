@@ -191,14 +191,6 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 	}
 
     @Override
-    protected void onStop() {
-        /*if (alertDialog!=null) {
-            if (alertDialog.isShowing()) alertDialog.dismiss();
-        }*/
-        super.onStop();
-    }
-
-    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_banks, menu);
         return true;

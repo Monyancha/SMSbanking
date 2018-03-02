@@ -29,7 +29,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Comment;
 import com.khizhny.smsbanking.model.Post;
-import com.khizhny.smsbanking.model.User;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -148,49 +147,48 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    public static String convertTime(long time){
+    private static String convertTime(long time){
         Date date = new Date(time);
         @SuppressLint("SimpleDateFormat") Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return format.format(date);
     }
 
     private void postComment() {
-        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseDatabase.getInstance().getReference().child("users").child(uid)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user information
-                        User user = dataSnapshot.getValue(User.class);
-                        String authorName = getUserName();
+				FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+				if (currentUser!=null) {
+						final String uid = currentUser.getUid();
+						FirebaseDatabase.getInstance().getReference().child("users").child(uid)
+										.addListenerForSingleValueEvent(new ValueEventListener() {
+												@Override
+												public void onDataChange(DataSnapshot dataSnapshot) {
+														// Get user information
+														String authorName = getUserName();
+														// Create new comment object
+														String commentText = mCommentField.getText().toString();
+														if (!commentText.equals("")) {
+																Comment comment = new Comment(uid, authorName, commentText, System.currentTimeMillis());
+																// Push the comment, it will appear in the list
+																mCommentsReference.push().setValue(comment);
+																// Clear the field
+																mCommentField.setText(null);
+														}
+												}
 
-                        // Create new comment object
-                        String commentText = mCommentField.getText().toString();
-                        if (!commentText.equals("")) {
-                            Comment comment = new Comment(uid, authorName, commentText, System.currentTimeMillis());
+												@Override
+												public void onCancelled(DatabaseError databaseError) {
 
-                            // Push the comment, it will appear in the list
-                            mCommentsReference.push().setValue(comment);
-
-                            // Clear the field
-                            mCommentField.setText(null);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+												}
+										});
+				}
     }
 
     private static class CommentViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView authorView;
-        public TextView bodyView;
-        public TextView dateView;
+        final TextView authorView;
+        final TextView bodyView;
+        final TextView dateView;
 
-        public CommentViewHolder(View itemView) {
+        CommentViewHolder(View itemView) {
             super(itemView);
 
             authorView = itemView.findViewById(R.id.comment_author);
@@ -201,14 +199,14 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
 
     private static class CommentAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
-        private Context mContext;
-        private DatabaseReference mDatabaseReference;
-        private ChildEventListener mChildEventListener;
+        private final Context mContext;
+        private final DatabaseReference mDatabaseReference;
+        private final ChildEventListener mChildEventListener;
 
-        private List<String> mCommentIds = new ArrayList<String>();
-        private List<Comment> mComments = new ArrayList<Comment>();
+        private final List<String> mCommentIds = new ArrayList<String>();
+        private final List<Comment> mComments = new ArrayList<Comment>();
 
-        public CommentAdapter(final Context context, DatabaseReference ref) {
+        CommentAdapter(final Context context, DatabaseReference ref) {
             mContext = context;
             mDatabaseReference = ref;
 
@@ -276,8 +274,8 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
 
                     // A comment has changed position, use the key to determine if we are
                     // displaying this comment and if so move it.
-                    Comment movedComment = dataSnapshot.getValue(Comment.class);
-                    String commentKey = dataSnapshot.getKey();
+                    @SuppressWarnings("unused") Comment movedComment = dataSnapshot.getValue(Comment.class);
+                    @SuppressWarnings("unused") String commentKey = dataSnapshot.getKey();
 
                 }
 
@@ -314,7 +312,7 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
             return mComments.size();
         }
 
-        public void cleanupListener() {
+         void cleanupListener() {
             if (mChildEventListener != null) {
                 mDatabaseReference.removeEventListener(mChildEventListener);
             }
@@ -322,18 +320,20 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
 
     }
 
-    public String getCountry(){
+    private String getCountry(){
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         return settings.getString("country_preference",null);
     }
 
-    public static String getUserName() {
+    private static String getUserName() {
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
-        for (UserInfo i : user.getProviderData()){
-            if (i.getDisplayName()!=null) {
-                if (!i.getDisplayName().equals("")) return i.getDisplayName();
-            }
-        }
-        return "Anonymous";
+        if (user!=null) {
+						for (UserInfo i : user.getProviderData()) {
+								if (i.getDisplayName() != null) {
+										if (!i.getDisplayName().equals("")) return i.getDisplayName();
+								}
+						}
+				}
+						return "Anonymous";
     }
 }

@@ -39,7 +39,7 @@ import android.view.View;
  *
  * @author Daniel Nilsson
  */
-@SuppressWarnings({"SameParameterValue", "JavaDoc"})
+@SuppressWarnings({"SameParameterValue", "JavaDoc", "ConstantConditions"})
 public class ColorPickerView extends View {
 
     public interface OnColorChangedListener {
@@ -102,9 +102,9 @@ public class ColorPickerView extends View {
     private float mSat = 0f;
     private float mVal = 0f;
 
-    private String mAlphaSliderText = "Alpha";
-    private int mSliderTrackerColor = 0xff1c1c1c;
-    private int mBorderColor = 0xff6E6E6E;
+    private final String mAlphaSliderText = "Alpha";
+    private final int mSliderTrackerColor = 0xff1c1c1c;
+    private final int mBorderColor = 0xff6E6E6E;
     private boolean mShowAlphaPanel = false;
 
     /*
@@ -547,8 +547,8 @@ public class ColorPickerView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = 0;
-        int height = 0;
+        int width;
+        int height;
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
@@ -686,33 +686,7 @@ public class ColorPickerView extends View {
         mListener = listener;
     }
 
-    /**
-     * Set the color of the border surrounding all panels.
-     *
-     * @param color Color
-     */
-    public void setBorderColor(int color) {
-        mBorderColor = color;
-        invalidate();
-    }
 
-    /**
-     * Get the color of the border surrounding all panels.
-     */
-    public int getBorderColor() {
-        return mBorderColor;
-    }
-
-    /**
-     * Get the current color this view is showing.
-     *
-     * @return the current color.
-     */
-    public int getColor() {
-        return Color.HSVToColor(mAlpha, new float[] {
-                mHue, mSat, mVal
-        });
-    }
 
     /**
      * Set the color the view should show.
@@ -752,18 +726,6 @@ public class ColorPickerView extends View {
     }
 
     /**
-     * Get the drawing offset of the color picker view. The drawing offset is
-     * the distance from the side of a panel to the side of the view minus the
-     * padding. Useful if you want to have your own panel below showing the
-     * currently selected color and want to align it perfectly.
-     *
-     * @return The offset in pixels.
-     */
-    public float getDrawingOffset() {
-        return mDrawingOffset;
-    }
-
-    /**
      * Set if the user is allowed to adjust the alpha panel. Default is false.
      * If it is set to false no alpha will be set.
      *
@@ -786,44 +748,5 @@ public class ColorPickerView extends View {
 
     }
 
-    public void setSliderTrackerColor(int color) {
-        mSliderTrackerColor = color;
-        mHueTrackerPaint.setColor(mSliderTrackerColor);
-        invalidate();
-    }
 
-    public int getSliderTrackerColor() {
-        return mSliderTrackerColor;
-    }
-
-    /**
-     * Set the text that should be shown in the alpha slider. Set to null to
-     * disable text.
-     *
-     * @param res string resource id.
-     */
-    public void setAlphaSliderText(int res) {
-        String text = getContext().getString(res);
-        setAlphaSliderText(text);
-    }
-
-    /**
-     * Set the text that should be shown in the alpha slider. Set to null to
-     * disable text.
-     *
-     * @param text Text that should be shown.
-     */
-    private void setAlphaSliderText(String text) {
-        mAlphaSliderText = text;
-        invalidate();
-    }
-
-    /**
-     * Get the current value of the text that will be shown in the alpha slider.
-     *
-     * @return
-     */
-    public String getAlphaSliderText() {
-        return mAlphaSliderText;
-    }
 }

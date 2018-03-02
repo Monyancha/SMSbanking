@@ -34,26 +34,26 @@ public class SmsBankingWidgetConfigureActivity extends AppCompatActivity impleme
     public static final String PREF_COLOR = "text_color_for_widget_";
     public static final String PREF_BACKGROUND = "text_backgound_for_widget_";
     public static final String PREF_SIZE = "text_size_for_widget_";
-    public static final String PREF_LAST_USED_COLOR = "last_used_text_color";
-    public static final String PREF_LAST_USED_BACKGROUND = "last_used_text_backgound";
-    public static final String PREF_LAST_USED_SIZE = "last_used_text_size";
+    private static final String PREF_LAST_USED_COLOR = "last_used_text_color";
+    private static final String PREF_LAST_USED_BACKGROUND = "last_used_text_backgound";
+    private static final String PREF_LAST_USED_SIZE = "last_used_text_size";
     private static final int MIN_FONT_SIZE = 10;
 
-    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    Spinner myBank;
-    TextView sampleText;
-    ImageView sampleBackground;
-    SeekBar fontSize;
-    int textColor;
-    int backColor;
-    int textSize;
+    private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    private Spinner myBank;
+    private TextView sampleText;
+    private ImageView sampleBackground;
+    private SeekBar fontSize;
+    private int textColor;
+    private int backColor;
+    private int textSize;
 
     public SmsBankingWidgetConfigureActivity() {
         super();
     }
 
     // Write the prefix to the SharedPreferences object for this widget
-    static void saveWidgetPref(Context context, int appWidgetId, int bankId,int color,int background,int textSize) {
+    private static void saveWidgetPref(Context context, int appWidgetId, int bankId, int color, int background, int textSize) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putInt(PREF_BANK_ID + appWidgetId, bankId);
         prefs.putInt(PREF_COLOR + appWidgetId, color);
@@ -83,7 +83,7 @@ public class SmsBankingWidgetConfigureActivity extends AppCompatActivity impleme
      * @param parameter name of the parameter
      * @return Int value saved. If not found 0.
      */
-    static int loadSavedIntFromPref(Context context, String parameter) {
+    private static int loadSavedIntFromPref(Context context, String parameter) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         return prefs.getInt(parameter, 0);
     }

@@ -33,9 +33,9 @@ public class Transaction implements Comparable<Transaction> {
 
   //  private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
     public int icon;  // R.id of the icon
-    private String smsBody;
+    private final String smsBody;
     public long smsId;
-    private Date transactionDate;
+    private final Date transactionDate;
     private String accountCurrency;
     private String transactionCurrency;
     private BigDecimal stateBefore;
@@ -50,7 +50,7 @@ public class Transaction implements Comparable<Transaction> {
     private String extraParam4;
 
     private int selectedRuleId=-1;        // id if transactions forced to be used by the user for this transaction.
-    public List <Rule> applicableRules;  // list of rules that can be used for this transaction
+    public final List <Rule> applicableRules;  // list of rules that can be used for this transaction
 
     public enum Parameters {
         ACCOUNT_STATE_BEFORE,
@@ -99,7 +99,7 @@ public class Transaction implements Comparable<Transaction> {
         this.accountCurrency=accountCurrency;
         this.transactionCurrency=accountCurrency;
         this.currencyRate=new BigDecimal(1).setScale(3, RoundingMode.HALF_UP);
-        this.setCommission(new BigDecimal(0).setScale(2, RoundingMode.HALF_UP));
+        this.commission=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateAfter=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateBefore=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateDifference=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
@@ -124,7 +124,7 @@ public class Transaction implements Comparable<Transaction> {
         return f.format(transactionDate);
     }
 
-    public String getAccountCurrency(){
+    private String getAccountCurrency(){
         return accountCurrency;
     }
 
@@ -151,10 +151,6 @@ public class Transaction implements Comparable<Transaction> {
             return currencyRate.multiply(stateDifference, MathContext.UNLIMITED).setScale(2, RoundingMode.HALF_UP);
         }
     }
-
-    public void setDate(long milis){
-    		this.transactionDate=new Date(milis);
-		}
 
     public BigDecimal getCommission() {
         return commission;
@@ -225,7 +221,7 @@ public class Transaction implements Comparable<Transaction> {
      * @param inverseRate flag
      * @return string that will represent transaction difference on screen
      */
-    public String getDifferenceAsString(boolean hideCurrency, boolean inverseRate, boolean withCommission){
+    public String getDifferenceAsString(boolean hideCurrency, boolean inverseRate, @SuppressWarnings("SameParameterValue") boolean withCommission){
         BigDecimal diff;
         BigDecimal rate=currencyRate;
         if (hasStateDifference) {
@@ -286,13 +282,9 @@ public class Transaction implements Comparable<Transaction> {
         }
     }
 
-    public void setCurrencyRate(BigDecimal currencyRate){
-        this.currencyRate=currencyRate;
-    }
-
     public void setCurrencyRate(String currencyRate){
         try{
-            this.setCurrencyRate(new BigDecimal(currencyRate.replace(",", ".")).setScale(3, BigDecimal.ROUND_HALF_UP));
+            this.currencyRate=new BigDecimal(currencyRate.replace(",", ".")).setScale(3, BigDecimal.ROUND_HALF_UP);
         }catch (Exception e) {
             Log.e(LOG,"Setting rate error:" + currencyRate);
         }
@@ -322,32 +314,24 @@ public class Transaction implements Comparable<Transaction> {
         return v;
     }
 
-
-    public void setAccountCurrency(String accountCurrency) {
-        this.accountCurrency = accountCurrency;
-    }
-
     public void setTransactionCurrency(String transactionCurrency) {
         this.transactionCurrency = transactionCurrency;
         this.hasTransactionCurrency =true;
 
     }
-    public void setStateBefore(BigDecimal stateBefore) {
+    private void setStateBefore(BigDecimal stateBefore) {
         this.stateBefore = stateBefore.setScale(2, RoundingMode.HALF_UP);
         this.hasStateBefore =true;
     }
-    public void setStateAfter(BigDecimal stateAfter) {
+    private void setStateAfter(BigDecimal stateAfter) {
         this.stateAfter = stateAfter.setScale(2, RoundingMode.HALF_UP);
         this.hasStateAfter =true;
     }
-    public void setDifference(BigDecimal stateDifference) {
+    private void setDifference(BigDecimal stateDifference) {
         this.stateDifference = stateDifference.setScale(2, RoundingMode.HALF_UP);
         this.hasStateDifference =true;
     }
 
-    public void setCommission(BigDecimal commission) {
-        this.commission = commission.setScale(2, RoundingMode.HALF_UP);
-    }
 
     public void setStateBefore(String s){
         try {
@@ -375,7 +359,7 @@ public class Transaction implements Comparable<Transaction> {
 
     public void setComission(String comission) {
         try{
-            this.setCommission(new BigDecimal(comission.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP));
+            this.commission= new BigDecimal(comission.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);
         }catch (Exception e) {
             Log.d(LOG,"setComission failed");
         }
@@ -427,8 +411,7 @@ public class Transaction implements Comparable<Transaction> {
                 // minus commission if exists
                 uah_price = uah_price.add(commission);
                 // exchange rate
-                BigDecimal rate = uah_price.divide(stateDifference.negate(), 3, RoundingMode.HALF_UP);
-                setCurrencyRate(rate);
+                this.currencyRate = uah_price.divide(stateDifference.negate(), 3, RoundingMode.HALF_UP);
             }
         }
     }
@@ -484,7 +467,7 @@ public class Transaction implements Comparable<Transaction> {
                     if (!prev.getStateAfter().equals(curr.getStateBefore())) {
                         Transaction new_transaction = new Transaction("", prev.getAccountCurrency(),new Date((curr.getTransactionDate().getTime() + prev.getTransactionDate().getTime()) / 2));
                         new_transaction.hasCalculatedTransactionDate = true;
-                        new_transaction.setAccountCurrency(prev.getAccountCurrency());
+                        new_transaction.accountCurrency=prev.getAccountCurrency();
                         new_transaction.icon = R.drawable.ic_transaction_calculated;
                         new_transaction.setStateBefore(prev.getStateAfter());
                         new_transaction.setStateAfter(curr.getStateBefore());
@@ -578,7 +561,8 @@ public class Transaction implements Comparable<Transaction> {
                             if (!hideMatchedMessages && transaction.applicableRules.size() >= 2) {
                                 transaction.selectedRuleId= db.getRuleIdFromConflictChoices(transactionDate);
                                 if (transaction.selectedRuleId >= 0) { // if user already picked rule using his choice
-                                    transaction.getSelectedRule().applyToTransaction(transaction);
+                                    Rule r= transaction.getSelectedRule();
+																		if (r!= null) r.applyToTransaction(transaction);
                                 } else { // if user did not picked rule choose any first.
                                     transaction.applicableRules.get(0).applyToTransaction(transaction);
                                 }

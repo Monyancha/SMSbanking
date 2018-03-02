@@ -40,7 +40,7 @@ public class MyDownloadService extends MyBaseTaskService {
 
     /** Extras **/
     public static final String EXTRA_DOWNLOAD_PATH = "extra_download_path";
-    public static final String EXTRA_BYTES_DOWNLOADED = "extra_bytes_downloaded";
+    private static final String EXTRA_BYTES_DOWNLOADED = "extra_bytes_downloaded";
 
     private StorageReference mStorageRef;
 

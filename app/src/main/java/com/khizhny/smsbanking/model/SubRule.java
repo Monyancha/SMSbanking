@@ -12,13 +12,13 @@ public class SubRule implements java.io.Serializable {
 
 	private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
 	private int id=-1;
-	private Rule rule; // back reference to rule
+	private final Rule rule; // back reference to rule
 	private int distanceToLeftPhrase=1;
 	private int distanceToRightPhrase=1;
 	private String leftPhrase="";
 	private String rightPhrase="";
 	private String constantValue="";
-	private Transaction.Parameters extractedParameter;
+	private final Transaction.Parameters extractedParameter;
 	private Method extractionMethod = Method.USE_REGEX;
 	private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_AUTO;  // 0 - dot,  1-coma, 2 - auto
 	public int trimLeft=0;
@@ -85,7 +85,7 @@ public class SubRule implements java.io.Serializable {
 		this.rightPhrase = rightPhrase;
 	}
 
-    public int getExtractionMethodInt() {
+    private int getExtractionMethodInt() {
 		return extractionMethod.ordinal();
 	}
 
@@ -120,7 +120,7 @@ public class SubRule implements java.io.Serializable {
 		return decimalSeparator;
 	}
 
-	public String getDecimalSeparatorString(String word) {
+	private String getDecimalSeparatorString(String word) {
     	switch (decimalSeparator){
 			case SEPARATOR_DOT:
 				return ".";
@@ -247,40 +247,38 @@ public class SubRule implements java.io.Serializable {
 	 *
 	 * @param msg         SMS Message
 	 * @param transaction Transaction
-	 * @return False if subrule cannot be applied
 	 */
-    public Boolean applySubRule(String msg, Transaction transaction) {
+    public void applySubRule(String msg, Transaction transaction) {
 		switch (extractedParameter) {
 			case ACCOUNT_STATE_BEFORE: //Account state before transaction
 				transaction.setStateBefore(applySubRule(msg, 0));
-				return true;
+					return;
 			case ACCOUNT_STATE_AFTER: //Account state after transaction
 				transaction.setStateAfter(applySubRule(msg, 0));
-				return true;
+					return;
 			case ACCOUNT_DIFFERENCE: //Account difference
 				transaction.setDifference(applySubRule(msg, 0));
-				return true;
+					return;
 			case COMMISSION: //Transaction commission
 				transaction.setComission(applySubRule(msg, 0));
-				return true;
+					return;
 			case CURRENCY: //Transaction currency
 				transaction.setTransactionCurrency(applySubRule(msg, 1)); // return only text)
-				return true;
+					return;
 			case EXTRA_1:
 				transaction.setExtraParam1(applySubRule(msg, 2));
-				return true;
+					return;
 			case EXTRA_2:
 				transaction.setExtraParam2(applySubRule(msg, 2));
-				return true;
+					return;
 			case EXTRA_3:
 				transaction.setExtraParam3(applySubRule(msg, 2));
-				return true;
+					return;
 			case EXTRA_4:
 				transaction.setExtraParam4(applySubRule(msg, 2));
-				return true;
+					return;
 			default:
 				Log.d(LOG, "Unexpected parameter number " + extractedParameter + " in Rule ID=" + rule.getId());
-				return false;
 		}
 
 	}

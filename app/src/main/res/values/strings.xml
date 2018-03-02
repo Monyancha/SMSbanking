@@ -100,7 +100,6 @@
 
     <string name="bank_activate">Activate</string>
     <string name="mybank_activity_title">My banks</string>
-    <string name="bank_templates_title">Bank templates</string>
     <string name="bank_add">Add new bank</string>
     <string name="bank_edit">Edit</string>
     <string name="bank_delete">Delete</string>
@@ -108,7 +107,6 @@
     <string name="add_phone_button_description">plus</string>
     <string name="phone_number_not_set">Phone number must be set.</string>
     <string name="export_failed">Export failed</string>
-    <string name="import_failed">import_failed</string>
     <string name="appwidget_text">0.00</string>
     <string name="add_widget">Add widget</string>
     <string name="widget_default_name">Bank</string>
@@ -140,7 +138,6 @@
     <string name="add">Add</string>
     <string name="done">Done</string>
     <string name="pick_phone_number">Pick a sender</string>
-    <string name="pick_a_template">Pick a template</string>
     <string name="Ignore">Ignore</string>
     <string name="left_characters_and">left characters and</string>
     <string name="right">right</string>
@@ -182,8 +179,7 @@
     <string name="download_failure">download_failure</string>
     <string name="comments">Comments</string>
     <string name="your_country">Country</string>
-    <string name="anonymous" translatable="false">Anonymous</string>
-    <string name="about">About</string>
+     <string name="about">About</string>
     <string name="replace_private">Replace you private data here if you wish to share template later.</string>
     <string name="pick_your_country">Pick your country</string>
     <string name="pref_lang">Language</string>
@@ -206,6 +202,7 @@
     <string name="system_language">System language</string>
     <string name="edit_message">Fix Time</string>
     <string name="impersonalize">Impersonalize</string>
+    <string name="anonymouse" translatable="false">Anonymous</string>
 
 </resources>
 

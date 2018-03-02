@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class Rule implements java.io.Serializable {
 
 	private static final long serialVersionUID = 3; // Is used to indicate class version during Import/Export
@@ -93,8 +94,6 @@ public class Rule implements java.io.Serializable {
 		}
 		// For old rules. Cloning selected words
 		setSelectedWords(originRule.getSelectedWords());
-
-		Log.d(LOG, "Rule " +originRule + " was cloned");
 	}
 
 	public String toString(){
@@ -460,7 +459,8 @@ public class Rule implements java.io.Serializable {
 													w.setBody(w.getImpersonalizedBody());
 													smsBody = (body1 + w.getBody() + body2);
 											} catch (Exception e) {
-
+													e.printStackTrace();
+													Log.d(LOG,"impersonalize error");
 											}
 											break;
 							}

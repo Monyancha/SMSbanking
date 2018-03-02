@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.support.v7.widget.AppCompatSpinner;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -48,7 +47,7 @@ public class BankActivity extends AppCompatActivity {
 		phonesView =  findViewById(R.id.bank_phones);
         currencyView =  findViewById(R.id.currency);
         countryView = findViewById(R.id.country);
-		Button saveView =  findViewById(R.id.sub_rule_save);
+		ImageButton saveView =  findViewById(R.id.sub_rule_save);
 		ImageButton addPhone =  findViewById(R.id.add_phone_button);
 		ImageButton clearPhones = findViewById(R.id.clear_phones);
 

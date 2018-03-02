@@ -1,8 +1,9 @@
 package com.khizhny.smsbanking.model;
 
+@SuppressWarnings("unused")
 public class Comment {
 
-    public String uid;
+		private String uid;
     public String author;
     public String text;
     public long timestamp;

@@ -12,11 +12,11 @@ public class Post {
     public String uid;
     public String author;
     public String title;
-    public String currency;
+    private String currency;
     public String url;
     public long timestamp;
     public int starCount = 0;
-    public Map<String, Integer> stars = new HashMap<String,Integer>();
+    public final Map<String, Integer> stars = new HashMap<String,Integer>();
 
     public Post() {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)

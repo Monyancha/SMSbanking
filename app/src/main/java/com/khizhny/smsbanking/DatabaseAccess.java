@@ -71,28 +71,6 @@ public class DatabaseAccess {
     }
 
     /**
-     *
-     * @return a list of read only banks. Can be used just as a tamplate.
-     */
-    public synchronized List<Bank> getBankTemplates (String country) {
-        List<Bank> bankList = new ArrayList<Bank>();
-        String selectQuery = "SELECT _id FROM banks WHERE editable=0 and country=?";
-        if (!db.isOpen()) open();
-        Cursor cursor = db.rawQuery(selectQuery, new String[]{country});
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                Bank bank = getBank(cursor.getInt(0));
-                // Adding Rules
-                bank.ruleList= getRules(bank);
-                bankList.add(bank);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return bankList;
-    }
-
-    /**
      * @return a List of Banks allowed to edit by the user.
      */
     public synchronized List<Bank> getMyBanks (@NonNull String country) {
@@ -238,7 +216,7 @@ public class DatabaseAccess {
      * @param bank BankV2.
      * @return a list of rules for particular BankV2 (including subrules)
      */
-    public synchronized List<Rule> getRules(Bank bank){
+    private synchronized List<Rule> getRules(Bank bank){
         List<Rule> ruleList = new ArrayList<Rule>();
         Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type, advanced FROM rules WHERE bank_id=" + bank.getId(), null);
         if (cursor.moveToFirst()) {
@@ -361,7 +339,7 @@ public class DatabaseAccess {
      * Gets All subrules for a Rule
      * @param rule -Rule object
      */
-    public synchronized List<SubRule> getSubRules(Rule rule){
+    private synchronized List<SubRule> getSubRules(Rule rule){
         List<SubRule> subRuleList = new ArrayList<SubRule>();
         String selectQuery = "SELECT \n" +
                 "_id,\n" +

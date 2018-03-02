@@ -18,7 +18,7 @@ public class Word implements java.io.Serializable {
 
     private String body;             // Word between [ firstLetterIndex,lastLetterIndex]
 
-    public Rule rule;           // backRef to Rule
+    public final Rule rule;           // backRef to Rule
 
     public Word(Rule rule, int firstLetterIndex, int lastLetterIndex, WORD_TYPES word_type){
         this.rule=rule;

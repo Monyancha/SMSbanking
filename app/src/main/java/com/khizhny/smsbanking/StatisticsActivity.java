@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
@@ -53,7 +54,8 @@ public class StatisticsActivity extends AppCompatActivity{
         if (bank!=null) {
             transactions = Transaction.loadTransactions(bank,this);
         }
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+				ActionBar appbar = getSupportActionBar();
+        if (appbar!=null) appbar.setDisplayHomeAsUpEnabled(true);
 
     }
 
@@ -360,9 +362,10 @@ public class StatisticsActivity extends AppCompatActivity{
 
     private class MyMarkerView extends MarkerView {
 
-        private TextView tvContent;
+        private final TextView tvContent;
 
-        public MyMarkerView(Context context, int layoutResource) {
+        @SuppressWarnings("SameParameterValue")
+				public MyMarkerView(Context context, int layoutResource) {
             super(context, layoutResource);
 
             tvContent = findViewById(R.id.tvContent);

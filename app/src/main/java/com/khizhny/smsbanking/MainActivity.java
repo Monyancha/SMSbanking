@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.provider.Telephony;
 import android.provider.Telephony.Sms;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
@@ -46,7 +45,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -69,7 +67,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import jxl.Cell;
 import jxl.CellView;
@@ -112,20 +109,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     public static final String KEY_TODO_EDIT = "edit";
     public static final String KEY_RULE_ID = "rule_id";
     public static final String KEY_SMS_BODY = "sms_body";
-		public static final String KEY_HIDE_CURRENCY = "hide_currency";
-		public static final String KEY_UPDATE_AVAILABLE = "update_available";
-		public static final String KEY_BANK_ID = "bank_id";
-		public static final String URL_4PDA_PRIVACY = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
-		public static final String KEY_COUNTRY_PREFERENCE = "country_preference";
-		public static final String KEY_INVERSE_RATE = "inverse_rate";
-		public static final String KEY_HIDE_ADS = "hide_ads";
+		private static final String KEY_HIDE_CURRENCY = "hide_currency";
+		private static final String KEY_UPDATE_AVAILABLE = "update_available";
+		private static final String KEY_BANK_ID = "bank_id";
+		private static final String URL_4PDA_PRIVACY = "http://4pda.ru/forum/index.php?showtopic=730676&st=20#entry58120636";
+		private static final String KEY_COUNTRY_PREFERENCE = "country_preference";
+		private static final String KEY_INVERSE_RATE = "inverse_rate";
+		private static final String KEY_HIDE_ADS = "hide_ads";
 
 
 		private ListView listView;
     private List<Transaction> transactions;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressDialog pDialog;
-    Transaction selectedTransaction;
+    private Transaction selectedTransaction;
     private TransactionListAdapter transactionListAdapter;
     private RuleListAdapter ruleListAdapter;
     private Boolean hideCurrency;
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private AlertDialog pickRuleDialog;
     private AlertDialog pickCountryDialog;
 
-    private static Calendar calendar = new GregorianCalendar();
+    private static final Calendar calendar = new GregorianCalendar();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -368,7 +365,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 								if (resultCode == Activity.RESULT_OK){
 										showDatePickerDialog();
 								}
-								return;
 				}
 		}
 

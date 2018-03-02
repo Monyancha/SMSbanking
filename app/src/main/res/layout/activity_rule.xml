@@ -7,7 +7,6 @@
     android:layout_height="fill_parent">
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="bottom"
@@ -132,7 +131,8 @@
             app:layout_constraintTop_toBottomOf="@+id/btn_variable"
             app:srcCompat="@drawable/ic_icon_save"
             tools:layout_constraintRight_creator="1"
-            tools:layout_constraintTop_creator="1" />
+            tools:layout_constraintTop_creator="1"
+            android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/btn_fixed"

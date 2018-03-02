@@ -93,15 +93,13 @@
 
     <string name="bank_activate">Активировать</string>
 	<string name="mybank_activity_title">Мои банки</string>
-	<string name="bank_templates_title">Шаблоны банков</string>
-	<string name="bank_add">Добавить</string>
+    <string name="bank_add">Добавить</string>
 	<string name="bank_edit">Изменить</string>
 	<string name="bank_delete">Удалить</string>
 	<string name="bank_activate_tip">сделан активным.</string>
     <string name="add_phone_button_description">плюс</string>
 	<string name="phone_number_not_set">Номер телефона не указан</string>
     <string name="export_failed">Не получилось экспортировать</string>
-    <string name="import_failed">Импорт не получился</string>
     <string name="add_widget">Добавить виджет</string>
 	<string name="appwidget_text">0.00</string>
     <string name="widget_default_name">Банк</string>
@@ -132,7 +130,6 @@
     <string name="add">Добавить</string>
     <string name="done">Готово</string>
     <string name="pick_phone_number">Выберите отправителя СМС</string>
-    <string name="pick_a_template">Выберите шаблон</string>
     <string name="Ignore">Игнорировать</string>
     <string name="left_characters_and">левых символов и</string>
     <string name="right">правых</string>

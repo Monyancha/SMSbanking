@@ -5,8 +5,7 @@
     android:padding="@dimen/widget_margin"
     android:orientation="vertical"
     android:gravity="center"
-    android:baselineAligned="false"
-    android:id="@+id/widget_layout">
+    android:baselineAligned="false">
 
     <ImageView
         android:id="@+id/widget_background_image"

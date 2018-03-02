@@ -17,18 +17,18 @@ import com.khizhny.smsbanking.R;
  */
 public abstract class MyBaseTaskService extends Service {
 
-		static final int PROGRESS_NOTIFICATION_ID = 0;
-    static final int FINISHED_NOTIFICATION_ID = 1;
+		private static final int PROGRESS_NOTIFICATION_ID = 0;
+    private static final int FINISHED_NOTIFICATION_ID = 1;
 
     private static final String TAG = "MyBaseTaskService";
-		public static final String SMS_BANKING_NOTIFICATION = "sms_banking_notification";
+		private static final String SMS_BANKING_NOTIFICATION = "sms_banking_notification";
 		private int mNumTasks = 0;
 
-    public void taskStarted() {
+    void taskStarted() {
         changeNumberOfTasks(1);
     }
 
-    public void taskCompleted() {
+    void taskCompleted() {
         changeNumberOfTasks(-1);
     }
 
@@ -46,7 +46,7 @@ public abstract class MyBaseTaskService extends Service {
     /**
      * Show notification with a progress bar.
      */
-    protected void showProgressNotification(String caption, long completedUnits, long totalUnits) {
+		void showProgressNotification(String caption, long completedUnits, long totalUnits) {
         int percentComplete = 0;
         if (totalUnits > 0) {
             percentComplete = (int) (100 * completedUnits / totalUnits);
@@ -71,7 +71,7 @@ public abstract class MyBaseTaskService extends Service {
     /**
      * Show notification that the activity finished.
      */
-    protected void showFinishedNotification(String caption, Intent intent, boolean success) {
+		void showFinishedNotification(String caption, Intent intent, boolean success) {
         // Make PendingIntent for notification
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* requestCode */, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -97,7 +97,7 @@ public abstract class MyBaseTaskService extends Service {
     /**
      * Dismiss the progress notification.
      */
-    protected void dismissProgressNotification() {
+		void dismissProgressNotification() {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 

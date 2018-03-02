@@ -149,6 +149,7 @@
         app:layout_constraintTop_toBottomOf="@+id/country"
         app:srcCompat="@drawable/ic_icon_save"
         tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        android:contentDescription="@string/image" />
 
 </android.support.constraint.ConstraintLayout>

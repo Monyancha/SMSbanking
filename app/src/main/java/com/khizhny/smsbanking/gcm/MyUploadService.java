@@ -18,8 +18,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.BankListActivity;
 import com.khizhny.smsbanking.model.Post;
@@ -56,7 +58,7 @@ public class MyUploadService extends MyBaseTaskService implements
 
     private Bank bank;
     private String country;
-    Uri fileLocalUri;
+    private Uri fileLocalUri;
 
     @Override
     public void onCreate() {
@@ -107,9 +109,8 @@ public class MyUploadService extends MyBaseTaskService implements
 
     /**
      * Broadcast finished upload (success or failure).
-     * @return true if a running receiver received the broadcast.
      */
-    private boolean broadcastUploadFinished(@Nullable Uri downloadUrl, @Nullable Uri fileUri) {
+    private void broadcastUploadFinished(@Nullable Uri downloadUrl, @Nullable Uri fileUri) {
         boolean success = downloadUrl != null;
 
         String action = success ? UPLOAD_COMPLETED : UPLOAD_ERROR;
@@ -117,9 +118,9 @@ public class MyUploadService extends MyBaseTaskService implements
         Intent broadcast = new Intent(action)
                 .putExtra(EXTRA_FILE_URI, fileUri)
                 .putExtra(EXTRA_DOWNLOAD_URL, downloadUrl);
-        return LocalBroadcastManager.getInstance(getApplicationContext())
-                .sendBroadcast(broadcast);
-    }
+				LocalBroadcastManager.getInstance(getApplicationContext())
+								.sendBroadcast(broadcast);
+		}
 
     /**
      * Show a notification for a finished upload.
@@ -129,14 +130,10 @@ public class MyUploadService extends MyBaseTaskService implements
         dismissProgressNotification();
 
         // Make Intent to BankListActivity
-        Intent intent = new Intent(this, BankListActivity.class)
+        new Intent(this, BankListActivity.class)
                 .putExtra(EXTRA_DOWNLOAD_URL, downloadUrl)
                 .putExtra(EXTRA_FILE_URI, fileUri)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        boolean success = downloadUrl != null;
-        String caption = success ? "upload_success" : "upload_failure";
-        //Toast.makeText(getApplicationContext(),caption,Toast.LENGTH_SHORT).show();
-        //showFinishedNotification(caption, intent, success);
     }
 
     public static IntentFilter getIntentFilter() {
@@ -150,20 +147,27 @@ public class MyUploadService extends MyBaseTaskService implements
     private void writeNewUser() {
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
 
-        String userId=firebaseUser.getUid();
-        String name=getUserName();
-        String email=firebaseUser.getEmail();
+				String userId;
+				if (firebaseUser != null) {
+						userId = firebaseUser.getUid();
+						String name=getUserName();
+						String email=firebaseUser.getEmail();
 
-        User user = new User(name, email);
-        user.photoUri=getPhotoURI();
-        mDatabase.child("users").child(userId).setValue(user);
+						User user = new User(name, email);
+						user.photoUri=getPhotoURI();
+						mDatabase.child("users").child(userId).setValue(user);
+				}
+
     }
 
     private void writeNewPost(String url) {
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
         String key = mDatabase.child("posts").push().getKey();
-        String userId=firebaseUser.getUid();
-        String author = getUserName();
+				String userId= null;
+				if (firebaseUser != null) {
+						userId = firebaseUser.getUid();
+				}
+				String author = getUserName();
 
         String currency = bank.getDefaultCurrency();
         String title = bank.getName();
@@ -177,25 +181,30 @@ public class MyUploadService extends MyBaseTaskService implements
         mDatabase.updateChildren(childUpdates);
     }
 
-    public String getUserName() {
+    private String getUserName() {
         String temp;
         FirebaseUser user=mAuth.getCurrentUser();
-        for (UserInfo i : user.getProviderData()){
-            temp=i.getDisplayName();
-            if (temp!=null) {
-                if (!temp.equals(""))  return temp;
-            }
-        }
-        return "Anonymous";
-    }
-    public String getPhotoURI() {
+        if (user!=null) {
+						for (UserInfo i : user.getProviderData()) {
+								temp = i.getDisplayName();
+								if (temp != null) {
+										if (!temp.equals("")) return temp;
+								}
+						}
+				}
+				return getString(R.string.anonymouse);
+		}
+
+    private String getPhotoURI() {
         FirebaseUser user=mAuth.getCurrentUser();
-        for (UserInfo i : user.getProviderData()){
-            if (i.getPhotoUrl()!=null) {
-                return i.getPhotoUrl().toString();
-            }
-        }
-        return "Anonymous";
+        if (user!=null) {
+						for (UserInfo i : user.getProviderData()) {
+								if (i.getPhotoUrl() != null) {
+										return i.getPhotoUrl().toString();
+								}
+						}
+				}
+        return getString(R.string.anonymouse);
     }
 
     @SuppressWarnings("VisibleForTests")
@@ -212,13 +221,16 @@ public class MyUploadService extends MyBaseTaskService implements
         Log.d(TAG, "uploadFromUri:onSuccess");
 
         // Get the public download URL
-        Uri downloadUri = taskSnapshot.getMetadata().getDownloadUrl();
+				StorageMetadata m = taskSnapshot.getMetadata();
+				Uri downloadUri;
+				if (m!=null) {
+						downloadUri=m.getDownloadUrl();
+						writeNewUser();
+						writeNewPost(m.getPath());
 
-        writeNewUser();
-        writeNewPost(taskSnapshot.getMetadata().getPath());
-
-        broadcastUploadFinished(downloadUri, fileLocalUri);
-        showUploadFinishedNotification(downloadUri, fileLocalUri);
+						broadcastUploadFinished(downloadUri, fileLocalUri);
+						showUploadFinishedNotification(downloadUri, fileLocalUri);
+				}
         taskCompleted();
     }
 

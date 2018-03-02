@@ -91,7 +91,6 @@
     <string name="negate">минус</string>
     <string name="bank_activate">Активиране</string>
     <string name="mybank_activity_title">Банки</string>
-    <string name="bank_templates_title">Шаблони на банките</string>
     <string name="bank_add">Добавяне</string>
     <string name="bank_edit">Редактиране</string>
     <string name="bank_delete">Изтриване</string>
@@ -99,7 +98,6 @@
     <string name="add_phone_button_description">плюс</string>
     <string name="phone_number_not_set">Не е зададен номер на телефона</string>
     <string name="export_failed">Експортът е неуспешен</string>
-    <string name="import_failed">Импортът е неуспешен</string>
     <string name="add_widget">Добавяне на widged</string>
     <string name="appwidget_text">0.00</string>
     <string name="widget_default_name">Банка</string>
@@ -130,7 +128,6 @@
     <string name="add">Добавяне</string>
     <string name="done">Готово</string>
     <string name="pick_phone_number">Изберете подателя на SMS</string>
-    <string name="pick_a_template">Изберeте шаблон</string>
     <string name="Ignore">Игнориране</string>
     <string name="left_characters_and">символа отляво и</string>
     <string name="right">отдясно</string>

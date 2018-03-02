@@ -57,7 +57,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 		private CheckBox cbImpersonalize;
     private EditText etRegExp;
     private boolean weNeedToDeleteAllSubrules=false;  // if flag is set then old subrules will be deleted because regex mask is now changed.
-    private OnSwipeTouchListener onSwipeTouchListener=new OnSwipeTouchListener();
+    private final OnSwipeTouchListener onSwipeTouchListener=new OnSwipeTouchListener();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -336,7 +336,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Removes subRules with old extraction methods to prevent their modify attempts
      */
-    public void removeOldSubrules(){
+		private void removeOldSubrules(){
         Iterator<SubRule> i = rule.subRuleList.iterator();
         while (i.hasNext()) {
             SubRule sr = i.next();
@@ -469,6 +469,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 wordButton.setOnTouchListener(onSwipeTouchListener);
 
+
                 wordButtons.add(wordButton);
                 flowLayout.addView(wordButton);
             }
@@ -500,7 +501,6 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
         private final GestureDetector gestureDetector = new GestureDetector(new GestureListener());
 
         Word word;
-
 
         @SuppressLint("ClickableViewAccessibility")
         public boolean onTouch(final View v, final MotionEvent event) {
@@ -544,26 +544,31 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        boolean onSwipeRight() {
+        @SuppressWarnings("SameReturnValue")
+				boolean onSwipeRight() {
             word.rule.mergeRight(word);
             weNeedToDeleteAllSubrules=true;
             updateWordsLayout();
             return true;
         }
 
-        boolean onSwipeLeft() {
+        @SuppressWarnings("SameReturnValue")
+				boolean onSwipeLeft() {
             word.rule.mergeLeft(word);
             weNeedToDeleteAllSubrules=true;
             updateWordsLayout();
             return true;
         }
 
-        boolean onSwipeTop() {
+        @SuppressWarnings("SameReturnValue")
+				boolean onSwipeTop() {
             return false;
         }
 
-        boolean onSwipeBottom() {
+        @SuppressWarnings("SameReturnValue")
+				boolean onSwipeBottom() {
             return false;
         }
+
     }
 }

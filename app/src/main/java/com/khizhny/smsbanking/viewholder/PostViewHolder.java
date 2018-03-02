@@ -17,14 +17,14 @@ import java.util.Date;
 
 public class PostViewHolder extends RecyclerView.ViewHolder {
 
-    public TextView titleView;
-    public TextView authorView;
-    public TextView dateView;
-    public ImageView likeView;
-    public ImageView dislikeView;
-    public TextView numStarsView;
-    public ImageButton deleteView;
-    public ImageButton downloadView;
+    private final TextView titleView;
+    private final TextView authorView;
+    private final TextView dateView;
+    public final ImageView likeView;
+    public final ImageView dislikeView;
+    private final TextView numStarsView;
+    public final ImageButton deleteView;
+    private final ImageButton downloadView;
 
     public PostViewHolder(View itemView) {
         super(itemView);
@@ -49,7 +49,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         downloadView.setOnClickListener(clickListener);
     }
 
-    public static String convertTime(long time){
+    private static String convertTime(long time){
         Date date = new Date(time);
         @SuppressLint("SimpleDateFormat") Format format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return format.format(date);

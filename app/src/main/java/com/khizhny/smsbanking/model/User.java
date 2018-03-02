@@ -3,11 +3,12 @@ package com.khizhny.smsbanking.model;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
+@SuppressWarnings("unused")
 @IgnoreExtraProperties
 public class User {
 
-    public String username;
-    public String email;
+		private String username;
+		private String email;
     public String photoUri; // 96x96 Photo link
 
     public User() {
