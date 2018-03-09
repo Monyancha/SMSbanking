@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/clear_phones"
         app:srcCompat="@drawable/ic_icon_minus"
-        android:contentDescription="@string/add_phone_button_description"
+        android:contentDescription="@string/ic_icon_minus"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
         app:layout_constraintRight_toRightOf="parent"
@@ -150,6 +150,6 @@
         app:srcCompat="@drawable/ic_icon_save"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintTop_creator="1"
-        android:contentDescription="@string/image" />
+        android:contentDescription="@string/sub_rule_save" />
 
 </android.support.constraint.ConstraintLayout>

@@ -31,7 +31,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public void testSubRuleModify(){
         // Here I have my new database which is not connected to the standard database of the App
         String old_method_result;
-        for (Bank b: db.getMyBanks("Ukraine")){
+        for (Bank b: db.getBanks("Ukraine")){
             for (Rule r: b.ruleList){
                 for (SubRule sr: r.subRuleList) {
                     switch (sr.getExtractionMethod()) {
@@ -52,9 +52,6 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
                 }
             }
         }
-    }
-    private void updateSubruleMask(){
-
     }
 
     @Override

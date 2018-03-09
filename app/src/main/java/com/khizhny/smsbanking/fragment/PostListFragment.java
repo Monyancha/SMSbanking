@@ -191,15 +191,12 @@ public abstract class PostListFragment extends Fragment {
 
 						// Set click listener for the whole post view
             final String postKey = postRef.getKey();
-            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Launch PostDetailActivity
-                    Intent intent = new Intent(getActivity(), PostDetailActivity.class);
-                    intent.putExtra(PostDetailActivity.EXTRA_POST_KEY, postKey);
-                    startActivity(intent);
-                }
-            });
+            viewHolder.itemView.setOnClickListener(v -> {
+								// Launch PostDetailActivity
+								Intent intent = new Intent(getActivity(), PostDetailActivity.class);
+								intent.putExtra(PostDetailActivity.EXTRA_POST_KEY, postKey);
+								startActivity(intent);
+						});
 
 
             if (post.starCount<POST_DELETE_THRESHOLD || getUid().equals(post.uid)) {
@@ -230,51 +227,46 @@ public abstract class PostListFragment extends Fragment {
 
 
             // Bind Post to ViewHolder, setting OnClickListener for the like/dislike buttons
-            viewHolder.bindToPost(post, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Need to write to both places the post is stored
-                    DatabaseReference countryPostRef = mDatabase
-                            .child("posts V" + Bank.serialVersionUID)
-                            .child(country)
-                            .child(postRef.getKey());
-                    DatabaseReference userPostRef = mDatabase.child("user-posts")
-                            .child(post.uid)
-                            .child(postRef.getKey());
-                    DatabaseReference postComments = mDatabase.child("post-comments")
-                            .child(postRef.getKey());
+            viewHolder.bindToPost(post, view -> {
+								// Need to write to both places the post is stored
+								DatabaseReference countryPostRef = mDatabase
+												.child("posts V" + Bank.serialVersionUID)
+												.child(country)
+												.child(postRef.getKey());
+								DatabaseReference userPostRef = mDatabase.child("user-posts")
+												.child(post.uid)
+												.child(postRef.getKey());
+								DatabaseReference postComments = mDatabase.child("post-comments")
+												.child(postRef.getKey());
 
-                    String[] arr=post.url.split("/");
-                    StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(arr[0])
-                            .child(arr[1])
-                            .child(arr[2]);
+								String[] arr=post.url.split("/");
+								StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(arr[0])
+												.child(arr[1])
+												.child(arr[2]);
 
-                    switch (view.getId()){
-                        case R.id.like:// Run two transactions
-                            onLikeClicked(countryPostRef);
-                            onLikeClicked(userPostRef);
-                            break;
-                        case R.id.dislike: // Run two transactions
-                            onDislikeClicked(countryPostRef);
-                            onDislikeClicked(userPostRef);
-                            break;
-                        case R.id.delete_post:
-                            storageRef.delete();// remove dat file
-                            postComments.removeValue();  // remove comments
-                            countryPostRef.removeValue(); // remove county-post
-                            userPostRef.removeValue(); // remove user-post
-                            break;
-                        case R.id.download_post:
-                            // Get path
-                            startDownload(post.url);
-                            break;
-                    }
+								switch (view.getId()){
+										case R.id.like:// Run two transactions
+												onLikeClicked(countryPostRef);
+												onLikeClicked(userPostRef);
+												break;
+										case R.id.dislike: // Run two transactions
+												onDislikeClicked(countryPostRef);
+												onDislikeClicked(userPostRef);
+												break;
+										case R.id.delete_post:
+												storageRef.delete();// remove dat file
+												postComments.removeValue();  // remove comments
+												countryPostRef.removeValue(); // remove county-post
+												userPostRef.removeValue(); // remove user-post
+												break;
+										case R.id.download_post:
+												// Get path
+												startDownload(post.url);
+												break;
+								}
 
 
-                }
-
-
-            });
+						});
 
         }
     }

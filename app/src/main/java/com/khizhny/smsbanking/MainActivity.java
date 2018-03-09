@@ -12,7 +12,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -62,6 +61,7 @@ import com.khizhny.smsbanking.model.Transaction;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -133,12 +133,29 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private Bank activeBank;
 
     private RefreshTransactionsTask refreshTransactionsTask;
-    private Parcelable listState = null;
+    private int firstVisiblePosition = 0;
     private AlertDialog firstRunDialog;
     private AlertDialog pickRuleDialog;
     private AlertDialog pickCountryDialog;
 
     private static final Calendar calendar = new GregorianCalendar();
+
+		/*public void createTestSMS(){
+				// Make Lots of fake SMS
+				Uri uri = Uri.parse("content://sms/inbox");
+				ContentValues cv = new ContentValues();
+				ContentResolver cr = getContentResolver();
+				int total=1000;
+				for (int i=1; i<total; i++) {
+						cv.put("address", "0671111111");
+						cv.put("date", String.valueOf(System.currentTimeMillis()-60000*(total-i)));
+						cv.put("body", "Test message #"+i+" 1 UAH was spent. "+(total-i)+" UAH left.");
+						cv.put("type", 1);
+						cv.put("thread_id", 4);
+						cv.put("read", 1);
+						cr.insert(uri, cv);
+				}
+		}*/
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d(LOG, "MainActivity:onOptionsItemSelected()");
+        Log.d(LOG, "MainActivity:onOptionsItemSelected() user clicked "+item.getTitle());
         // Listener for Menu options
         Intent intent;
         switch (item.getItemId()) {
@@ -219,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 goToMarket();
                 break;
             case R.id.action_privacy:
+
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(URL_4PDA_PRIVACY));
                 startActivity(i);
@@ -242,7 +260,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }
                 return true;
             case R.id.action_quit:
-                this.finish();
+								/*createRestSMS();/**/
+								this.finish();
                 System.exit(0);
                 break;
 
@@ -254,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     // Listener for popup rule menu clicks
     public boolean onMenuItemClick(MenuItem item) {
-        Log.d(LOG, "MainActivity:OnMenuItemClick()");
+        Log.d(LOG, "MainActivity:OnMenuItemClick() user clicked "+item.getTitle());
         Intent intent;
 				String defaultSmsApp;
         switch (item.getItemId()) {
@@ -279,7 +298,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                     startActivity(intent);
                 } else {
                     // Creating dialog for rule edition
-                    showRulePickerDialog(selectedTransaction.applicableRules,selectedTransaction);
+										// if t=null then click on the rule will triger editing
+                    showRulePickerDialog(selectedTransaction.applicableRules,null);
                 }
                 return true;
 
@@ -346,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         if (firstRunDialog !=null){
             if (firstRunDialog.isShowing()) firstRunDialog.dismiss();
         }
-        refreshScreenWidgets();
+
         Log.d(LOG, "MainActivity:OnStop() finished");
         super.onStop();
     }
@@ -394,9 +414,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             if (transactions!=null) {
                 transactionListAdapter = new TransactionListAdapter(transactions);
                 listView.setAdapter(transactionListAdapter);
-                if (listState != null) {
+                if (firstVisiblePosition != 0) {
                     Log.d(LOG, "MainActivity:OnResume() ListState restored");
-                    listView.onRestoreInstanceState(listState);
+                    listView.setSelection(firstVisiblePosition);
                 }
             } else {
                 // reloading transactions to list
@@ -431,8 +451,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     protected void onSaveInstanceState(Bundle state) {
         Log.d(LOG, "MainActivity:onSaveInstanceState() started");
         super.onSaveInstanceState(state);
-        listState = listView.onSaveInstanceState();
-        state.putParcelable(LIST_STATE,listState);
+        state.putInt(LIST_STATE,listView.getFirstVisiblePosition());
         Log.d(LOG, "MainActivity:onSaveInstanceState() finished");
     }
 
@@ -441,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         Log.d(LOG, "MainActivity:onRestoreInstanceState() started");
         super.onRestoreInstanceState(state);
         if (!forceRefresh) {
-            listState = state.getParcelable(LIST_STATE);
+						firstVisiblePosition = state.getInt(LIST_STATE);
             Log.d(LOG, "MainActivity instance restored...");
         }
         Log.d(LOG, "MainActivity:onRestoreInstanceState() finished");
@@ -451,6 +470,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     protected void onDestroy() {
         Log.d(LOG, "MainActivity:onDestroy()");
+				refreshScreenWidgets();
         // restoring default SMS managing application
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (!MyApplication.defaultSmsApp.equals(getPackageName())) {
@@ -700,51 +720,41 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             if (rowView != null) {
                 TextView ruleNameView = rowView.findViewById(R.id.ruleName);
+                ImageView ruleIcon = rowView.findViewById(R.id.ruleIcon);
                 Rule r = ruleListAdapter.getItem(position);
                 ruleNameView.setText("---");
                 if (r != null) {
                     ruleNameView.setText(r.getName());
-                    Drawable icon = ResourcesCompat.getDrawable(getResources(), r.getRuleTypeDrawable(), null);
-
-                    if (icon != null) {
-                        icon.setBounds(0, 0, icon.getMinimumWidth(), icon.getMinimumHeight());
-                    }
-                    ruleNameView.setCompoundDrawables(icon, null, null, null);
+										ruleIcon.setImageResource(r.getRuleIconId());
                     rowView.setTag(r);
                 }
 
                 // switching rule
-                ruleNameView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (selectedTransaction != null) {
-                            selectedRule = (Rule) ((View) v.getParent()).getTag();
-                            selectedTransaction.switchToRule(selectedRule);
-                            onRefresh();
-                            pickRuleDialog.dismiss();
-                        }else{
-														selectedRule = (Rule) ((View) v.getParent()).getTag();
-														pickRuleDialog.dismiss();
-														Intent intent = new Intent(MainActivity.this, RuleActivity.class);
-														intent.putExtra(KEY_RULE_ID, selectedRule.getId());
-														intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
-														startActivity(intent);
-														forceRefresh = true;
-														pickRuleDialog.dismiss();
-												}
-                    }
-                });
+                ruleNameView.setOnClickListener(v -> {
+										if (selectedTransaction != null) {
+												selectedRule = (Rule) ((View) v.getParent()).getTag();
+												selectedTransaction.switchToRule(selectedRule);
+												onRefresh();
+												pickRuleDialog.dismiss();
+										}else{
+												selectedRule = (Rule) ((View) v.getParent()).getTag();
+												pickRuleDialog.dismiss();
+												Intent intent = new Intent(MainActivity.this, RuleActivity.class);
+												intent.putExtra(KEY_RULE_ID, selectedRule.getId());
+												intent.putExtra(KEY_TODO, KEY_TODO_EDIT);
+												startActivity(intent);
+												forceRefresh = true;
+												pickRuleDialog.dismiss();
+										}
+								});
 
                 ImageButton vDeleteRule = rowView.findViewById(R.id.delete_rule_button);
-                vDeleteRule.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        selectedRule = (Rule) ((View) v.getParent()).getTag();
-                        db.deleteRule(selectedRule.getId());
-                        onRefresh();
-                        pickRuleDialog.dismiss();
-                    }
-                });
+                vDeleteRule.setOnClickListener(v -> {
+										selectedRule = (Rule) ((View) v.getParent()).getTag();
+										db.deleteRule(selectedRule.getId());
+										onRefresh();
+										pickRuleDialog.dismiss();
+								});
 
             }
             //noinspection ConstantConditions
@@ -994,21 +1004,18 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.pick_your_country);
-            builder.setSingleChoiceItems(R.array.countries_array,-1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // Updating country settings in preferences
-                    Log.d(LOG, "MainActivity:showCountryPickDialog().onClick");
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    country = getResources().getStringArray(R.array.countries_array)[which];
-                    settings.edit().putString(KEY_COUNTRY_PREFERENCE, country).apply();
-                    db.open();
-                    db.setDefaultCountry(country);  // update db with selected country
-                    loadMyBanks();
-                    dialog.dismiss();
-                    showFirstRunDialog();
-                }
-            });
+            builder.setSingleChoiceItems(R.array.countries_array,-1, (dialog, which) -> {
+								// Updating country settings in preferences
+								Log.d(LOG, "MainActivity:showCountryPickDialog().onClick");
+								SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+								country = getResources().getStringArray(R.array.countries_array)[which];
+								settings.edit().putString(KEY_COUNTRY_PREFERENCE, country).apply();
+								db.open();
+								db.setDefaultCountry(country);  // update db with selected country
+								loadMyBanks();
+								dialog.dismiss();
+								showFirstRunDialog();
+						});
             pickCountryDialog = builder.create();
             pickCountryDialog.show();
         }
@@ -1053,12 +1060,16 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             super.onPreExecute();
             swipeRefreshLayout.setRefreshing(true);
             if (pDialog != null) pDialog.dismiss();
+						// Save the ListView state
+						firstVisiblePosition = listView.getFirstVisiblePosition();
             pDialog = new ProgressDialog(MainActivity.this);
             pDialog.setMessage(getString(R.string.reading_messages));
             pDialog.setCancelable(false);
-            pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pDialog.setMax(100);
             pDialog.setProgress(1);
             pDialog.show();
+
             // Restoring preferences
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
             hideCurrency = settings.getBoolean(KEY_HIDE_CURRENCY, false);
@@ -1098,6 +1109,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             }
             if (c != null) {
                 int msgCount = c.getCount();
+								pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 pDialog.setMax(msgCount-1);
                 if (c.moveToFirst()) {
                     for (int ii = 0; ii < msgCount; ii++) {
@@ -1180,11 +1192,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             if (t!=null) {
                 transactions=t;
                 transactionListAdapter = new TransactionListAdapter(t);
-                // Save the ListView state (= includes scroll position) as a Parceble
-                Parcelable state = listView.onSaveInstanceState();
                 listView.setAdapter(transactionListAdapter);
-                // Restore previous state (including selected item index and scroll position)
-                listView.onRestoreInstanceState(state);
                 if (refreshTime>CACHE_NOTIFY_THRESHOLD) {
                     Toast.makeText(getApplicationContext(), R.string.cache_needed,Toast.LENGTH_LONG).show();
                 }
@@ -1195,9 +1203,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             swipeRefreshLayout.setRefreshing(false);
             // restoring position if possible
             try {
-                if (listState != null) {
+                if (firstVisiblePosition != 0) {
                     Log.d(LOG, "MainActivity:onPostExecute() list restored after refreshing");
-                    listView.onRestoreInstanceState(listState);
+                    listView.setSelection(firstVisiblePosition);
                 }
             } catch (Exception e) {
                 Log.d(LOG, "MainActivity:onPostExecute() failed to restore");
@@ -1216,7 +1224,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             swipeRefreshLayout.setRefreshing(true);
             if (pDialog != null) pDialog.dismiss();
             pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Caching...");
+            pDialog.setMessage(MessageFormat.format("{0}...", getString(R.string.caching)));
             pDialog.setCancelable(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             pDialog.setMax(transactions.size());
@@ -1229,8 +1237,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             hideAds = settings.getBoolean(KEY_HIDE_ADS, false);
         }
 
-        @Override
-        protected Void doInBackground(List <Transaction>... params) {
+				@Override
+        protected Void doInBackground(List<Transaction>... params) {
             Log.d(LOG,"CacheTransactionsTask.doInBackground() started");
             db.deleteBankCache(activeBank.getId());
             int progress=0;
@@ -1260,8 +1268,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             swipeRefreshLayout.setRefreshing(false);
             // restoring position if possible
             try {
-                if (listState != null){
-                    listView.onRestoreInstanceState(listState);
+                if (firstVisiblePosition != 0){
+                    listView.setSelection(firstVisiblePosition);
                     Log.d(LOG, "MainActivity:onPostExecute() list restored after caching");
                 }
             } catch (Exception e) {
@@ -1273,19 +1281,18 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
+		/**
+		 * @param ruleList - List of rules
+		 * @param t if null click will open editor. Otherwise will switch to selected rule.
+		 */
     private void showRulePickerDialog(List <Rule> ruleList, Transaction t) {
-            if (ruleList != null) {
-                Log.d(LOG, "MainActivity:showRulePickerDialog()");
+				Log.d(LOG, "MainActivity:showRulePickerDialog()");
+    		if (ruleList != null) {
                 // Creating dialog for rule picking
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setCancelable(true);
                 builder.setTitle(getString(R.string.action_rule_list));
-                builder.setPositiveButton(getString(R.string.action_cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        pickRuleDialog.dismiss();
-                    }
-                });
+                builder.setPositiveButton(getString(R.string.action_cancel), (dialog, which) -> pickRuleDialog.dismiss());
                 ruleListAdapter = new RuleListAdapter(ruleList, t);
                 builder.setAdapter(ruleListAdapter, null);
                 pickRuleDialog = builder.create();
@@ -1295,7 +1302,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     private void loadMyBanks(){
         Log.d(LOG, "MainActivity:loadMyBanks() started");
-        myBanks = db.getMyBanks(country);
+        myBanks = db.getBanks(country);
         for (Bank b : myBanks) {
             if (b.isActive()) activeBank = b;
         }

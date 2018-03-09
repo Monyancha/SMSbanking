@@ -28,27 +28,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -100,14 +92,19 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
                 String s = intent.getAction();
                 if (s != null) {
-                    if (s.equals(MyDownloadService.DOWNLOAD_COMPLETED)) {
-                        Log.d(LOG, "DOWNLOAD_COMPLETED intent recieved");
-                    } else if (s.equals(MyDownloadService.DOWNLOAD_ERROR)) {
-                        Log.d(LOG, "OWNLOAD_ERROR intent recieved");
-                    } else if (s.equals(MyUploadService.UPLOAD_COMPLETED) || s.equals(MyUploadService.UPLOAD_ERROR)) {
-                        Log.d(LOG, "UPLOAD_COMPLETED intent recieved");
-                        onUploadResultIntent(intent);
-                    }
+										switch (s) {
+												case MyDownloadService.DOWNLOAD_COMPLETED:
+														Log.d(LOG, "DOWNLOAD_COMPLETED intent recieved");
+														break;
+												case MyDownloadService.DOWNLOAD_ERROR:
+														Log.d(LOG, "OWNLOAD_ERROR intent recieved");
+														break;
+												case MyUploadService.UPLOAD_COMPLETED:
+												case MyUploadService.UPLOAD_ERROR:
+														Log.d(LOG, "UPLOAD_COMPLETED intent recieved");
+														onUploadResultIntent(intent);
+														break;
+										}
                 }
             }
         };
@@ -121,12 +118,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 .build();
 
         googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Toast.makeText(BankListActivity.this,"Error in Google API Client", Toast.LENGTH_SHORT).show();
-                    }
-                })
+                .enableAutoManage(this, connectionResult -> Toast.makeText(BankListActivity.this,"Error in Google API Client", Toast.LENGTH_SHORT).show())
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
@@ -134,17 +126,14 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         if (actionBar!=null) actionBar.setDisplayHomeAsUpEnabled(true);
 
 		listView =  findViewById(R.id.listView);
-		listView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		listView.setOnItemClickListener((parent, view, position, id) -> {
 				selected_row = position;
 
                 PopupMenu popupMenu = new PopupMenu(BankListActivity.this, view);
 				popupMenu.setOnMenuItemClickListener(BankListActivity.this);
                 popupMenu.inflate(R.menu.popup_menu_my_banks);
 				popupMenu.show();
-			}
-		});
+			});
 
 		PopupMenu popupMenu = new PopupMenu(BankListActivity.this, listView);
 		popupMenu.setOnMenuItemClickListener(BankListActivity.this);
@@ -176,7 +165,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
         country=getCountry();
 
 		setTitle(getString(R.string.mybank_activity_title));
-        bankList=db.getMyBanks(country);
+        bankList=db.getBanks(country);
         //bankTemplates = db.getBankTemplates(country);
 
 		for (int i=0;i<bankList.size();i++) {
@@ -253,7 +242,7 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                 case R.id.bank_activate:// Marking selected bank as Active in DB
                     db.setActiveBank(selectedBank.getId());
                     bankList.clear();
-                    bankList.addAll(db.getMyBanks(country));
+                    bankList.addAll(db.getBanks(country));
                     forceRefresh = true;
                     bankListAdapter.notifyDataSetChanged();
                     Toast.makeText(BankListActivity.this, selectedBank.getName() + " " + getString(R.string.bank_activate_tip), Toast.LENGTH_SHORT).show();
@@ -288,18 +277,18 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
                         db.deleteBank(selectedBank.getId());
                     }
                     bankList.clear();
-                    bankList.addAll(db.getMyBanks(country));
+                    bankList.addAll(db.getBanks(country));
 
                     bankListAdapter.notifyDataSetChanged();
                     return true;
 
                 case R.id.bank_cloud_upload:
-                    bank2Share = selectedBank;
+                    bank2Share= new Bank(selectedBank); // creating full copy in case of impersonalization
                     if (mAuth.getCurrentUser() == null) {
                         Toast.makeText(this, R.string.login_first, Toast.LENGTH_SHORT).show();
                         googleSignIn();
                     } else {
-                        exportBankToCloud();
+												showImpersonalizePrompt();
                     }
                     return true;
             }
@@ -378,11 +367,11 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
 
 
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener, DialogInterface.OnClickListener cancelListener) {
         new AlertDialog.Builder(this)
                 .setMessage(message)
                 .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Cancel", cancelListener)
                 .create()
                 .show();
     }
@@ -394,14 +383,11 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
             if (hasWritePermission != PackageManager.PERMISSION_GRANTED) {
                 if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     showMessageOKCancel(getString(R.string.sd_card_msg),
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                        requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_ASK_PERMISSIONS);
-                                    }
-                                }
-                            });
+														(dialog, which) -> {
+																if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+																		requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_ASK_PERMISSIONS);
+																}
+														},null);
                     return;
                 }
                 requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_ASK_PERMISSIONS);
@@ -474,6 +460,15 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
     }
 
+		private void showImpersonalizePrompt(){
+				showMessageOKCancel(getString(R.string.remove_personal_info),  (dialog, which) -> {
+						Bank.impersonalize(bank2Share);
+						exportBankToCloud();
+				},(dialog, which) -> {
+						exportBankToCloud();
+				});
+		}
+
     private void exportBankToCloud(){
         String exportPath=Environment.getExternalStorageDirectory().getPath()+EXPORT_PATH;
         showProgress(true);
@@ -512,13 +507,8 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
         //Google signOut
         Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull Status status) {
-                        Toast.makeText(BankListActivity.this,"Logged out.", Toast.LENGTH_LONG).show();
-                    }
-                }
-        );
+								status -> Toast.makeText(BankListActivity.this,"Logged out.", Toast.LENGTH_LONG).show()
+				);
     }
 
    /* private void revokeAccess(){
@@ -582,23 +572,20 @@ public class BankListActivity extends AppCompatActivity implements PopupMenu.OnM
 
         AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(),null);
         mAuth.signInWithCredential(authCredential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(LOG,"signInWithCredential:OnComplete:" + task.isSuccessful());
-                        showProgress(false);
-                        if (task.isSuccessful()) {
-                            // if sign in successful then auth state listener will handle it.
-                                        Toast.makeText(BankListActivity.this,"Welcome "+getUserName(),Toast.LENGTH_LONG).show();
-                            Log.d(LOG, "signInWithCredential:success");
-                            goToPostsActivity();
-                        }else{
-                            // if sign in fails show message to user.
-                            Log.d(LOG, "signInWithCredential:failed");
-                            Toast.makeText(BankListActivity.this,"Authentication failed.",Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+                .addOnCompleteListener(this, task -> {
+										Log.d(LOG,"signInWithCredential:OnComplete:" + task.isSuccessful());
+										showProgress(false);
+										if (task.isSuccessful()) {
+												// if sign in successful then auth state listener will handle it.
+																		Toast.makeText(BankListActivity.this,"Welcome "+getUserName(),Toast.LENGTH_LONG).show();
+												Log.d(LOG, "signInWithCredential:success");
+												goToPostsActivity();
+										}else{
+												// if sign in fails show message to user.
+												Log.d(LOG, "signInWithCredential:failed");
+												Toast.makeText(BankListActivity.this,"Authentication failed.",Toast.LENGTH_LONG).show();
+										}
+								});
     }
 
     @Override

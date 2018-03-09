@@ -6,7 +6,6 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -26,7 +25,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.support.v7.widget.AppCompatSpinner;
@@ -46,7 +44,7 @@ import static com.khizhny.smsbanking.MyApplication.forceRefresh;
 
 public class RuleActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private List<Button> wordButtons= new ArrayList <Button>();
+    private List<Button> wordButtons= new ArrayList <>();
     private Rule rule;
 
     private TextView tvMessageBody;
@@ -77,7 +75,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                     // adding new rule
                     rule = new Rule(bank, "");
                     rule.setSmsBody(intent.getExtras().getString(KEY_SMS_BODY));
-                    rule.makeInitialWordSplitting();
+                    Rule.makeInitialWordSplitting(rule);
                 } else {
                     // picking existing rule for editing.
                     for (Rule r : bank.ruleList) {
@@ -130,42 +128,36 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
         cbAdvanced=findViewById(R.id.cbAdvanced);
         cbAdvanced.setChecked(rule.isAdvanced());
-        cbAdvanced.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                rule.setAdvanced(isChecked?1:0);
-                if (isChecked) {
-										cbImpersonalize.setVisibility(View.GONE);
-                    etRegExp.setVisibility(View.VISIBLE);
-                }else{
-                    rule.updateMask();
-										cbImpersonalize.setVisibility(View.VISIBLE);
-                    etRegExp.setText(rule.getMask());
-                    etRegExp.setVisibility(View.GONE);
-                }
-            }
-        });
+        cbAdvanced.setOnCheckedChangeListener((buttonView, isChecked) -> {
+						rule.setAdvanced(isChecked?1:0);
+						if (isChecked) {
+								cbImpersonalize.setVisibility(View.GONE);
+								etRegExp.setVisibility(View.VISIBLE);
+						}else{
+								rule.updateMask();
+								cbImpersonalize.setVisibility(View.VISIBLE);
+								etRegExp.setText(rule.getMask());
+								etRegExp.setVisibility(View.GONE);
+						}
+				});
 
         etRegExp=findViewById(R.id.etRegex);
         etRegExp.setText(rule.getMask());
-        etRegExp.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
-                if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
-                    return false;
-                } else if (actionId == EditorInfo.IME_ACTION_DONE
-                        || event == null
-                        || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    // the user is done typing.
-                    rule.setMask(v.getText().toString());
-                    weNeedToDeleteAllSubrules=true;
-                    tvResults.setText(rule.getValues());
-                    return true;
-                }
-                return false; // pass on to other listeners.
-            }
-        });
+        etRegExp.setOnEditorActionListener((v, actionId, event) -> {
+						//KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
+						if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
+								return false;
+						} else if (actionId == EditorInfo.IME_ACTION_DONE
+										|| event == null
+										|| event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+								// the user is done typing.
+								rule.setMask(v.getText().toString());
+								weNeedToDeleteAllSubrules=true;
+								tvResults.setText(rule.getValues());
+								return true;
+						}
+						return false; // pass on to other listeners.
+				});
 
         if (rule.isAdvanced()) {
             etRegExp.setVisibility(View.VISIBLE);
@@ -178,25 +170,22 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
 
 		tvMessageBody =  findViewById(R.id.rule_sms_body);
 		tvMessageBody.setText(rule.getSmsBody());
-        tvMessageBody.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
-                if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
-                    return false;
-                } else if (actionId == EditorInfo.IME_ACTION_DONE
-                        || event == null
-                        || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    // the user is done typing.
-                    rule.setSmsBody(v.getText().toString());
-                    rule.makeInitialWordSplitting();
-                    weNeedToDeleteAllSubrules=true;
-                    updateWordsLayout();
-                    return true;
-                }
-                return false; // pass on to other listeners.
-            }
-        });
+        tvMessageBody.setOnEditorActionListener((v, actionId, event) -> {
+						//KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
+						if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
+								return false;
+						} else if (actionId == EditorInfo.IME_ACTION_DONE
+										|| event == null
+										|| event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+								// the user is done typing.
+								rule.setSmsBody(v.getText().toString());
+								Rule.makeInitialWordSplitting(rule);
+								weNeedToDeleteAllSubrules=true;
+								updateWordsLayout();
+								return true;
+						}
+						return false; // pass on to other listeners.
+				});
 
 		AppCompatSpinner ruleTypeView = this.findViewById(R.id.rule_type);
         ivIcon = this.findViewById(R.id.image);
@@ -218,7 +207,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-        ivIcon.setImageResource(rule.getRuleTypeDrawable());
+        ivIcon.setImageResource(rule.getRuleIconId());
         updateWordsLayout();
 
 
@@ -301,7 +290,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void onNextBtnClick(){
         // Saving all changes to Rule object and saves them to db
-				if (cbImpersonalize.isChecked()) rule.impersonalize();
+				if (cbImpersonalize.isChecked()) Rule.impersonalize(rule);
 
         if (rule.isAdvanced()) {
             rule.setMask(etRegExp.getText().toString());
@@ -365,40 +354,31 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
     private void showDialogToChangeWord(final Word w){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.split);
-        builder.setNeutralButton("<<", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                w.rule.mergeLeft(w);
-                dialog.dismiss();
-                weNeedToDeleteAllSubrules=true;
-                updateWordsLayout();
-            }
-        });
+        builder.setNeutralButton("<<", (dialog, which) -> {
+						w.rule.mergeLeft(w);
+						dialog.dismiss();
+						weNeedToDeleteAllSubrules=true;
+						updateWordsLayout();
+				});
 
-        builder.setPositiveButton(">>", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                w.rule.mergeRight(w);
-                dialog.dismiss();
-                weNeedToDeleteAllSubrules=true;
-                updateWordsLayout();
-            }
-        });
+        builder.setPositiveButton(">>", (dialog, which) -> {
+						w.rule.mergeRight(w);
+						dialog.dismiss();
+						weNeedToDeleteAllSubrules=true;
+						updateWordsLayout();
+				});
 
         if (w.getBody().length()>=2) {
             String splitOptions[]=new String[w.getBody().length()-1];
             for (int i=1;i<=w.getBody().length()-1;i++){
                 splitOptions[i-1]=w.getBody().substring(0,i)+" >< "+w.getBody().substring(i);
             }
-            builder.setSingleChoiceItems(splitOptions, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    w.rule.split(w,which+1);
-                    weNeedToDeleteAllSubrules=true;
-                    dialog.dismiss();
-                    updateWordsLayout();
-                }
-            });
+            builder.setSingleChoiceItems(splitOptions, -1, (dialog, which) -> {
+								w.rule.split(w,which+1);
+								weNeedToDeleteAllSubrules=true;
+								dialog.dismiss();
+								updateWordsLayout();
+						});
         }
         alertDialog=builder.create();
         alertDialog.show();
@@ -412,7 +392,7 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
             flowLayout.removeView(wordButtons.get(i));
         }
         //Creating "word buttons" on Flow Layout
-        wordButtons = new ArrayList <Button>();/**/
+        wordButtons = new ArrayList <>();/**/
         Button wordButton;
         wordButton = new Button(this);
         wordButton.setText(R.string.begin);
@@ -442,31 +422,26 @@ public class RuleActivity extends AppCompatActivity implements View.OnClickListe
                 wordButton.setMinimumHeight(0);
                 wordButton.setMinimumWidth(0);
                 wordButton.setTag(rule.words.get(i-1));
-                wordButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        rule.setAdvanced(0);
-                        cbAdvanced.setChecked(false);
-                        Word word = (Word) v.getTag();
-                        word.changeWordType();
-                        changeColor(v, word.getWordType());
-												if (cbImpersonalize.isChecked()) {
-														((Button) v).setText(String.format("\"%s\"", word.getImpersonalizedBody()));
-												}else{
-														((Button) v).setText(String.format("\"%s\"", word.getBody()));
-												}
-                        weNeedToDeleteAllSubrules = true;
-                        refreshResults();
-                    }
-                });
-                wordButton.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        rule.setAdvanced(0);
-                        cbAdvanced.setChecked(false);
-                        showDialogToChangeWord((Word) v.getTag());
-												return false;
+                wordButton.setOnClickListener(v -> {
+										rule.setAdvanced(0);
+										cbAdvanced.setChecked(false);
+										Word word1 = (Word) v.getTag();
+										word1.changeWordType();
+										changeColor(v, word1.getWordType());
+										if (cbImpersonalize.isChecked()) {
+												((Button) v).setText(String.format("\"%s\"", word1.getImpersonalizedBody()));
+										}else{
+												((Button) v).setText(String.format("\"%s\"", word1.getBody()));
 										}
-                });
+										weNeedToDeleteAllSubrules = true;
+										refreshResults();
+								});
+                wordButton.setOnLongClickListener(v -> {
+										rule.setAdvanced(0);
+										cbAdvanced.setChecked(false);
+										showDialogToChangeWord((Word) v.getTag());
+										return false;
+								});
                 wordButton.setOnTouchListener(onSwipeTouchListener);
 
 

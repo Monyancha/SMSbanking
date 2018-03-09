@@ -198,7 +198,7 @@ public class UnitTests {
     @Test
     public void Migration_test() throws Exception {
 
-        for (Bank b: db.getMyBanks("*")){
+        for (Bank b: db.getBanks("*")){
             for (Rule r: b.ruleList){
                 for (SubRule sr: r.subRuleList) {
                     switch (sr.getExtractionMethod()) {

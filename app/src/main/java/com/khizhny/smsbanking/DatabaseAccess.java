@@ -71,17 +71,16 @@ public class DatabaseAccess {
     }
 
     /**
-     * @return a List of Banks allowed to edit by the user.
+     * @return a List of Banks with Rules and Subrules.
      */
-    public synchronized List<Bank> getMyBanks (@NonNull String country) {
-        List<Bank> bankList = new ArrayList<Bank>();
+    public synchronized List<Bank> getBanks(@NonNull String country) {
+        List<Bank> bankList = new ArrayList<>();
         String selectQuery = "SELECT _id FROM banks WHERE editable<>0 and country=?";
         Cursor cursor= db.rawQuery(selectQuery, new String[]{country});
             // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                Bank bank = getBank(cursor.getInt(0));
-                bank.ruleList= getRules(bank);
+                Bank bank = getBank(cursor.getInt(0),true);
                 bankList.add(bank);
             } while (cursor.moveToNext());
         }
@@ -108,7 +107,7 @@ public class DatabaseAccess {
      * @param bankId BankV2 id.
      * @return BankV2 object.
      */
-    public synchronized Bank getBank (int bankId) {
+    public synchronized Bank getBank (int bankId, boolean withRules) {
         Bank b = new Bank();
         Cursor cursor = db.rawQuery("SELECT _id, name, phone, active, default_currency,editable,current_account_state,country FROM banks WHERE _id="+bankId, null);
         if (cursor.moveToFirst()) {
@@ -120,7 +119,7 @@ public class DatabaseAccess {
             b.setEditable(cursor.getInt(5));
             b.setCurrentAccountState(cursor.getString(6));
             b.setCountry(cursor.getString(7));
-            b.ruleList= getRules(b);
+            if (withRules) b.ruleList= getRules(b);
             cursor.close();
             return b;
         }
@@ -129,8 +128,8 @@ public class DatabaseAccess {
     }
 
     /**
-     * Returns Active BankV2 object.
-     * @return BankV2 object or null if not found.
+     * Returns Active Bank object.
+     * @return Bank object or null if not found.
      */
     public Bank getActiveBank () {
         Cursor c=db.rawQuery("SELECT _id FROM banks where active=1 and editable=1", null);
@@ -138,7 +137,7 @@ public class DatabaseAccess {
         if (c.moveToFirst()) bankId=c.getInt(0);
         c.close();
         if (bankId>0) {
-            return getBank(bankId);
+            return getBank(bankId,true);
         }
         return null;
     }
@@ -213,12 +212,12 @@ public class DatabaseAccess {
     }
 
     /**
-     * @param bank BankV2.
-     * @return a list of rules for particular BankV2 (including subrules)
+     * @param bank Bank.
+     * @return list of rules for particular Bank (including subrules)
      */
     private synchronized List<Rule> getRules(Bank bank){
-        List<Rule> ruleList = new ArrayList<Rule>();
-        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, bank_id, type, advanced FROM rules WHERE bank_id=" + bank.getId(), null);
+        List<Rule> ruleList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, type, advanced FROM rules WHERE bank_id=" + bank.getId(), null);
         if (cursor.moveToFirst()) {
             do {
                 Rule r = new Rule(bank,cursor.getString(1));
@@ -226,9 +225,9 @@ public class DatabaseAccess {
                 r.setSmsBody(cursor.getString(2));
                 r.setMask(cursor.getString(3));
                 r.setSelectedWords(cursor.getString(4));
-                r.setRuleType(cursor.getInt(6));
-                r.subRuleList=getSubRules(r);
-                r.setAdvanced(cursor.getInt(7));
+                r.setRuleType(cursor.getInt(5));
+                r.setAdvanced(cursor.getInt(6));
+								r.subRuleList=getSubRules(r);
                 getWords(r);
                 ruleList.add(r);
             } while (cursor.moveToNext());
@@ -242,7 +241,7 @@ public class DatabaseAccess {
     }
 
     public synchronized List<Transaction> getTransactionCache(int bankId){
-        List<Transaction> transactionList = new ArrayList<Transaction>();
+        List<Transaction> transactionList = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT transaction_date,account_currency,sms_body,icon,transaction_currency,state_before,state_after,state_difference,commission,extra1,extra2,extra3,extra4,exchange_rate,sms_id FROM transactions WHERE bank_id=" + bankId, null);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -307,21 +306,28 @@ public class DatabaseAccess {
      * @return Rule object
      */
     synchronized Rule getRule(int ruleId){
-        String selectQuery = "SELECT distinct bank_id FROM rules WHERE _id="+ruleId;
-
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        int bankId=-1;
-        if (cursor.moveToFirst()) bankId=cursor.getInt(0);
-        if (bankId>=0) {
-            Bank b = getBank(bankId);
-            for (Rule r:b.ruleList) {
-                if (r.getId()==ruleId) return r;
-            }
-        } else {
-            Log.e("DatabaseHelper.getRule", "rule with id="+ruleId+" not found in DB .");
-        }
-        cursor.close();
-        return null;
+				Log.v(LOG, "DatabaseAccess.getRule()");
+				Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, type, advanced, bank_id FROM rules WHERE _id=" + ruleId, null);
+				if (cursor.moveToFirst()) {
+						do {
+								int bankId=cursor.getInt(7);
+								Bank bank = getBank(bankId,false);
+								Rule r = new Rule(bank, cursor.getString(1));
+								r.setId(cursor.getInt(0));
+								r.setSmsBody(cursor.getString(2));
+								r.setMask(cursor.getString(3));
+								r.setSelectedWords(cursor.getString(4));
+								r.setRuleType(cursor.getInt(5));
+								r.setAdvanced(cursor.getInt(6));
+								r.subRuleList=getSubRules(r);
+								getWords(r);
+								cursor.close();
+								return r;
+						} while (cursor.moveToNext());
+				}
+				cursor.close();
+				Log.e(LOG, "Requested rule not found.");
+				return null;
     }
 
     /**
@@ -340,7 +346,7 @@ public class DatabaseAccess {
      * @param rule -Rule object
      */
     private synchronized List<SubRule> getSubRules(Rule rule){
-        List<SubRule> subRuleList = new ArrayList<SubRule>();
+        List<SubRule> subRuleList = new ArrayList<>();
         String selectQuery = "SELECT \n" +
                 "_id,\n" +
                 "left_phrase,\n" +
@@ -405,7 +411,7 @@ public class DatabaseAccess {
             } while (cursor.moveToNext());
         }
         cursor.close();
-        if (rule.words.size()==0) rule.makeInitialWordSplitting();
+        if (rule.words.size()==0) Rule.makeInitialWordSplitting(rule);
     }
 
     /**

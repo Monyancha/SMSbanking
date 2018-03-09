@@ -7,19 +7,19 @@
         android:orderInCategory="103"
         android:title="@string/mybank_activity_title"
         android:icon="@drawable/ic_menu_banks"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_statistics"
         android:orderInCategory="104"
         android:icon="@drawable/ic_menu_statistics"
         android:title="@string/statistics"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_rule_list"
         android:orderInCategory="105"
         android:title="@string/action_rule_list"
         android:icon="@drawable/ic_menu_list_rules"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_export_transactions"
         android:orderInCategory="106"

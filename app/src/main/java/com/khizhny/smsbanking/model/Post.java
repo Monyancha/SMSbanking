@@ -16,7 +16,7 @@ public class Post {
     public String url;
     public long timestamp;
     public int starCount = 0;
-    public final Map<String, Integer> stars = new HashMap<String,Integer>();
+    public final Map<String, Integer> stars = new HashMap<>();
 
     public Post() {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
@@ -38,7 +38,7 @@ public class Post {
 
     @Exclude
     public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
         result.put("author", author);
         result.put("title", title);

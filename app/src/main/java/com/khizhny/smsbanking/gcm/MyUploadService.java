@@ -175,7 +175,7 @@ public class MyUploadService extends MyBaseTaskService implements
         Post post = new Post(userId,author,title,url,currency,System.currentTimeMillis());
         Map<String, Object> postValues = post.toMap();
 
-        Map<String, Object> childUpdates = new HashMap<String, Object>();
+        Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/posts V"+ Bank.serialVersionUID +"/"+country+"/" + key, postValues);
         childUpdates.put("/user-posts/"+ userId+"/" + key, postValues);
         mDatabase.updateChildren(childUpdates);

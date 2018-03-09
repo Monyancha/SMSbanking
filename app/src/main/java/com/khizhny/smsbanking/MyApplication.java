@@ -14,7 +14,16 @@ import android.preference.PreferenceManager;
 import android.provider.Telephony;
 import android.util.Log;
 
+import org.acra.*;
+import org.acra.annotation.*;
+
 import java.util.Locale;
+
+@AcraCore(buildConfigClass = BuildConfig.class)
+@AcraMailSender(mailTo="khizhny@gmail.com",
+				reportAsFile = false,
+				resSubject = R.string.crash_mail_subject)
+@AcraToast(resText = R.string.crash_mail_subject)
 
 public class MyApplication extends Application {
 
@@ -39,10 +48,19 @@ public class MyApplication extends Application {
 
 		public static String language;
 
+
+
+		@Override
+		protected void attachBaseContext(Context base) {
+				super.attachBaseContext(base);
+				// The following line triggers the initialization of ACRA
+				ACRA.init(this);
+		}
+
 		@Override
 		public void onCreate() {
 				super.onCreate();
-				Log.d(LOG,"MyApplication.onCreate() started");
+				Log.d(LOG,"MyApplication.onCreate()");
 				db = DatabaseAccess.getInstance(this);
 				db.open();
 				Log.d(LOG,"New Application created...");
@@ -127,6 +145,7 @@ public class MyApplication extends Application {
 		}
 
 		public static  String[] getExtraParameterNames(Context ctx){
+				Log.d(LOG, "MyApplication.getExtraParameterNames()");
 				// Restoring preferences
 				String[] res=new String[4];
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);

@@ -18,6 +18,7 @@ import com.khizhny.smsbanking.MyApplication;
 import com.khizhny.smsbanking.R;
 import com.khizhny.smsbanking.model.Bank;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,70 +81,65 @@ public class MyDownloadService extends MyBaseTaskService {
 
         // Download and get total bytes
         mStorageRef.child(downloadPath).getStream(
-                new StreamDownloadTask.StreamProcessor() {
-                    @Override
-                    public void doInBackground(StreamDownloadTask.TaskSnapshot taskSnapshot,
-                                               InputStream inputStream) throws IOException {
-                        long totalBytes = taskSnapshot.getTotalByteCount();
-                        long bytesDownloaded = 0;
+								(taskSnapshot, inputStream) -> {
+										long totalBytes = taskSnapshot.getTotalByteCount();
+										long bytesDownloaded = 0;
 
-                        byte[] buffer = new byte[1024];
-                        int size;
+										byte[] buffer = new byte[1024];
+										int size;
 
-                        // Output stream to write file
-                        OutputStream outputStream = new FileOutputStream(getCacheDir().getAbsolutePath()+"/loaded_bank.dat");
+										// Output stream to write file
+										OutputStream outputStream = new FileOutputStream(getApplicationContext().getCacheDir().getAbsolutePath()+"/loaded_bank.dat");
 
-                        while ((size = inputStream.read(buffer)) != -1) {
-                            bytesDownloaded += size;
-                            outputStream.write(buffer, 0, size);
-                            showProgressNotification(getString(R.string.progress_downloading),
-                                    bytesDownloaded, totalBytes);
-                        }
-                        outputStream.flush();
-                        outputStream.close();
-                        inputStream.close();
-                    }
-                })
-                .addOnSuccessListener(new OnSuccessListener<StreamDownloadTask.TaskSnapshot>() {
-                    @SuppressWarnings("VisibleForTests")
-                    @Override
-                    public void onSuccess(StreamDownloadTask.TaskSnapshot taskSnapshot) {
-                        Log.d(TAG, "download:SUCCESS");
+										while ((size = inputStream.read(buffer)) != -1) {
+												bytesDownloaded += size;
+												outputStream.write(buffer, 0, size);
+												showProgressNotification(getString(R.string.progress_downloading),
+																bytesDownloaded, totalBytes);
+										}
+										outputStream.flush();
+										outputStream.close();
+										inputStream.close();
+								})
+                .addOnSuccessListener(taskSnapshot -> {
+										Log.d(TAG, "download:SUCCESS");
 
-                        // Send success broadcast with number of bytes downloaded
-                        if (broadcastDownloadFinished(downloadPath, taskSnapshot.getTotalByteCount())) {
-                            showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
-                        }
-                        Bank bank;
-                        // importing downloaded template to DB
-                        Bank loadedBank=Bank.importBank(getCacheDir().getAbsolutePath() + "/loaded_bank.dat");
-                        if (loadedBank!=null) {
-                            bank = new Bank(loadedBank);
-                            db.addOrEditBank(bank, true, true);
-                            db.setActiveBank(bank.getId());
-                            MyApplication.forceRefresh = true;
-                        }else{
-                            // Send failure broadcast
-                            showImportFailedNotification();
-                        }
+										// Send success broadcast with number of bytes downloaded
+										if (broadcastDownloadFinished(downloadPath, taskSnapshot.getTotalByteCount())) {
+												showDownloadFinishedNotification(downloadPath, (int) taskSnapshot.getTotalByteCount());
+										}
+										Bank bank;
+										// importing downloaded template to DB
+										File cache=getApplicationContext().getCacheDir();
+										if (cache!=null) {
+												Bank loadedBank = Bank.importBank(cache.getAbsolutePath() + "/loaded_bank.dat");
+												if (loadedBank != null) {
+														bank = new Bank(loadedBank);
+														db.addOrEditBank(bank, true, true);
+														db.setActiveBank(bank.getId());
+														MyApplication.forceRefresh = true;
+												} else {
+														// Send failure broadcast
+														showImportFailedNotification("Import failed.");
+												}
+										}else{
+												// Send failure broadcast
+												showImportFailedNotification("Cache dir not found.");
+										}
 
-                        // Mark task completed
-                        taskCompleted();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.w(TAG, "download:FAILURE", exception);
+										// Mark task completed
+										taskCompleted();
+								})
+                .addOnFailureListener(exception -> {
+										Log.w(TAG, "download:FAILURE", exception);
 
-                        // Send failure broadcast
-                        if (broadcastDownloadFinished(downloadPath, -1)) {
-                            showDownloadFinishedNotification(downloadPath, -1);
-                        }
-                        // Mark task completed
-                        taskCompleted();
-                    }
-                });
+										// Send failure broadcast
+										if (broadcastDownloadFinished(downloadPath, -1)) {
+												showDownloadFinishedNotification(downloadPath, -1);
+										}
+										// Mark task completed
+										taskCompleted();
+								});
     }
 
     /**
@@ -182,11 +178,11 @@ public class MyDownloadService extends MyBaseTaskService {
     /**
      * Show a notification for a failed import.
      */
-    private void showImportFailedNotification() {
+    private void showImportFailedNotification(String msg) {
         // Make Intent to MainActivity
         Intent intent = new Intent(this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        showFinishedNotification("Import failed.", intent, false);
+        showFinishedNotification(msg, intent, false);
     }
 
 

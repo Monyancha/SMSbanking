@@ -25,8 +25,8 @@ public class Rule implements java.io.Serializable {
 	private Boolean advanced=false;
     private String nameSuggestion="";
 	private transactionType ruleType=transactionType.UNKNOWN;
-	public List<SubRule> subRuleList=new ArrayList<SubRule>();
-	public final List<Word> words=new ArrayList<Word>();
+	public List<SubRule> subRuleList= new ArrayList<>();
+	public final List<Word> words= new ArrayList<>();
 
 	private int wordsCount=0; // for old rules compatibility
 	private boolean[] wordIsSelected= null; // for old rules compatibility
@@ -275,8 +275,13 @@ public class Rule implements java.io.Serializable {
 	 *
 	 * @return Drawable ID of the icon to be shown in transaction list.
 	 */
-	public int getRuleTypeDrawable() {
-		return ruleTypeIcons[ruleType.ordinal()];
+	public int getRuleIconId() {
+			int res=ruleTypeIcons[0];
+			try {
+					return ruleTypeIcons[ruleType.ordinal()];
+			}catch (Exception e){
+					return res;
+			}
 	}
 
 	public void setRuleType(int ruleType) {
@@ -290,7 +295,7 @@ public class Rule implements java.io.Serializable {
 	public List<String> getVariablePhrases(){
 		Pattern pattern = Pattern.compile(mask);
 		Matcher matcher = pattern.matcher(smsBody);
-		List<String> results=new ArrayList<String>();
+		List<String> results= new ArrayList<>();
 		if (matcher.matches()) {
 			for (int i =1; i<=matcher.groupCount();i++){
 				results.add(matcher.group(i));
@@ -323,7 +328,7 @@ public class Rule implements java.io.Serializable {
 	void applyToTransaction(@NonNull Transaction transaction ){
 		String sms_body = transaction.getSmsBody();
 		if (ruleType!=Rule.transactionType.IGNORE && sms_body.matches(mask)) {
-			transaction.icon = getRuleTypeDrawable();
+			transaction.icon = getRuleIconId();
 			for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
 		}
 	}
@@ -350,21 +355,21 @@ public class Rule implements java.io.Serializable {
         return sr;
     }
 
-	public void makeInitialWordSplitting(){
-		words.clear();
+	public static void makeInitialWordSplitting(Rule r){
+		r.words.clear();
 		char ch;
 		char splitChar=' ';
 		boolean WeNeedToSaveWord=false;
 		int word_start=0;
 		int word_end;
 
-		for (int i=0; i<smsBody.length();i++) {
-			ch=smsBody.charAt(i);
+		for (int i=0; i<r.smsBody.length();i++) {
+			ch=r.smsBody.charAt(i);
 			if (ch==splitChar) {
 				if (WeNeedToSaveWord) {
 					// we are at the end of word
 					word_end=i-1;
-					words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
+						r.words.add(new Word(r,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
 				}
 				WeNeedToSaveWord=false;
 			} else {
@@ -376,8 +381,8 @@ public class Rule implements java.io.Serializable {
 			}
 		}
 		if (WeNeedToSaveWord) {
-			word_end=smsBody.length()-1;
-			words.add(new Word(this,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
+			word_end=r.smsBody.length()-1;
+				r.words.add(new Word(r,word_start,word_end, Word.WORD_TYPES.WORD_CONST));
 		}
 	}
 
@@ -445,19 +450,19 @@ public class Rule implements java.io.Serializable {
 		 * Removes personal data from rule
 		 * Works just in regular mode.
 		 */
-	public void impersonalize(){
-			if (!advanced) {
-					for (Word w : words) {
+	public static void impersonalize(Rule r){
+			if (!r.advanced) {
+					for (Word w : r.words) {
 							switch (w.getWordType()) {
 									case WORD_CONST:
 											break;
 									case WORD_VARIABLE:
 									case WORD_VARIABLE_FIXED_SIZE:
 											try {
-													String body1 = w.getFirstLetterIndex() == 0 ? "" : smsBody.substring(0, w.getFirstLetterIndex());
-													String body2 = w.getLastLetterIndex() == (smsBody.length() - 1) ? "" : smsBody.substring(w.getLastLetterIndex() + 1);
+													String body1 = w.getFirstLetterIndex() == 0 ? "" : r.smsBody.substring(0, w.getFirstLetterIndex());
+													String body2 = w.getLastLetterIndex() == (r.smsBody.length() - 1) ? "" : r.smsBody.substring(w.getLastLetterIndex() + 1);
 													w.setBody(w.getImpersonalizedBody());
-													smsBody = (body1 + w.getBody() + body2);
+													r.smsBody = (body1 + w.getBody() + body2);
 											} catch (Exception e) {
 													e.printStackTrace();
 													Log.d(LOG,"impersonalize error");

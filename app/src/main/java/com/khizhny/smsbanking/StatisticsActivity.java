@@ -138,9 +138,9 @@ public class StatisticsActivity extends AppCompatActivity{
                     int lastBarIndex = transactions.get(0).getDateIndex(start_date, step);
                     //int lastTransactionIndex = transactions.size() - 1;
                     // Filling categories array
-                    List<String> cat = new ArrayList<String>(); // categories list
-                    ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();  // list for positive BarValues
-                    ArrayList<Entry> lineEntries = new ArrayList<Entry>();  // list for line value (max ballance state)
+                    List<String> cat = new ArrayList<>(); // categories list
+                    ArrayList<BarEntry> barEntries = new ArrayList<>();  // list for positive BarValues
+                    ArrayList<Entry> lineEntries = new ArrayList<>();  // list for line value (max ballance state)
                     int transactionIndex = transactions.size() - 1;
                     int currentTransactionBarIndex = transactions.get(transactionIndex).getDateIndex(start_date, step);
 
@@ -213,22 +213,18 @@ public class StatisticsActivity extends AppCompatActivity{
                     //colors.add(Color.rgb(60, 220, 78));
                     //colors.add(Color.rgb(250, 0, 0));
                     //barDataSet.setValueTextColors(colors);
-                    barDataSet.setValueFormatter(new ValueFormatter() {
-
-                        @Override
-                        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                            BigDecimal bd = new BigDecimal(Float.toString(value));
-                            bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
-                            switch (bd.signum()) {
-                                case 0:
-                                    return "";
-                                case 1:
-                                    return "+" + bd.toString();
-                                default:
-                                    return bd.toString();
-                            }
-                        }
-                    });
+                    barDataSet.setValueFormatter((value, entry, dataSetIndex, viewPortHandler) -> {
+												BigDecimal bd = new BigDecimal(Float.toString(value));
+												bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
+												switch (bd.signum()) {
+														case 0:
+																return "";
+														case 1:
+																return "+" + bd.toString();
+														default:
+																return bd.toString();
+												}
+										});
                     BarData barData = new BarData();
                     barData.addDataSet(barDataSet);
 
@@ -250,7 +246,7 @@ public class StatisticsActivity extends AppCompatActivity{
                     }
                     maxLineData.addDataSet(maxLineDataSet);
 
-                    ArrayList<ILineDataSet> lineDataSets = new ArrayList<ILineDataSet>();
+                    ArrayList<ILineDataSet> lineDataSets = new ArrayList<>();
                     lineDataSets.add(maxLineDataSet);
 
                     LineData lineData = new LineData(cat, lineDataSets);

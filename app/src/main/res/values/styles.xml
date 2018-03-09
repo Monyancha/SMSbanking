@@ -2,6 +2,6 @@
 <resources>
     <style name="Theme.Mytheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
         <item name="android:itemBackground">@color/white</item>
-        <item name="icon">@drawable/ic_launcher</item>
+        <item name="icon">@mipmap/ic_launcher</item>
     </style>
 </resources>

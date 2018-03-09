@@ -55,7 +55,8 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     protected void onResume() {
-        super.onResume();
+				Log.d(LOG, "Transaction Activity onResume()");
+    		super.onResume();
         // getting Rule object in on resume because we will get back here from Subrule Activity
         Intent intent = getIntent();
         if ( intent.hasExtra( KEY_RULE_ID)) {
@@ -73,12 +74,12 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
 
         }
         if (rule==null) Log.e(MyApplication.LOG, "Rule for Transaction Activity not found.");
-
-        Log.d(LOG, "Transaction Activity resuming");
 				refreshUiElements();
+				Log.d(LOG, "Transaction Activity onResume() finished");
     }
 
     private void refreshUiElements(){
+				Log.d(LOG, "Transaction Activity refreshUiElements()");
     		if (rule.isAdvanced()) {
     				findViewById(R.id.impersonalize).setVisibility(View.GONE);
 				}else{
@@ -179,7 +180,7 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
                 selectedParameter = Transaction.Parameters.EXTRA_4;
                 break;
 						case R.id.impersonalize:
-								rule.impersonalize();
+								Rule.impersonalize(rule);
 								transaction = rule.getSampleTransaction();
 								refreshUiElements();
 								return;

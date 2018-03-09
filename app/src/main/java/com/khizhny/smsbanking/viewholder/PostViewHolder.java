@@ -21,6 +21,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private final TextView authorView;
     private final TextView dateView;
     public final ImageView likeView;
+    public final ImageView iconView;
     public final ImageView dislikeView;
     private final TextView numStarsView;
     public final ImageButton deleteView;
@@ -31,6 +32,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         dateView = itemView.findViewById(R.id.post_date);
         titleView = itemView.findViewById(R.id.post_title);
         authorView = itemView.findViewById(R.id.post_author);
+        iconView = itemView.findViewById(R.id.post_icon);
         likeView = itemView.findViewById(R.id.like);
         dislikeView = itemView.findViewById(R.id.dislike);
         numStarsView = itemView.findViewById(R.id.post_num_stars);

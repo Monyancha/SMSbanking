@@ -94,70 +94,58 @@ public class BankActivity extends AppCompatActivity {
 		}
 
         if (saveView != null) {
-            saveView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (phonesView.getText().toString().length() < 3) {
-                        Toast.makeText(BankActivity.this, getString(R.string.phone_number_not_set), Toast.LENGTH_SHORT).show();
-                    } else if (nameView.getText().toString().equals("")) {
-                        Toast.makeText(BankActivity.this, getString(R.string.bank_name_must_be_set), Toast.LENGTH_SHORT).show();
-                    }else {
-                        // Updating country settings in preferences
-                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                        String country=countryView.getSelectedItem().toString();
-                        settings.edit().putString("country_preference",country).apply();
+            saveView.setOnClickListener(v -> {
+								if (phonesView.getText().toString().length() < 3) {
+										Toast.makeText(BankActivity.this, getString(R.string.phone_number_not_set), Toast.LENGTH_SHORT).show();
+								} else if (nameView.getText().toString().equals("")) {
+										Toast.makeText(BankActivity.this, getString(R.string.bank_name_must_be_set), Toast.LENGTH_SHORT).show();
+								}else {
+										// Updating country settings in preferences
+										SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+										String country1 =countryView.getSelectedItem().toString();
+										settings.edit().putString("country_preference", country1).apply();
 
-                        Toast.makeText(BankActivity.this, getString(R.string.saving_changes), Toast.LENGTH_SHORT).show();
-                        bank.setName(nameView.getText().toString());
-                        bank.setPhone(phonesView.getText().toString());
-                        bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
-                        bank.setCountry(arr[countryView.getSelectedItemPosition()]);
-                        db.addOrEditBank(bank,false,false);
-                        BankActivity.this.finish();
-                    }
-                }
-            });
+										Toast.makeText(BankActivity.this, getString(R.string.saving_changes), Toast.LENGTH_SHORT).show();
+										bank.setName(nameView.getText().toString());
+										bank.setPhone(phonesView.getText().toString());
+										bank.setDefaultCurrency(currencyView.getSelectedItem().toString().replace("\n", ""));
+										bank.setCountry(arr[countryView.getSelectedItemPosition()]);
+										db.addOrEditBank(bank,false,false);
+										BankActivity.this.finish();
+								}
+						});
         }
 
         if (addPhone != null) {
-            addPhone.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            addPhone.setOnClickListener(v -> {
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(BankActivity.this);
-                    builder.setTitle(R.string.pick_phone_number);
-                    builder.setItems(senders, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    String s = phonesView.getText().toString();
-                                    if (!s.equals("")) s=s+";";
-                                    phonesView.setText(String.format("%s%s", s, senders[which]));
-                                }
-                            });
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-                }
-            });
+								AlertDialog.Builder builder = new AlertDialog.Builder(BankActivity.this);
+								builder.setTitle(R.string.pick_phone_number);
+								builder.setItems(senders, (dialog, which) -> {
+										String s = phonesView.getText().toString();
+										if (!s.equals("")) s=s+";";
+										phonesView.setText(String.format("%s%s", s, senders[which]));
+								});
+								AlertDialog alertDialog = builder.create();
+								alertDialog.show();
+						});
         }
 
         if (clearPhones != null) {
-            clearPhones.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // if clear button clicked we will delete last added phone number.
-                    String[] s=phonesView.getText().toString().split(";");
-                    StringBuilder s2= new StringBuilder();
-                    for (int i=0;i<s.length-1;i++) {
-                        if (i==0) {
-                            s2 = new StringBuilder(s[0]);
-                        } else {
-                            s2.append(";").append(s[i]);
-                        }
+            clearPhones.setOnClickListener(v -> {
+								// if clear button clicked we will delete last added phone number.
+								String[] s=phonesView.getText().toString().split(";");
+								StringBuilder s2= new StringBuilder();
+								for (int i=0;i<s.length-1;i++) {
+										if (i==0) {
+												s2 = new StringBuilder(s[0]);
+										} else {
+												s2.append(";").append(s[i]);
+										}
 
-                    }
-                    phonesView.setText(s2.toString());
-                }
-            });
+								}
+								phonesView.setText(s2.toString());
+						});
         }
     }
 

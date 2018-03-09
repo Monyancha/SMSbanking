@@ -103,7 +103,7 @@ public class Transaction implements Comparable<Transaction> {
         this.stateAfter=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateBefore=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
         this.stateDifference=new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
-        this.applicableRules = new ArrayList <Rule>();
+        this.applicableRules = new ArrayList<>();
         this.extraParam1="";
         this.extraParam2="";
         this.extraParam3="";
@@ -423,9 +423,9 @@ public class Transaction implements Comparable<Transaction> {
      */
     public static List<Transaction> addMissingTransactions(List<Transaction> transactionList){
         // removing duplicates
-        HashSet<Transaction> se = new HashSet<Transaction>(transactionList);
+        HashSet<Transaction> se = new HashSet<>(transactionList);
         transactionList.clear();
-        transactionList = new ArrayList<Transaction>(se);
+        transactionList = new ArrayList<>(se);
         //Sorting by date
         Collections.sort(transactionList);
 

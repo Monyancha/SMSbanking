@@ -92,7 +92,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
 
         //==  Phrase ====
         AppCompatSpinner phraseView =findViewById(R.id.sub_rule_phrase);
-        ArrayAdapter phraseAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, rule.getVariablePhrases());
+        ArrayAdapter phraseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, rule.getVariablePhrases());
        phraseView.setAdapter(phraseAdapter);
         phraseView.setSelection(subRule.regexPhraseIndex);
         phraseView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -114,36 +114,30 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         EditText constantView = findViewById(R.id.sub_rule_constant_value);
         constantView.setText(subRule.getConstantValue());
         constantView.setOnEditorActionListener(
-                new EditText.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        //KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
-                        if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
-                            return false;
-                        } else if (actionId == EditorInfo.IME_ACTION_SEARCH
-                                || event == null
-                                || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                            // the user is done typing.
-                            subRule.setConstantValue(v.getText().toString());
-                            refreshResult();
-                            return true;
-                        }
-                        return false; // pass on to other listeners.
-                    }
-                });/**/
+								(v, actionId, event) -> {
+										//KeyEvent: If triggered by an enter key, this is the event; otherwise, this is null.
+										if (event != null && event.getAction() != KeyEvent.ACTION_DOWN) {
+												return false;
+										} else if (actionId == EditorInfo.IME_ACTION_SEARCH
+														|| event == null
+														|| event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+												// the user is done typing.
+												subRule.setConstantValue(v.getText().toString());
+												refreshResult();
+												return true;
+										}
+										return false; // pass on to other listeners.
+								});/**/
         //========================================================================================
         CheckBox negateView = findViewById(R.id.sub_rule_negate);
         negateView.setChecked(subRule.negate);
-        negateView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton v, boolean isChecked) {
-                // Adding Negate checkbox listener
-                if (isChecked != subRule.negate) {
-                    subRule.negate=isChecked;
-                    refreshResult();
-                }
-            }
-        });
+        negateView.setOnCheckedChangeListener((v, isChecked) -> {
+						// Adding Negate checkbox listener
+						if (isChecked != subRule.negate) {
+								subRule.negate=isChecked;
+								refreshResult();
+						}
+				});
 
         //========================================================================================
         AppCompatSpinner separatorView = findViewById(R.id.sub_rule_separator);

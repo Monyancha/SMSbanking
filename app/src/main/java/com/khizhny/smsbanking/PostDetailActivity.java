@@ -203,8 +203,8 @@ public class PostDetailActivity extends AppCompatActivity implements View.OnClic
         private final DatabaseReference mDatabaseReference;
         private final ChildEventListener mChildEventListener;
 
-        private final List<String> mCommentIds = new ArrayList<String>();
-        private final List<Comment> mComments = new ArrayList<Comment>();
+        private final List<String> mCommentIds = new ArrayList<>();
+        private final List<Comment> mComments = new ArrayList<>();
 
         CommentAdapter(final Context context, DatabaseReference ref) {
             mContext = context;

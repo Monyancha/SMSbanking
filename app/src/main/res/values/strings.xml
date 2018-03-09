@@ -203,6 +203,13 @@
     <string name="edit_message">Fix Time</string>
     <string name="impersonalize">Impersonalize</string>
     <string name="anonymouse" translatable="false">Anonymous</string>
+    <string name="crash_mail_subject" translatable="false">SMS banking crash report</string>
+    <string name="ic_icon_minus" translatable="false">ic_icon_minus</string>
+    <string name="sub_rule_save" translatable="false">sub_rule_save</string>
+    <string name="button_post_comment" translatable="false">button_post_comment</string>
+    <string name="rule_next" translatable="false">rule_next</string>
+    <string name="remove_personal_info">Would you like to remove all personal information (if any) before share?</string>
+    <string name="caching">Caching</string>
 
 </resources>
 

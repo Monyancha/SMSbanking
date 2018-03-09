@@ -136,9 +136,9 @@ public class SmsBankingWidgetConfigureActivity extends AppCompatActivity impleme
         }
 
         // Filling Spinner vith myBanks options
-        List <Bank> banks = db.getMyBanks(getCountry());
-        ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter <Bank>(this,
-                android.R.layout.simple_spinner_dropdown_item, banks);
+        List <Bank> banks = db.getBanks(getCountry());
+        ArrayAdapter <Bank> myBankAdapter = new ArrayAdapter<>(this,
+								android.R.layout.simple_spinner_dropdown_item, banks);
         myBank = findViewById(R.id.my_bank);
         myBank.setAdapter(myBankAdapter);
 
@@ -167,32 +167,26 @@ public class SmsBankingWidgetConfigureActivity extends AppCompatActivity impleme
         ColorPickerView textColorPickerView = findViewById(R.id.text_color);
         textColorPickerView.setAlphaSliderVisible(true);
         textColorPickerView.setColor(textColor);
-        textColorPickerView.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
-            @Override
-            public void onColorChanged(int color) {
-                sampleText.setTextColor(color);
-                textColor = color;
-            }
-        });
+        textColorPickerView.setOnColorChangedListener(color -> {
+						sampleText.setTextColor(color);
+						textColor = color;
+				});
 
         ColorPickerView backColorPickerView = findViewById(R.id.text_background);
         backColorPickerView.setAlphaSliderVisible(true);
         backColorPickerView.setColor(backColor);
 
-        backColorPickerView.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
-            @Override
-            public void onColorChanged(int color) {
-                // Setting background of the sample
-                backColor = color;
-                sampleBackground.setColorFilter(backColor);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    sampleBackground.setImageAlpha(Color.alpha(backColor));
-                } else {
-                    //noinspection deprecation
-                    sampleBackground.setAlpha(Color.alpha(backColor));
-                }
-            }
-        });
+        backColorPickerView.setOnColorChangedListener(color -> {
+						// Setting background of the sample
+						backColor = color;
+						sampleBackground.setColorFilter(backColor);
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+								sampleBackground.setImageAlpha(Color.alpha(backColor));
+						} else {
+								//noinspection deprecation
+								sampleBackground.setAlpha(Color.alpha(backColor));
+						}
+				});
 
         fontSize  = findViewById(R.id.font_size);
         fontSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

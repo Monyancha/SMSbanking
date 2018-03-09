@@ -3,6 +3,7 @@ package com.khizhny.smsbanking.model;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -21,16 +22,16 @@ import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class Bank  implements java.io.Serializable{
 
-	private int id=-1;  // id in main DB. If -1 then it is new.
-	public static final long serialVersionUID = 3;
-	private int editable=1; // 1 if user is allowed to modify
-	private int active=1;  // 1 indicates that user want to watch this account info in program. test
-	private String name;
-	private String phone;
+	  private int id=-1;  // id in main DB. If -1 then it is new.
+	  public static final long serialVersionUID = 3;
+	  private int editable=1; // 1 if user is allowed to modify
+	  private int active=1;  // 1 indicates that user want to watch this account info in program. test
+	  private String name;
+	  private String phone;
     private String country=null;
-	private String defaultCurrency;
-	private BigDecimal currentAccountState=new BigDecimal("0.00"); // used to keep last account state in db for widgets.
-    public List<Rule> ruleList=new ArrayList<Rule>();
+  	private String defaultCurrency;
+	  private BigDecimal currentAccountState=new BigDecimal("0.00"); // used to keep last account state in db for widgets.
+    public List<Rule> ruleList= new ArrayList<>();
 
     public Bank(){  // default constructor
 	}
@@ -43,7 +44,7 @@ public class Bank  implements java.io.Serializable{
 		this.name = originBank.name;
         this.phone = originBank.phone;
         this.country = originBank.country;
-		this.defaultCurrency = originBank.defaultCurrency;
+		    this.defaultCurrency = originBank.defaultCurrency;
 		// Cloning all rules
 		for (Rule r : originBank.ruleList) {
 			this.ruleList.add( new Rule(r, this));
@@ -115,28 +116,33 @@ public class Bank  implements java.io.Serializable{
 	 * @param filePath File path where BankV2 should be exported
 	 * @return True if success, False if failed.
 	 */
-	public static Uri exportBank(Bank b, String filePath){
-		try{
+			public static Uri exportBank(Bank b, String filePath){
+						try{
+								b.setCurrentAccountState("0");
+								ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filePath)));
+								oos.writeObject(b);
+								oos.flush();
+								oos.close();
+							return Uri.parse("file:///"+filePath);
+						} catch (IOException e) {
+								Log.v(LOG,"Serialization Save Error : "+ e.getMessage());
+								e.printStackTrace();
+								return null;
+						}
+			}
 
-            b.setCurrentAccountState("0");
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filePath)));
-			oos.writeObject(b);
-			oos.flush();
-			oos.close();
-			return Uri.parse("file:///"+filePath);
-		} catch (IOException e) {
-			Log.v(LOG,"Serialization Save Error : "+ e.getMessage());
-			e.printStackTrace();
-			return null;
+		public static void impersonalize(Bank bank){
+				for (Rule r:bank.ruleList) {
+						Rule.impersonalize(r);
+				}
 		}
-	}
-
 
 	/**
 	 * These function reads Object from file
 	 * @param filePath File path
 	 * @return Object read from file or null.
 	 */
+	@Nullable
 	public static Bank importBank(String filePath)
 	{
 		try
@@ -175,6 +181,7 @@ public class Bank  implements java.io.Serializable{
     public void setCurrentAccountState(BigDecimal currentAccountState) {
 		this.currentAccountState = currentAccountState;
 	}
+
 
     public void setCurrentAccountState(String currentAccountState) {
 		this.currentAccountState = new BigDecimal(currentAccountState.replace(",", ".")).setScale(2, BigDecimal.ROUND_HALF_UP);

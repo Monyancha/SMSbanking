@@ -45,7 +45,7 @@
                 android:id="@+id/widget_value"
                 android:layout_width="fill_parent"
                 android:layout_height="0dp"
-                android:contentDescription="@string/appwidget_text"
+                android:contentDescription="appwidget_value"
                 android:text="@string/appwidget_text"
                 android:textColor="#fbff00"
                 android:textSize="12sp"

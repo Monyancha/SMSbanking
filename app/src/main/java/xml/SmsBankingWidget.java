@@ -36,7 +36,7 @@ public class SmsBankingWidget extends AppWidgetProvider {
         //delete widget if it has no bank id
 
         Log.d(LOG,"Opening db for bankId="+bankId);
-        Bank bank= db.getBank(bankId);
+        Bank bank= db.getBank(bankId,true);
         if (bank!=null) {
             Log.d(LOG,"Recalculating balance for bank:"+bank.getName());
 

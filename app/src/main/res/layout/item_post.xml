@@ -44,7 +44,7 @@
                 android:id="@+id/like"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:contentDescription="@string/image"
+                android:contentDescription="like"
                 android:background="?attr/selectableItemBackground"
                 app:srcCompat="@drawable/ic_thumb_up_green"/>
 
@@ -61,7 +61,7 @@
                 android:id="@+id/dislike"
                 android:layout_width="0dp"
                 android:layout_height="32dp"
-                android:contentDescription="@string/image"
+                android:contentDescription="dislike"
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackground"
                 app:srcCompat="@drawable/ic_thumb_down_red"/>
@@ -111,7 +111,7 @@
             android:layout_marginRight="6dp"
             android:layout_marginEnd="6dp"
             android:layout_marginTop="-3dp"
-            android:contentDescription="@string/image"
+            android:contentDescription="download_post"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_icon_download"
             app:layout_constraintRight_toRightOf="parent"/>
@@ -120,7 +120,7 @@
             android:id="@+id/delete_post"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:contentDescription="@string/image"
+            android:contentDescription="delete_post"
             app:layout_constraintRight_toLeftOf="@+id/download_post"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_icon_delete"/>
