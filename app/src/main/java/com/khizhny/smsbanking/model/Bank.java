@@ -47,7 +47,7 @@ public class Bank  implements java.io.Serializable{
 		    this.defaultCurrency = originBank.defaultCurrency;
 		// Cloning all rules
 		for (Rule r : originBank.ruleList) {
-			this.ruleList.add( new Rule(r, this));
+				new Rule(r, this);
 		}
 	}
 

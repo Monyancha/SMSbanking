@@ -192,4 +192,6 @@
     <string name="system_language">Мова системи</string>
     <string name="edit_message">Виправити час</string>
     <string name="impersonalize">Деперсоналізувати</string>
+    <string name="caching">Кешування</string>
+    <string name="remove_personal_info">Видалити усю приватну інформацию перед тим як опублікувати шаблон?</string>
 </resources>

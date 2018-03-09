@@ -119,7 +119,7 @@ public class DatabaseAccess {
             b.setEditable(cursor.getInt(5));
             b.setCurrentAccountState(cursor.getString(6));
             b.setCountry(cursor.getString(7));
-            if (withRules) b.ruleList= getRules(b);
+            if (withRules) getRules(b);
             cursor.close();
             return b;
         }
@@ -215,8 +215,7 @@ public class DatabaseAccess {
      * @param bank Bank.
      * @return list of rules for particular Bank (including subrules)
      */
-    private synchronized List<Rule> getRules(Bank bank){
-        List<Rule> ruleList = new ArrayList<>();
+    private synchronized void getRules(Bank bank){
         Cursor cursor = db.rawQuery("SELECT _id, name, sms_body, mask, selected_words, type, advanced FROM rules WHERE bank_id=" + bank.getId(), null);
         if (cursor.moveToFirst()) {
             do {
@@ -227,13 +226,11 @@ public class DatabaseAccess {
                 r.setSelectedWords(cursor.getString(4));
                 r.setRuleType(cursor.getInt(5));
                 r.setAdvanced(cursor.getInt(6));
-								r.subRuleList=getSubRules(r);
+								getSubRules(r);
                 getWords(r);
-                ruleList.add(r);
             } while (cursor.moveToNext());
         }
         cursor.close();
-        return ruleList;
     }
 
     public void cacheTransaction  (ContentValues cv){
@@ -319,7 +316,7 @@ public class DatabaseAccess {
 								r.setSelectedWords(cursor.getString(4));
 								r.setRuleType(cursor.getInt(5));
 								r.setAdvanced(cursor.getInt(6));
-								r.subRuleList=getSubRules(r);
+								getSubRules(r);
 								getWords(r);
 								cursor.close();
 								return r;
@@ -345,8 +342,7 @@ public class DatabaseAccess {
      * Gets All subrules for a Rule
      * @param rule -Rule object
      */
-    private synchronized List<SubRule> getSubRules(Rule rule){
-        List<SubRule> subRuleList = new ArrayList<>();
+    private synchronized void getSubRules(Rule rule){
         String selectQuery = "SELECT \n" +
                 "_id,\n" +
                 "left_phrase,\n" +
@@ -381,13 +377,11 @@ public class DatabaseAccess {
                 subRule.trimRight=cursor.getInt(10);
                 subRule.negate=cursor.getInt(11)!=0;
                 subRule.regexPhraseIndex=cursor.getInt(12);
-
                 // Adding contact to list
-                subRuleList.add(subRule);
+                rule.subRuleList.add(subRule);
             } while (cursor.moveToNext());
         }
         cursor.close();
-        return subRuleList;
     }
 
     private synchronized void getWords(Rule rule){

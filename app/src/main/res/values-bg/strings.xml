@@ -188,4 +188,6 @@
     <string name="extra_parameters">Допълнителни параметри</string>
     <string name="edit_message">Редактиране Време</string>
     <string name="impersonalize">Обезличавам</string>
+    <string name="caching">Кеширование</string>
+    <string name="remove_personal_info">Да се изтрие ли цялата информация преди публикуване?</string>
 </resources>

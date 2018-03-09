@@ -227,7 +227,7 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
         switch (subRule.getExtractedParameter()){
             // getting result as a currency
             case CURRENCY:
-                resultView.setText(subRule.applySubRule(rule.getSmsBody(), 1));
+                resultView.setText(SubRule.applySubRule(subRule,rule.getSmsBody(), 1));
                 break;
             // getting result as a decimal value
             case COMMISSION:
@@ -235,14 +235,14 @@ public class SubRuleActivity extends AppCompatActivity implements View.OnClickLi
             case ACCOUNT_STATE_BEFORE:
             case ACCOUNT_STATE_AFTER:
             case ACCOUNT_DIFFERENCE:
-                resultView.setText(subRule.applySubRule(rule.getSmsBody(), 0));
+                resultView.setText(SubRule.applySubRule(subRule,rule.getSmsBody(), 0));
                 break;
             // getting result as a string
             case EXTRA_1:
             case EXTRA_2:
             case EXTRA_3:
             case EXTRA_4:
-                resultView.setText(subRule.applySubRule(rule.getSmsBody(), 2));
+                resultView.setText(SubRule.applySubRule(subRule,rule.getSmsBody(), 2));
                 break;
         }
     }

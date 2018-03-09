@@ -10,8 +10,10 @@ import android.app.TimePickerDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -56,6 +58,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.khizhny.smsbanking.model.Bank;
 import com.khizhny.smsbanking.model.Rule;
+import com.khizhny.smsbanking.model.SubRule;
 import com.khizhny.smsbanking.model.Transaction;
 
 import java.io.File;
@@ -101,6 +104,13 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
 		private static final int DEF_SMS_REQ_FOR_DEL = 888; // asking to be set as default app for msg delete.
 		private static final int DEF_SMS_REQ_FOR_EDIT = 889; // asking to be set as default app for msg edit.
+		private static final int DEF_SMS_REQ_FOR_TEST = 890; // asking to be set as default app for creating test messages.
+
+		// Constants for creatins test messsages for stress testing
+		private static final int MENU_ITEM_ITEM1 = 1;
+		private static final int TEST_MSG_COUNT = 100;
+		private static final int TEST_MSG_MINUTES_INTERVAL =2;
+		private static final String TEST_SENDER = "TestSender";
 
     private static final String EXPORT_FOLDER = "SMS banking";
 
@@ -116,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 		private static final String KEY_COUNTRY_PREFERENCE = "country_preference";
 		private static final String KEY_INVERSE_RATE = "inverse_rate";
 		private static final String KEY_HIDE_ADS = "hide_ads";
+
 
 
 		private ListView listView;
@@ -140,24 +151,52 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
     private static final Calendar calendar = new GregorianCalendar();
 
-		/*public void createTestSMS(){
+		public void createTestSMS(){
 				// Make Lots of fake SMS
 				Uri uri = Uri.parse("content://sms/inbox");
 				ContentValues cv = new ContentValues();
 				ContentResolver cr = getContentResolver();
-				int total=1000;
-				for (int i=1; i<total; i++) {
-						cv.put("address", "0671111111");
-						cv.put("date", String.valueOf(System.currentTimeMillis()-60000*(total-i)));
-						cv.put("body", "Test message #"+i+" 1 UAH was spent. "+(total-i)+" UAH left.");
+				for (int i=1; i<TEST_MSG_COUNT; i++) {
+						cv.put("address", TEST_SENDER);
+						cv.put("date", String.valueOf(System.currentTimeMillis()-TEST_MSG_MINUTES_INTERVAL*60000*(TEST_MSG_COUNT-i)));
+						cv.put("body", "Test message #"+i+" 1 UAH was spent. "+(TEST_MSG_COUNT-i)+" UAH left.");
 						cv.put("type", 1);
 						cv.put("thread_id", 4);
 						cv.put("read", 1);
 						cr.insert(uri, cv);
 				}
-		}*/
+				Bank testBank=new Bank();
+				testBank.setActive(1);
+				testBank.setName("Test Bank");
+				testBank.setPhone(TEST_SENDER);
+				testBank.setCountry(country);
+				testBank.setDefaultCurrency("UAH");
 
-    protected void onCreate(Bundle savedInstanceState) {
+				Rule r = new Rule(testBank, "rule#0");
+				//						0		   1       2  3  4   5    6     7   8   9
+				r.setSmsBody("Test message #666 1 UAH was spent. 456 UAH left.");
+				r.setRuleType(Rule.transactionType.WITHDRAW.ordinal());
+				Rule.makeInitialWordSplitting(r);
+				r.words.get(2).changeWordType(); // 0
+				r.words.get(3).changeWordType(); // 1
+				r.words.get(4).changeWordType(); // 2
+				r.words.get(7).changeWordType(); // 3
+				SubRule srDiff = new SubRule(r,Transaction.Parameters.ACCOUNT_DIFFERENCE);
+				srDiff.regexPhraseIndex=1;
+				srDiff.negate=true;
+				SubRule srCurr = new SubRule(r,Transaction.Parameters.CURRENCY);
+				srCurr.regexPhraseIndex=2;
+				SubRule srAfter = new SubRule(r,Transaction.Parameters.ACCOUNT_STATE_AFTER);
+				srAfter.regexPhraseIndex=3;
+				// making 30 more copies of the Rule
+				for (int j=0; j<30; j++) {
+						new Rule(r,testBank);
+				}
+				db.addOrEditBank(testBank,true,true);
+				onRefresh();
+		}
+
+		protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.d(LOG, "MainActivity:onCreate()");
@@ -201,6 +240,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(LOG, "MainActivity:onCreateOptionsMenu()");
         getMenuInflater().inflate(R.menu.menu_main_activity, menu);
+				if (BuildConfig.DEBUG) {
+						menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "CreateTestMsg");
+				}
         return true;
     }
 
@@ -212,38 +254,38 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         switch (item.getItemId()) {
             case R.id.action_preferences:
                 startActivity(new Intent(this, PrefActivity.class));
-                break;
+								return true;
             case R.id.action_bank_my_list:
                 intent = new Intent(this, BankListActivity.class);
                 intent.putExtra("bankFilter", "myBanks");
                 startActivity(intent);
-                break;
+								return true;
             case R.id.action_rule_list:
                 if (activeBank!=null){
                     if (activeBank.ruleList!=null) {
                         showRulePickerDialog(activeBank.ruleList, null);
                     }
                 }
-                break;
+								return true;
             case R.id.action_statistics:
                 intent = new Intent(this, StatisticsActivity.class);
                 startActivity(intent);
-                break;
+								return true;
             case R.id.action_export_transactions:
                 exportToExcel();
-                break;
+								return true;
             case R.id.action_rate_app:
                 goToMarket();
-                break;
+								return true;
             case R.id.action_privacy:
 
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(URL_4PDA_PRIVACY));
                 startActivity(i);
-                break;
+								return true;
             case R.id.action_about:
                 showAboutDialog();
-                break;
+								return true;
             case R.id.action_cache:
                 if (activeBank!=null && transactions!=null) {
                     CacheTransactionsTask cacheTransactionsTask=new CacheTransactionsTask();
@@ -251,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
                 }else{
                     Toast.makeText(getApplicationContext(), R.string.nothing_to_cache, Toast.LENGTH_SHORT).show();
                 }
-                break;
+								return true;
             case R.id.bank_clear_cache:
                 if (activeBank!=null) {
                     db.deleteBankCache(activeBank.getId());
@@ -263,19 +305,26 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 								/*createRestSMS();/**/
 								this.finish();
                 System.exit(0);
-                break;
+								return true;
+						case MENU_ITEM_ITEM1:
+							showMessageOKCancel("Add test SMS?",(dialog, which) -> {
+												if (!isDefaultSmsApp()) {
+														sendDefaultSmsAppRequest(DEF_SMS_REQ_FOR_TEST);
+												} else {
+														createTestSMS();
+												}
+										},null);
+								return true;
 
             default:
                 return false;
         }
-        return true;
     }
 
     // Listener for popup rule menu clicks
     public boolean onMenuItemClick(MenuItem item) {
         Log.d(LOG, "MainActivity:OnMenuItemClick() user clicked "+item.getTitle());
         Intent intent;
-				String defaultSmsApp;
         switch (item.getItemId()) {
 
             // delete rule option
@@ -320,38 +369,21 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
 						//editing date/Time option
 						case R.id.item_edit_sms:
-								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-										defaultSmsApp = Sms.getDefaultSmsPackage(this);
-										if (defaultSmsApp == null) {
-												intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
-												intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+								if (!isDefaultSmsApp()) {
+										intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
+										intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
 												startActivityForResult(intent, DEF_SMS_REQ_FOR_EDIT);
-										} else {
-												if (!defaultSmsApp.equals(getPackageName())) {
-														intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
-														intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
-														startActivityForResult(intent, DEF_SMS_REQ_FOR_EDIT);
-												} else {
-														showDatePickerDialog();
-												}
-										}
-								}else{
+								} else {
 										showDatePickerDialog();
 								}
 								return true;
 
 						//deleting SMS option
 						case R.id.item_delete_sms:
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    defaultSmsApp = Sms.getDefaultSmsPackage(this);
-                    if (!defaultSmsApp.equals(getPackageName())) {
+								if (!isDefaultSmsApp()) {
                         intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
                         intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
 												startActivityForResult(intent, DEF_SMS_REQ_FOR_DEL);
-                    }else{
-												showDeleteSmsDialog();
-										}
                 }else{
                 		showDeleteSmsDialog();
 								}
@@ -385,6 +417,11 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 								if (resultCode == Activity.RESULT_OK){
 										showDatePickerDialog();
 								}
+						case DEF_SMS_REQ_FOR_TEST:
+								if (resultCode == Activity.RESULT_OK){
+										createTestSMS();
+								}
+								return;
 				}
 		}
 
@@ -572,6 +609,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         Log.d(LOG, "MainActivity:onRefresh() started");
         activeBank = db.getActiveBank();
         if (activeBank != null) {
+
             refreshTransactionsTask = new RefreshTransactionsTask();
             refreshTransactionsTask.execute(activeBank);
         } else {
@@ -581,6 +619,19 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
 
+    private boolean isDefaultSmsApp(){
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+						String defaultSmsApp = Sms.getDefaultSmsPackage(this);
+						if (defaultSmsApp == null) {
+								return false;
+						} else {
+								return defaultSmsApp.equals(getPackageName());
+						}
+				}else{
+						return true;
+				}
+
+		}
 
 
 		private class TransactionListAdapter extends ArrayAdapter<Transaction> {
@@ -905,6 +956,12 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
+		private void sendDefaultSmsAppRequest(int rcCode){
+				Intent intent = new Intent(Sms.Intents.ACTION_CHANGE_DEFAULT);
+				intent.putExtra(Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
+				startActivityForResult(intent, rcCode);
+		}
+
 		private void showDeleteSmsDialog(){
 				try {
 						Uri uriSms = Uri.parse("content://sms/inbox");
@@ -1046,8 +1103,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
      * Task loads a list of transactions from SMS using rules defined for BankV2
      * BankV2
      */
-    @SuppressLint("StaticFieldLeak")
-    private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
+     private class RefreshTransactionsTask extends AsyncTask<Bank, Integer, List<Transaction>> {
 
         private static final long CACHE_NOTIFY_THRESHOLD = 5000; // in milliseconds
 
@@ -1214,7 +1270,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
     private class CacheTransactionsTask extends AsyncTask<List <Transaction>, Integer, Void> {
 
         @Override
@@ -1237,8 +1292,9 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
             hideAds = settings.getBoolean(KEY_HIDE_ADS, false);
         }
 
+				@SafeVarargs
 				@Override
-        protected Void doInBackground(List<Transaction>... params) {
+        protected final Void doInBackground(List<Transaction>... params) {
             Log.d(LOG,"CacheTransactionsTask.doInBackground() started");
             db.deleteBankCache(activeBank.getId());
             int progress=0;
@@ -1308,4 +1364,14 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }
         Log.d(LOG, "MainActivity:loadMyBanks() finished");
     }
+
+		private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener, DialogInterface.OnClickListener cancelListener) {
+				new android.support.v7.app.AlertDialog.Builder(this)
+								.setMessage(message)
+								.setPositiveButton("OK", okListener)
+								.setNegativeButton("Cancel", cancelListener)
+								.create()
+								.show();
+		}
+
 }

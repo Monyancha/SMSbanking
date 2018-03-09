@@ -27,7 +27,7 @@ public class UnitTests {
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
-        r.makeInitialWordSplitting();
+        Rule.makeInitialWordSplitting(r);
         assertEquals(11, r.words.size());
         assertEquals("This",r.words.get(0).getBody());
         assertEquals("50.65UAH",r.words.get(9).getBody());
@@ -48,7 +48,7 @@ public class UnitTests {
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
-        r.makeInitialWordSplitting();
+        Rule.makeInitialWordSplitting(r);
 
         r.mergeRight(r.words.get(5));
         //             0    1   2    3         4       5        6    7    8       9
@@ -78,7 +78,7 @@ public class UnitTests {
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
-        r.makeInitialWordSplitting();
+        Rule.makeInitialWordSplitting(r);
 
         r.mergeLeft(r.words.get(5));
         //             0    1   2    3       [    4       ] 5    6    7     8      9
@@ -107,7 +107,7 @@ public class UnitTests {
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
-        r.makeInitialWordSplitting();
+        Rule.makeInitialWordSplitting(r);
 
         r.split(r.words.get(4),4);
         //             0    1   2    3        4    5    6    7     8   9     10     11
@@ -133,7 +133,7 @@ public class UnitTests {
 				r.setSmsBody(msg);
 				Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
 				r.setRuleType(trans_type.ordinal());
-				r.makeInitialWordSplitting();
+				Rule.makeInitialWordSplitting(r);
 				Word w= r.words.get(9);
 				assertEquals("00.00AAA", w.getImpersonalizedBody());
 		}
@@ -152,7 +152,7 @@ public class UnitTests {
         r.setSmsBody(msg);
         Rule.transactionType trans_type=Rule.transactionType.WITHDRAW;
         r.setRuleType(trans_type.ordinal());
-        r.makeInitialWordSplitting();
+        Rule.makeInitialWordSplitting(r);
         r.words.get(5).changeWordType();
         r.words.get(6).changeWordType();
         r.words.get(6).changeWordType();

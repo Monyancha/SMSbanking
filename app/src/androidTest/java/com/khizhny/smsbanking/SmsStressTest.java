@@ -24,9 +24,6 @@ public class SmsStressTest extends ApplicationTestCase<Application> {
 
     }
 
-
-
-
     @Override
     public void tearDown() throws Exception{
         super.tearDown();

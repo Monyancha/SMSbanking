@@ -65,8 +65,9 @@ public class Rule implements java.io.Serializable {
 	 */
     public Rule(Bank bank, String name){
 		this.bank=bank;
+		bank.ruleList.add(this);
 		this.name=name;
-        this.nameSuggestion=name;
+		this.nameSuggestion=name;
 	}
 
 	/**
@@ -76,8 +77,9 @@ public class Rule implements java.io.Serializable {
 	 */
     public Rule(Rule originRule, Bank bank){
 		this.bank=bank;
+		bank.ruleList.add(this);
 		this.name=originRule.name;
-        this.nameSuggestion=originRule.name;
+		this.nameSuggestion=originRule.name;
 		this.smsBody=originRule.smsBody;
 		this.mask=originRule.mask;
 		this.advanced=originRule.advanced;
@@ -329,7 +331,7 @@ public class Rule implements java.io.Serializable {
 		String sms_body = transaction.getSmsBody();
 		if (ruleType!=Rule.transactionType.IGNORE && sms_body.matches(mask)) {
 			transaction.icon = getRuleIconId();
-			for (SubRule subRule : subRuleList) subRule.applySubRule(sms_body, transaction);
+			for (SubRule subRule : subRuleList) SubRule.applySubRule(subRule,sms_body, transaction);
 		}
 	}
 

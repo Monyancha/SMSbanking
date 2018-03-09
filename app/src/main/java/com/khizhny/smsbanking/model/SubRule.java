@@ -9,22 +9,21 @@ import java.util.regex.Pattern;
 import static com.khizhny.smsbanking.MyApplication.LOG;
 
 public class SubRule implements java.io.Serializable {
-
-	private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
-	private int id=-1;
-	private final Rule rule; // back reference to rule
-	private int distanceToLeftPhrase=1;
-	private int distanceToRightPhrase=1;
-	private String leftPhrase="";
-	private String rightPhrase="";
-	private String constantValue="";
-	private final Transaction.Parameters extractedParameter;
-	private Method extractionMethod = Method.USE_REGEX;
-	private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_AUTO;  // 0 - dot,  1-coma, 2 - auto
-	public int trimLeft=0;
-	public int trimRight=0;
-	public int regexPhraseIndex=0;
-	public boolean negate=false;
+		private final static long serialVersionUID = 3; // Is used to indicate class version during Import/Export
+		private int id=-1;
+		private final Rule rule; // back reference to rule
+		private int distanceToLeftPhrase=1;
+		private int distanceToRightPhrase=1;
+		private String leftPhrase="";
+		private String rightPhrase="";
+		private String constantValue="";
+		private final Transaction.Parameters extractedParameter;
+		private Method extractionMethod = Method.USE_REGEX;
+		private DECIMAL_SEPARATOR decimalSeparator=DECIMAL_SEPARATOR.SEPARATOR_AUTO;  // 0 - dot,  1-coma, 2 - auto
+		public int trimLeft=0;
+		public int trimRight=0;
+		public int regexPhraseIndex=0;
+		public boolean negate=false;
 
     public enum Method {
 		WORD_AFTER_PHRASE,
@@ -40,25 +39,27 @@ public class SubRule implements java.io.Serializable {
 		SEPARATOR_AUTO,
 	}
 
-    public SubRule(Rule rule, Transaction.Parameters extractedParameter) {
-		this.rule = rule;
-		this.extractedParameter = extractedParameter;
-	}
+		public SubRule(Rule rule, Transaction.Parameters extractedParameter) {
+				this.rule = rule;
+				rule.subRuleList.add(this);
+				this.extractedParameter = extractedParameter;
+		}
 
-    public SubRule(SubRule origin, Rule rule) {
-		this.rule = rule;
-		this.distanceToLeftPhrase = origin.distanceToLeftPhrase;
-		this.distanceToRightPhrase = origin.distanceToRightPhrase;
-		this.leftPhrase=origin.leftPhrase;
-		this.rightPhrase=origin.rightPhrase;
-		this.constantValue=origin.constantValue;
-		this.extractedParameter = origin.extractedParameter;
-		this.extractionMethod = origin.extractionMethod;
-		this.decimalSeparator = origin.decimalSeparator;
-		this.trimLeft = origin.trimLeft;
-		this.trimRight = origin.trimRight;
-		regexPhraseIndex = origin.regexPhraseIndex;
-		this.negate = origin.negate;
+		SubRule(SubRule origin, Rule rule) {
+				this.rule = rule;
+				rule.subRuleList.add(this);
+				this.distanceToLeftPhrase = origin.distanceToLeftPhrase;
+				this.distanceToRightPhrase = origin.distanceToRightPhrase;
+				this.leftPhrase=origin.leftPhrase;
+				this.rightPhrase=origin.rightPhrase;
+				this.constantValue=origin.constantValue;
+				this.extractedParameter = origin.extractedParameter;
+				this.extractionMethod = origin.extractionMethod;
+				this.decimalSeparator = origin.decimalSeparator;
+				this.trimLeft = origin.trimLeft;
+				this.trimRight = origin.trimRight;
+				regexPhraseIndex = origin.regexPhraseIndex;
+				this.negate = origin.negate;
 	}
 
 	public int getId() {
@@ -151,28 +152,28 @@ public class SubRule implements java.io.Serializable {
 	 * @param returnedType Zero for decimal, One for Alphabetical, Other for unchanged string.
 	 * @return Parameter value
 	 */
-    public String applySubRule(String smsMsg, int returnedType) {
+    public static String applySubRule(SubRule sr, String smsMsg, int returnedType) {
 		String msg = "<BEGIN> " + smsMsg + " <END>";
 		StringBuilder temp = new StringBuilder();
 		try {
             String[] arr;
             int wordsCount;
-			switch (extractionMethod) {
+			switch (sr.extractionMethod) {
 				case WORD_AFTER_PHRASE:
-					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", leftPhrase))[1].split(" ")[distanceToLeftPhrase]);
+					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", sr.leftPhrase))[1].split(" ")[sr.distanceToLeftPhrase]);
 					break;
 				case WORD_BEFORE_PHRASE:
-					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", rightPhrase))[0].trim());
+					temp = new StringBuilder(msg.split(String.format("\\Q%s\\E", sr.rightPhrase))[0].trim());
 					arr = temp.toString().split(" ");
 					wordsCount = arr.length;
-					temp = new StringBuilder((arr[wordsCount - distanceToRightPhrase]));
+					temp = new StringBuilder((arr[wordsCount - sr.distanceToRightPhrase]));
 					break;
 				case WORDS_BETWEEN_PHRASES:
 					// temp will store all words between phrases "leftPhrase" and "rightPhrase"
-                    arr=msg.split(String.format("\\Q%s\\E", leftPhrase));
+                    arr=msg.split(String.format("\\Q%s\\E", sr.leftPhrase));
                     if (arr.length>1) {
                         temp = new StringBuilder(arr[1]);
-                        arr = temp.toString().split(String.format("\\Q%s\\E", rightPhrase));
+                        arr = temp.toString().split(String.format("\\Q%s\\E", sr.rightPhrase));
                         if (arr.length>=1) {
                             temp = new StringBuilder(arr[0].trim());
                         }else{
@@ -186,20 +187,20 @@ public class SubRule implements java.io.Serializable {
                     // M - distanceToRightPhrase
                     arr = temp.toString().split(" ");
                     temp = new StringBuilder();
-                    for (int j=distanceToLeftPhrase-1; j<arr.length-distanceToRightPhrase+1;j++) {
-                        if (j > distanceToLeftPhrase - 1) temp.append(" ");
+                    for (int j=sr.distanceToLeftPhrase-1; j<arr.length-sr.distanceToRightPhrase+1;j++) {
+                        if (j > sr.distanceToLeftPhrase - 1) temp.append(" ");
                         temp.append(arr[j]);
                     }
                     break;
 				case USE_CONSTANT:
-					temp = new StringBuilder(constantValue);
+					temp = new StringBuilder(sr.constantValue);
 					break;
 				case USE_REGEX:
-                    Pattern pattern = Pattern.compile(rule.getMask());
+                    Pattern pattern = Pattern.compile(sr.rule.getMask());
                     Matcher matcher = pattern.matcher(smsMsg);
                     if (matcher.matches()) {
-                        if (matcher.groupCount() > regexPhraseIndex) {
-                        	temp = new StringBuilder(matcher.group(regexPhraseIndex + 1));
+                        if (matcher.groupCount() > sr.regexPhraseIndex) {
+                        	temp = new StringBuilder(matcher.group(sr.regexPhraseIndex + 1));
 						}
                     }
 					break;
@@ -208,10 +209,10 @@ public class SubRule implements java.io.Serializable {
 			return "";
 		}
 		// trimming characters if needed
-		if (trimRight > 0 || trimLeft > 0) {
+		if (sr.trimRight > 0 || sr.trimLeft > 0) {
 			int temp_len = temp.length();
 			try {
-				temp = new StringBuilder(temp.substring(trimLeft, temp_len - trimRight));
+				temp = new StringBuilder(temp.substring(sr.trimLeft, temp_len - sr.trimRight));
 			} catch (Exception e) {
 				return "";
 			}
@@ -221,14 +222,14 @@ public class SubRule implements java.io.Serializable {
 			case 0: // return only Numbers
 				try {
 					// changing sign if needed
-					if (negate) {
+					if (sr.negate) {
 						if (!temp.toString().contains("-")) {
 							temp.insert(0, "-");
 						} else {
 							temp = new StringBuilder(temp.toString().replace("-", ""));
 						}
 					}
-					temp = new StringBuilder(temp.toString().replaceAll("[^0-9" + getDecimalSeparatorString(temp.toString()) + "-]", ""));
+					temp = new StringBuilder(temp.toString().replaceAll("[^0-9" + sr.getDecimalSeparatorString(temp.toString()) + "-]", ""));
 				} catch (Exception e) {
                     temp = new StringBuilder("0");
 				}
@@ -248,37 +249,37 @@ public class SubRule implements java.io.Serializable {
 	 * @param msg         SMS Message
 	 * @param transaction Transaction
 	 */
-    public void applySubRule(String msg, Transaction transaction) {
-		switch (extractedParameter) {
+    static void applySubRule(SubRule sr, String msg, Transaction transaction) {
+		switch (sr.extractedParameter) {
 			case ACCOUNT_STATE_BEFORE: //Account state before transaction
-				transaction.setStateBefore(applySubRule(msg, 0));
+				transaction.setStateBefore(applySubRule(sr, msg, 0));
 					return;
 			case ACCOUNT_STATE_AFTER: //Account state after transaction
-				transaction.setStateAfter(applySubRule(msg, 0));
+				transaction.setStateAfter(applySubRule(sr, msg, 0));
 					return;
 			case ACCOUNT_DIFFERENCE: //Account difference
-				transaction.setDifference(applySubRule(msg, 0));
+				transaction.setDifference(applySubRule(sr, msg, 0));
 					return;
 			case COMMISSION: //Transaction commission
-				transaction.setComission(applySubRule(msg, 0));
+				transaction.setComission(applySubRule(sr, msg, 0));
 					return;
 			case CURRENCY: //Transaction currency
-				transaction.setTransactionCurrency(applySubRule(msg, 1)); // return only text)
+				transaction.setTransactionCurrency(applySubRule(sr, msg, 1)); // return only text)
 					return;
 			case EXTRA_1:
-				transaction.setExtraParam1(applySubRule(msg, 2));
+				transaction.setExtraParam1(applySubRule(sr, msg, 2));
 					return;
 			case EXTRA_2:
-				transaction.setExtraParam2(applySubRule(msg, 2));
+				transaction.setExtraParam2(applySubRule(sr, msg, 2));
 					return;
 			case EXTRA_3:
-				transaction.setExtraParam3(applySubRule(msg, 2));
+				transaction.setExtraParam3(applySubRule(sr, msg, 2));
 					return;
 			case EXTRA_4:
-				transaction.setExtraParam4(applySubRule(msg, 2));
+				transaction.setExtraParam4(applySubRule(sr, msg, 2));
 					return;
 			default:
-				Log.d(LOG, "Unexpected parameter number " + extractedParameter + " in Rule ID=" + rule.getId());
+				Log.d(LOG, "Unexpected parameter number " + sr.extractedParameter + " in Rule ID=" + sr.rule.getId());
 		}
 
 	}

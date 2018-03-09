@@ -14,9 +14,9 @@ android {
         applicationId "com.khizhny.smsbanking"
         minSdkVersion 14
         //if >23 then TransactionTooLargeException crashes the app. I'll handle it later
-        targetSdkVersion 23
-        versionCode 143
-        versionName '1.43'
+        targetSdkVersion 27
+        versionCode 144
+        versionName '1.44'
         signingConfig signingConfigs.sign
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }

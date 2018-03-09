@@ -190,5 +190,7 @@
     <string name="system_language">Язык системы</string>
     <string name="edit_message">Поправить время</string>
     <string name="impersonalize">Деперсонализировать</string>
+    <string name="caching">Кеширование</string>
+    <string name="remove_personal_info">Удалить всю приватную информацию перед тем как опубликовать?</string>
 </resources>
 
